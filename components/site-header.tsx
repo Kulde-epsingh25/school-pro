@@ -20,60 +20,106 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Code,
-  Book,
-  PieChart,
+  Users,
+  GraduationCap,
+  ClipboardList,
+  MessageSquare,
   DollarSign,
-  Fingerprint,
+  Bus,
+  BookOpen,
+  BarChart2,
+  CalendarDays,
+  FileText,
   Bell,
+  Shield,
   Menu,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
 const features = [
   {
-    icon: Code,
-    title: "Open source",
-    description: "This Pokemon's cry is very loud and distracting",
+    icon: Users,
+    title: "Student Management",
+    description: "Comprehensive student information system for managing enrollments, profiles, academic records, health data, and performance analytics with ease.",
+    href: "/features/student-management",
+  },
+  {
+    icon: GraduationCap,
+    title: "Academic Management",
+    description: "Streamline curriculum planning, class scheduling, examinations, grading, and report card generation in one unified system.",
+    href: "/features/academic-management",
+  },
+  {
+    icon: ClipboardList,
+    title: "Staff Management",
+    description: "Efficient tools for managing staff records, attendance, leave, performance evaluation, and payroll processing.",
+    href: "/features/staff-management",
+  },
+  {
+    icon: MessageSquare,
+    title: "Communication Hub",
+    description: "Integrated multi-channel messaging with email, SMS, push notifications, and a digital notice board for seamless school-wide communication.",
+    href: "/features/communication",
   },
   {
     icon: DollarSign,
-    title: "Free for everyone",
-    description: "The fluid of Smeargle's tail secretions changes",
+    title: "Financial Management",
+    description: "Complete fee management with online payments, automated invoicing, scholarship tracking, budget planning, and comprehensive financial reporting.",
+    href: "/features/finance",
   },
   {
-    icon: Book,
-    title: "Documentation",
-    description: "Yanma is capable of seeing 360 degrees without",
+    icon: Bus,
+    title: "Transport Management",
+    description: "Real-time GPS tracking, route optimization, driver management, vehicle maintenance, and automated parent notifications for safe student transportation.",
+    href: "/features/transport",
   },
   {
-    icon: Fingerprint,
-    title: "Security",
-    description: "The shell's rounded shape and the grooves on its",
+    icon: BookOpen,
+    title: "Resource Management",
+    description: "Digital library system, inventory control, facility scheduling, and asset tracking in one integrated platform.",
+    href: "/features/resources",
   },
   {
-    icon: PieChart,
-    title: "Analytics",
-    description: "This Pokémon uses its flying ability to quickly chase",
+    icon: BarChart2,
+    title: "Analytics & Reports",
+    description: "Powerful analytics tools for data-driven decisions with a custom report builder, trend analysis, and interactive data visualizations.",
+    href: "/features/analytics",
+  },
+  {
+    icon: CalendarDays,
+    title: "Attendance System",
+    description: "Automated attendance tracking for students and staff with real-time dashboards and instant parent notification capabilities.",
+    href: "/features/attendance",
+  },
+  {
+    icon: FileText,
+    title: "Examination Portal",
+    description: "End-to-end examination management from scheduling and seating to result publication, with online assessment tools and secure access control.",
+    href: "/features/examinations",
   },
   {
     icon: Bell,
-    title: "Notifications",
-    description: "Combusken battles with the intensely hot flames it spews",
+    title: "Notice Board",
+    description: "Digital notice board for announcements, events, and important updates with targeted distribution to specific groups or the whole school.",
+    href: "/features/announcements",
+  },
+  {
+    icon: Shield,
+    title: "Security & Access",
+    description: "Role-based access control, data encryption, audit trails, regular backups, and compliance tools for complete peace of mind.",
+    href: "/features/security",
   },
 ];
-
 export default function SiteHeader() {
   const [open, setOpen] = React.useState(false);
   const [showFeatures, setShowFeatures] = React.useState(false);
 
   return (
-    <div className="h-screen">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container max-w-6xl mx-auto
-        flex h-14 items-center justify-between">
+    <div>
+
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
+        <div className="container mx-auto max-w-6xl flex h-14 items-center justify-between">
           <div className="flex items-center space-x-4">
                 <Logo/>
             <NavigationMenu className="hidden md:flex">
@@ -89,7 +135,7 @@ export default function SiteHeader() {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Features</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="w-[600px] p-4">
+                    <div className="w-[700px] p-4">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b">
                         <h4 className="text-lg font-medium">Features</h4>
                         <Link
@@ -99,7 +145,7 @@ export default function SiteHeader() {
                           View all
                         </Link>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 md:grid-cols-3">
                         {features.map((feature, index) => (
                           <Link
                             key={index}
@@ -116,7 +162,7 @@ export default function SiteHeader() {
                                 <h5 className="font-medium mb-1 group-hover:text-blue-500">
                                   {feature.title}
                                 </h5>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground line-clamp-2">
                                   {feature.description}
                                 </p>
                               </div>
@@ -133,7 +179,11 @@ export default function SiteHeader() {
                               numbers
                             </p>
                           </div>
-                          <Button variant="secondary">Get started</Button>
+                          <Button  variant="secondary">
+                            <Link href="/get-started" passHref>
+                              Get started
+                            </Link>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -141,17 +191,17 @@ export default function SiteHeader() {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link href="/learn" legacyBehavior passHref>
+                  <Link href="/pricing" legacyBehavior passHref>
                     <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      Learn
+                      Pricing
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link href="/academy" legacyBehavior passHref>
+                  <Link href="/how-it-works" legacyBehavior passHref>
                     <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      Academy
+                      How it works?
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -165,10 +215,8 @@ export default function SiteHeader() {
           </div>
 
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger  className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
+            <SheetTrigger className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+              <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="left" className="w-full p-0">
               <SheetHeader className="border-b p-4">
@@ -219,18 +267,18 @@ export default function SiteHeader() {
                   </div>
                 )}
                 <Link
-                  href="/learn"
+                  href="/pricing"
                   className="px-4 py-2 text-lg font-medium hover:bg-accent"
                   onClick={() => setOpen(false)}
                 >
-                  Learn
+                  Pricing
                 </Link>
                 <Link
-                  href="/academy"
+                  href="/how-it-works"
                   className="px-4 py-2 text-lg font-medium hover:bg-accent"
                   onClick={() => setOpen(false)}
                 >
-                  Academy
+                  How it works?
                 </Link>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-background">

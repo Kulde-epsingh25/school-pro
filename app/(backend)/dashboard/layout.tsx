@@ -1,3 +1,4 @@
+import { HeroSection } from '@/components/frontend/hero-section';
 import React, { ReactNode } from 'react';
 
 export default function DashboardLayout({children}: {
@@ -5,6 +6,7 @@ export default function DashboardLayout({children}: {
 }) {
   return (
     <div>
+      
         {children}
     </div>
   );
