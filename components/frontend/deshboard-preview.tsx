@@ -3,11 +3,11 @@ import Image from "next/image"
 
 export function DeskboardPreview() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    <Card className="w-full max-w-sm">
+    <div className="">
+    <Card className="w-full rounded-lg border bg-background/80 p-4 shadow-sm backdrop-blur py-12 md:py-16">
      
       <CardContent>
-        <Image src="D:\New folder (2)\ALL\PRO\Project\New folder\school-pro\public\Images\Deskboard-preview.avif" alt="Dashboard Preview" width={400} height={300} />
+        <Image src="/Images/Deskboard-preview.jpg" alt="Dashboard Preview" width={2016} height={1210} className="" />
       </CardContent>
     </Card>
     </div>

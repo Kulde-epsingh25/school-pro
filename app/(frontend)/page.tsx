@@ -1,7 +1,9 @@
 import { DeskboardPreview } from "@/components/frontend/deshboard-preview";
+import FeatureGrids from "@/components/frontend/features-grid";
 import { HeroSection } from "@/components/frontend/hero-section";
 import  { LogoCloud } from "@/components/frontend/logo-cloud";
-import Image from "next/image";
+import PricingV1 from "@/components/frontend/pricing";
+import SiteFooter from "@/components/frontend/site-footer";
 
 export default function Home() {
   return (
@@ -9,6 +11,8 @@ export default function Home() {
     <HeroSection />
     <LogoCloud />
     <DeskboardPreview />
+    <FeatureGrids />
+   <PricingV1 />
    </main>
   );
 }

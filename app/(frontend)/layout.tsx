@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
-import SiteHeader from '@/components/site-header';
+import SiteHeader from '@/components/frontend/site-header';
 import { HeroSection } from '@/components/frontend/hero-section';
+import SiteFooter from '@/components/frontend/site-footer';
 export default function FrontLayout({children}: {
   children: ReactNode;
 }) {
@@ -9,6 +10,8 @@ export default function FrontLayout({children}: {
       <SiteHeader/>
       
       {children}
+
+      <SiteFooter/>
     </div>
   );
 }
