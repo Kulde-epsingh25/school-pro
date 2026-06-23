@@ -1,10 +1,10 @@
+import LoginV2 from '@/components/frontend/login';
 import React from 'react';
 
 export default function page(){
     return (
         <div>
-            <h1>Login Page</h1>
-            <p>Please enter your credentials to log in.</p>
+            <LoginV2 />
         </div>
     );
 }

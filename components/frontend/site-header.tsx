@@ -19,98 +19,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Users,
-  GraduationCap,
-  ClipboardList,
-  MessageSquare,
-  DollarSign,
-  Bus,
-  BookOpen,
-  BarChart2,
-  CalendarDays,
-  FileText,
-  Bell,
-  Shield,
-  Menu,
-} from "lucide-react";
+import { Menu } from "lucide-react";
+import { features } from "./features";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
-const features = [
-  {
-    icon: Users,
-    title: "Student Management",
-    description: "Comprehensive student information system for managing enrollments, profiles, academic records, health data, and performance analytics with ease.",
-    href: "/features/student-management",
-  },
-  {
-    icon: GraduationCap,
-    title: "Academic Management",
-    description: "Streamline curriculum planning, class scheduling, examinations, grading, and report card generation in one unified system.",
-    href: "/features/academic-management",
-  },
-  {
-    icon: ClipboardList,
-    title: "Staff Management",
-    description: "Efficient tools for managing staff records, attendance, leave, performance evaluation, and payroll processing.",
-    href: "/features/staff-management",
-  },
-  {
-    icon: MessageSquare,
-    title: "Communication Hub",
-    description: "Integrated multi-channel messaging with email, SMS, push notifications, and a digital notice board for seamless school-wide communication.",
-    href: "/features/communication",
-  },
-  {
-    icon: DollarSign,
-    title: "Financial Management",
-    description: "Complete fee management with online payments, automated invoicing, scholarship tracking, budget planning, and comprehensive financial reporting.",
-    href: "/features/finance",
-  },
-  {
-    icon: Bus,
-    title: "Transport Management",
-    description: "Real-time GPS tracking, route optimization, driver management, vehicle maintenance, and automated parent notifications for safe student transportation.",
-    href: "/features/transport",
-  },
-  {
-    icon: BookOpen,
-    title: "Resource Management",
-    description: "Digital library system, inventory control, facility scheduling, and asset tracking in one integrated platform.",
-    href: "/features/resources",
-  },
-  {
-    icon: BarChart2,
-    title: "Analytics & Reports",
-    description: "Powerful analytics tools for data-driven decisions with a custom report builder, trend analysis, and interactive data visualizations.",
-    href: "/features/analytics",
-  },
-  {
-    icon: CalendarDays,
-    title: "Attendance System",
-    description: "Automated attendance tracking for students and staff with real-time dashboards and instant parent notification capabilities.",
-    href: "/features/attendance",
-  },
-  {
-    icon: FileText,
-    title: "Examination Portal",
-    description: "End-to-end examination management from scheduling and seating to result publication, with online assessment tools and secure access control.",
-    href: "/features/examinations",
-  },
-  {
-    icon: Bell,
-    title: "Notice Board",
-    description: "Digital notice board for announcements, events, and important updates with targeted distribution to specific groups or the whole school.",
-    href: "/features/announcements",
-  },
-  {
-    icon: Shield,
-    title: "Security & Access",
-    description: "Role-based access control, data encryption, audit trails, regular backups, and compliance tools for complete peace of mind.",
-    href: "/features/security",
-  },
-];
+
 export default function SiteHeader() {
   const [open, setOpen] = React.useState(false);
   const [showFeatures, setShowFeatures] = React.useState(false);
@@ -210,8 +124,14 @@ export default function SiteHeader() {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost">Log in</Button>
-            <Button>Sign up</Button>
+            <Button variant="ghost">
+              <Link href="/login" passHref>Log in
+              </Link>
+            </Button>
+            <Button >
+              <Link href="/signup" passHref>Try Now
+              </Link>
+            </Button>
           </div>
 
           <Sheet open={open} onOpenChange={setOpen}>
