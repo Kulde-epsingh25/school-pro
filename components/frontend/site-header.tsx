@@ -39,11 +39,9 @@ export default function SiteHeader() {
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link href="/" legacyBehavior passHref>
-                    <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      Home
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink render={<Link href="/" />} className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    Home
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
@@ -93,10 +91,8 @@ export default function SiteHeader() {
                               numbers
                             </p>
                           </div>
-                          <Button  variant="secondary">
-                            <Link href="/get-started" passHref>
-                              Get started
-                            </Link>
+                          <Button variant="secondary" render={<Link href="/get-started" />} nativeButton={false}>
+                            Get started
                           </Button>
                         </div>
                       </div>
@@ -105,32 +101,26 @@ export default function SiteHeader() {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link href="/pricing" legacyBehavior passHref>
-                    <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      Pricing
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink render={<Link href="/pricing" />} className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    Pricing
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link href="/how-it-works" legacyBehavior passHref>
-                    <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                      How it works?
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink render={<Link href="/how-it-works" />} className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    How it works?
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost">
-              <Link href="/login" passHref>Log in
-              </Link>
+            <Button variant="ghost" render={<Link href="/login" />} nativeButton={false}>
+              Log in
             </Button>
-            <Button >
-              <Link href="/signup" passHref>Try Now
-              </Link>
+            <Button render={<Link href="/signup" />} nativeButton={false}>
+              Try Now
             </Button>
           </div>
 

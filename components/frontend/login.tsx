@@ -75,9 +75,7 @@ export default function LoginV2() {
       <div className="bg-card m-auto h-fit w-full max-w-md rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
         <div className="p-8 pb-6">
           <div>
-            <Link href="/" aria-label="go home">
-              <Logo />
-            </Link>
+            <Logo />
             <h1 className="mb-1 mt-4 text-xl font-semibold">
               Sign In now
             </h1>

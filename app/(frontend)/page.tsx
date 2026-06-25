@@ -12,7 +12,7 @@ export default function Home() {
       <HeroSection />
       <LogoCloud />
       <DeskboardPreview />
-      {/* <FeatureGrids /> */}
+      <FeatureGrids />
       <TabbedFeatures />
       <PricingV1 />
     </main>

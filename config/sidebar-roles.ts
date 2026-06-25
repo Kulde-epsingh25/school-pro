@@ -37,6 +37,7 @@ export const adminSidebar = [
     title: "User Management",
     url: "/admin/users",
     icon: Users,
+    isActive: false,
     items: [
       { title: "Students", url: "/admin/users/students" },
       { title: "Teachers", url: "/admin/users/teachers" },

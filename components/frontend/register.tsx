@@ -84,9 +84,7 @@ export default function RegisterV2() {
       <div className="bg-card m-auto h-fit w-full max-w-md rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
         <div className="p-8 pb-6">
           <div>
-            <Link href="/" aria-label="go home">
-              <Logo />
-            </Link>
+            <Logo />
             <h1 className="text-title mb-1 mt-4 text-xl font-semibold">
               Create a Account
             </h1>
@@ -176,8 +174,8 @@ export default function RegisterV2() {
         <div className="bg-muted rounded-(--radius) border p-3">
           <p className="text-accent-foreground text-center text-sm">
             Have an account?
-            <Button  variant="link" className="px-2 ml-3">
-              <Link href="/login">Sign In</Link>
+            <Button variant="link" className="px-2 ml-3" render={<Link href="/login" />} nativeButton={false}>
+              Sign In
             </Button>
           </p>
         </div>
