@@ -22,6 +22,7 @@ export const getFees = async (req: Request, res: Response) => {
     
     res.json(formatted);
   } catch (error) {
+    console.error('[API Error in finance.ts]', error);
     res.status(500).json({ error: "Failed to fetch fees" });
   }
 };
@@ -50,6 +51,7 @@ export const createFee = async (req: Request, res: Response) => {
     });
     res.json(fee);
   } catch (error) {
+    console.error('[API Error in finance.ts]', error);
     res.status(500).json({ error: "Failed to create fee" });
   }
 };
@@ -66,6 +68,7 @@ export const getPayments = async (req: Request, res: Response) => {
     });
     res.json(payments);
   } catch (error) {
+    console.error('[API Error in finance.ts]', error);
     res.status(500).json({ error: "Failed to fetch payments" });
   }
 };
@@ -85,6 +88,7 @@ export const createPayment = async (req: Request, res: Response) => {
     });
     res.json(payment);
   } catch (error) {
+    console.error('[API Error in finance.ts]', error);
     res.status(500).json({ error: "Failed to create payment" });
   }
 };
@@ -97,6 +101,7 @@ export const getStudentPayments = async (req: Request, res: Response) => {
     });
     res.json(payments);
   } catch (error) {
+    console.error('[API Error in finance.ts]', error);
     res.status(500).json({ error: "Failed to fetch student payments" });
   }
 };

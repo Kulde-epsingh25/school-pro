@@ -54,6 +54,7 @@ export const onboardSchool = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
+    console.error('[API Error in auth.ts]', error);
     console.error(error);
     res.status(500).json({ error: "Failed to onboard school" });
   }
@@ -92,6 +93,7 @@ export const setupPassword = async (req: Request, res: Response) => {
     res.json({ message: "Password set successfully. Account activated." });
 
   } catch (error) {
+    console.error('[API Error in auth.ts]', error);
     console.error(error);
     res.status(500).json({ error: "Failed to setup password" });
   }

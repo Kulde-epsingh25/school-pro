@@ -12,6 +12,7 @@ export const getTerms = async (req: Request, res: Response) => {
     });
     res.json(terms);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed to fetch terms" });
   }
 };
@@ -45,6 +46,7 @@ export const createTerm = async (req: Request, res: Response) => {
     });
     res.json(term);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed to create term" });
   }
 };
@@ -57,6 +59,7 @@ export const getDepartments = async (req: Request, res: Response) => {
     });
     res.json(depts);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed" });
   }
 };
@@ -68,6 +71,7 @@ export const createDepartment = async (req: Request, res: Response) => {
     });
     res.json(dept);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed" });
   }
 };
@@ -79,6 +83,7 @@ export const getSubjects = async (req: Request, res: Response) => {
     });
     res.json(subjects);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed" });
   }
 };
@@ -94,6 +99,7 @@ export const createSubject = async (req: Request, res: Response) => {
     });
     res.json(subject);
   } catch (error) {
+    console.error('[API Error in academics.ts]', error);
     res.status(500).json({ error: "Failed" });
   }
 };
