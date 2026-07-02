@@ -29,7 +29,7 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     // 2. Map User to Tenant
-    await prisma.userTenant.create({
+    const userTenant = await prisma.userTenant.create({
       data: {
         userId: user.id,
         tenantId
@@ -40,7 +40,7 @@ export const createUser = async (req: Request, res: Response) => {
     if (roleId) {
       await prisma.userRole.create({
         data: {
-          userId: user.id,
+          userTenantId: userTenant.id,
           roleId
         }
       });
