@@ -11,7 +11,7 @@ export const onboardSchool = async (req: Request, res: Response) => {
     const tenant = await prisma.tenant.create({
       data: {
         name: schoolName,
-        domain: domain,
+        domain: domain || undefined,
         isMaster: true // The initial tenant is the master
       }
     });
@@ -58,7 +58,8 @@ export const onboardSchool = async (req: Request, res: Response) => {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: "A school with this domain or an admin with this email already exists." });
     }
-    res.status(500).json({ error: "Failed to onboard school" });
+    // Return the actual error message for debugging purposes
+    res.status(500).json({ error: "Failed to onboard school", details: error?.message || String(error) });
   }
 };
 
