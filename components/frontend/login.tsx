@@ -179,14 +179,6 @@ export default function LoginV2() {
           </Form>
         </div>
 
-        <div className="bg-muted rounded-(--radius) border p-3">
-          <p className="text-accent-foreground text-center text-sm">
-            Don&apos;t have an account?
-            <Link href="/register" className="ml-3 px-2">
-              Create account
-            </Link>
-          </p>
-        </div>
       </div>
     </section>
   );

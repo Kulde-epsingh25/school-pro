@@ -119,7 +119,7 @@ export default function SiteHeader() {
             <Button variant="ghost" render={<Link href="/login" />} nativeButton={false}>
               Log in
             </Button>
-            <Button render={<Link href="/register" />} nativeButton={false}>
+            <Button render={<Link href="/onboarding" />} nativeButton={false}>
               Try Now
             </Button>
           </div>
