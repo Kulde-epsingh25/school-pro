@@ -50,6 +50,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import Logo from "@/components/frontend/logo";
+import { useSchoolStore } from "@/store/schoolStore";
 
 export interface DashboardSidebarProps {
   user: {
@@ -80,12 +81,13 @@ export interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({
-  user,
-  teams,
-  navMain,
-  projects,
+  user = { name: "Guest", email: "", avatar: "" },
+  teams = [],
+  navMain = [],
+  projects = [],
 }: DashboardSidebarProps) {
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const [activeTeam, setActiveTeam] = React.useState(teams[0] || null);
+  const school = useSchoolStore((state) => state.school);
 
   return (
     <Sidebar collapsible="icon">
@@ -94,15 +96,19 @@ export function DashboardSidebar({
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger render={<SidebarMenuButton />}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Logo />
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white overflow-hidden">
+                  {school?.logo ? (
+                    <img src={school.logo} alt="School Logo" className="object-contain h-full w-full" />
+                  ) : (
+                    <Logo />
+                  )}
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {activeTeam?.name}
+                    {school?.name || activeTeam?.name || "School Pro"}
                   </span>
                   <span className="truncate text-xs">
-                    {activeTeam?.plan}
+                    {activeTeam?.plan || "Premium"}
                   </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />

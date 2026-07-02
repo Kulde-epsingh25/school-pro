@@ -1,0 +1,498 @@
+{
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\eslint.config.mjs": {
+    "mtime": 1782285545.6254723,
+    "hash": "6c4307ffa009658f5c97f5629094c0c2"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\next-env.d.ts": {
+    "mtime": 1782912297.8981583,
+    "hash": "b698cdd97fe8e3bd16dcd74899ad7cef"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\next.config.ts": {
+    "mtime": 1782285545.6254723,
+    "hash": "898ffcde50df85425a1e21b333612c90"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\postcss.config.mjs": {
+    "mtime": 1782285545.6287622,
+    "hash": "481fac0fdecd70e1821cc30b86030c1a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\actions\\auth.ts": {
+    "mtime": 1782914226.4071667,
+    "hash": "02cf22b42c4f67ef5ef331064245b9dc"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\layout.tsx": {
+    "mtime": 1782285545.618255,
+    "hash": "e7595f79a62a5fbce0df374a5657c756"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\not-found.tsx": {
+    "mtime": 1782285545.618255,
+    "hash": "fc139615cf8a84241632b2b19e66af46"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(auth)\\layout.tsx": {
+    "mtime": 1782285545.6143668,
+    "hash": "87a97684d29fb809273a05244120cf0a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(auth)\\login\\page.tsx": {
+    "mtime": 1782913555.230716,
+    "hash": "2df433d31d1dffde3457bc9ec890482a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(auth)\\register\\page.tsx": {
+    "mtime": 1782285545.6156971,
+    "hash": "f187d63b1a75d1877e4cac9a931eb0f7"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(auth)\\school-onboarding\\page.tsx": {
+    "mtime": 1782893705.9852467,
+    "hash": "ca221fd8d1e6d750b1cd0718a050f300"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\layout.tsx": {
+    "mtime": 1782913512.6948378,
+    "hash": "029e455b863c80b0eb29bd4a6eaa4f31"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\page.tsx": {
+    "mtime": 1782914209.2477288,
+    "hash": "bc149eb08a859ef300d9bd4f32e8e387"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\academics\\classes\\page.tsx": {
+    "mtime": 1782895857.3386405,
+    "hash": "7012fc5d6fb05c48b30e07abb81da0f1"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\academics\\departments\\page.tsx": {
+    "mtime": 1782913387.450647,
+    "hash": "5d9d96901529d3a307d6d26c99c931fc"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\academics\\subjects\\page.tsx": {
+    "mtime": 1782913350.628823,
+    "hash": "36d988de46e6f749bfc160b30e898bda"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\Admin\\layout.tsx": {
+    "mtime": 1782916410.462456,
+    "hash": "ec07cbb92e1d3faa3bebcbf1ccc8c4e8"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\Admin\\contacts\\page.tsx": {
+    "mtime": 1782916604.5928478,
+    "hash": "8241670e24de20873416844d15334258"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\students\\columns.tsx": {
+    "mtime": 1782401800.8228207,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\students\\page.tsx": {
+    "mtime": 1782912506.3514626,
+    "hash": "986e4785598c9d5eae54a6f8c7807776"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\students\\new\\page.tsx": {
+    "mtime": 1782914162.6179934,
+    "hash": "556dd70d25eb22ae774ec991d9363b78"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\teacher\\page.tsx": {
+    "mtime": 1782306603.5461102,
+    "hash": "7fa27774a467825842f1ff389ceec95e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\teacher\\new\\page.tsx": {
+    "mtime": 1782913615.691196,
+    "hash": "dc0533a8a88b18fc4c09f0cacf4811b6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(backend)\\dashboard\\users\\parents\\new\\page.tsx": {
+    "mtime": 1782405417.613995,
+    "hash": "d908a4853cd0fb0432a394d99751fb3a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(frontend)\\layout.tsx": {
+    "mtime": 1782285545.6167717,
+    "hash": "35ffa60412cd3adf7d75277274f730b0"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(frontend)\\page.tsx": {
+    "mtime": 1782404402.2281287,
+    "hash": "2538d8ee837ef9a30d540c0721586bb2"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(frontend)\\contact-us\\page.tsx": {
+    "mtime": 1782911901.6982489,
+    "hash": "4326a13c72eca4411c64d5fd850d977b"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\app\\(frontend)\\help\\page.tsx": {
+    "mtime": 1782404845.9812267,
+    "hash": "34b950ff892d8057e52c5cb028b53967"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\infoBanner.tsx": {
+    "mtime": 1782320820.7499528,
+    "hash": "5a10bfed49050ee368c75bb5cb8c3358"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\dashboard-header.tsx": {
+    "mtime": 1782913699.6050644,
+    "hash": "f14bd640fe5809721acfbb79539294b7"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\dashboard-sidebar.tsx": {
+    "mtime": 1782913855.075443,
+    "hash": "273d4e165d1aa89948db9ef07c6e00ec"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\data.tsx": {
+    "mtime": 1782895004.0427108,
+    "hash": "679ab64d5a8f1e9ec6728d888bccce07"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\recent-data-table.tsx": {
+    "mtime": 1782304609.2592514,
+    "hash": "5d56dbc44663ef53898471c270080d2b"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\revenue-chart.tsx": {
+    "mtime": 1782304607.2422767,
+    "hash": "f2a862b3c64698c7b20be1806b7298fe"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\sales-chart.tsx": {
+    "mtime": 1782304605.2195666,
+    "hash": "3c1de00e6487e490ecc02b483fe751d4"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\stat-cards.tsx": {
+    "mtime": 1782914192.2432637,
+    "hash": "1c47878bac317ad634ea9103fd713c15"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\welcome-banner.tsx": {
+    "mtime": 1782913780.03952,
+    "hash": "96b77a98c32572447f2015757a923d52"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\student-addmintion.tsx": {
+    "mtime": 1782319262.3148315,
+    "hash": "af9fce1150e49b038c7552c23bf44420"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\admission\\contact-details.tsx": {
+    "mtime": 1782319210.3206675,
+    "hash": "34b1a0dee21a1a6b319c53192670cf26"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\admission\\official-details.tsx": {
+    "mtime": 1782319191.9967885,
+    "hash": "6dffa70ded4eba68cf18233336605d01"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\admission\\parent-details.tsx": {
+    "mtime": 1782911543.2173321,
+    "hash": "e079ec7ea93d9fdee17083cf5f785751"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\admission\\personal-details.tsx": {
+    "mtime": 1782319176.3675592,
+    "hash": "a7bd1fc9775a9967faae8ce181a61d8e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\dashboard\\forms\\admission\\student-admission-form.tsx": {
+    "mtime": 1782799674.1050618,
+    "hash": "dad14bf5c380b6944bec13921902345c"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\formInputs\\formSelect.tsx": {
+    "mtime": 1782320770.8759177,
+    "hash": "c2b05aac7a074278fabe57f96ae81a17"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\formInputs\\imageInput.tsx": {
+    "mtime": 1782320785.7260947,
+    "hash": "4edeb310666ccfb6a089fd716e19e064"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\formInputs\\textInput.tsx": {
+    "mtime": 1782320757.6767335,
+    "hash": "8709460a9219d9d7f69fcb0fe16be04e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\formFooter.tsx": {
+    "mtime": 1782320809.8558125,
+    "hash": "f50a30ff2b5d9cf422b8430f2a8b4360"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\formHeader.tsx": {
+    "mtime": 1782320797.014734,
+    "hash": "717caef404ce0c3a764fef57183b487e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\academics\\classForm.tsx": {
+    "mtime": 1782320887.9473524,
+    "hash": "e3def495d411df0db550c24abed02feb"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\academics\\streamForm.tsx": {
+    "mtime": 1782320899.8414094,
+    "hash": "9d0610a128fc51bb1bb0f9d00a53f0f6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\school\\school-onboarding-form.tsx": {
+    "mtime": 1782907491.8498495,
+    "hash": "b21fed733a467b1424bc5b76046956f9"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\students\\bulkStudentForm.tsx": {
+    "mtime": 1782320848.4666295,
+    "hash": "d019420c1f2adeb2ce3f5474cc472caf"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\students\\singleStudentForm.tsx": {
+    "mtime": 1782320836.7062378,
+    "hash": "78e58de9a6d1bb84d2d74e61b20a788e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\users\\parentDialog.tsx": {
+    "mtime": 1782911585.9587996,
+    "hash": "f13d4b262551ac79e0fee93ded77033e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\forms\\users\\parentForm.tsx": {
+    "mtime": 1782797635.1534557,
+    "hash": "6322dd0fdefbe8756d1a116577de8094"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\deshboard-preview.tsx": {
+    "mtime": 1782285545.619254,
+    "hash": "fed5561a3d89a0995636157cb5a8e606"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\features-grid.tsx": {
+    "mtime": 1782285545.619254,
+    "hash": "566bb635d330ee9ad4366a21043e8ce6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\features.tsx": {
+    "mtime": 1782285545.619254,
+    "hash": "859d97f5e162ac87e738cb64438e5f3a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\hero-section.tsx": {
+    "mtime": 1782285545.6205657,
+    "hash": "6ad48c18cc77863f412bfaec6b8899cb"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\login.tsx": {
+    "mtime": 1782916421.6161356,
+    "hash": "1e05ef2761d6514e37b676e9574e1ef2"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\logo-cloud.tsx": {
+    "mtime": 1782285545.6205657,
+    "hash": "f6c5c09d6d44063eeba9d5598d84254e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\logo.tsx": {
+    "mtime": 1782285545.6205657,
+    "hash": "2245904bc672144c9152fa7ab3ba8f9f"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\pricing.tsx": {
+    "mtime": 1782285545.6205657,
+    "hash": "19d09f089ae8680ca2426e722b08dbb9"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\register.tsx": {
+    "mtime": 1782316993.115038,
+    "hash": "05a752a30bc5546d070c0f10f8eb0cb5"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\section-header.tsx": {
+    "mtime": 1782285545.6219883,
+    "hash": "b177fd78df71bca475731eb5d415026b"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\site-footer.tsx": {
+    "mtime": 1782892852.4250193,
+    "hash": "1636140f7dfc94a96ab38e07e1c36a1f"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\site-header.tsx": {
+    "mtime": 1782907600.8615644,
+    "hash": "312a4626993d4187a8da73d820815e8c"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\small-title.tsx": {
+    "mtime": 1782285545.6224918,
+    "hash": "af5972d3ee32b7a8d75a01560a38a7e2"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\tabbed-features.tsx": {
+    "mtime": 1782285545.6224918,
+    "hash": "41ea58a5bfd1161a7dc4aa2dc41fb279"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\frontend\\forms\\contact-us-form.tsx": {
+    "mtime": 1782911884.1000926,
+    "hash": "53a3fe853c592e3d052a33b9fb65f6f6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\accordion.tsx": {
+    "mtime": 1782320976.0417917,
+    "hash": "f04f5e2a04ec1972b53225e4c694cbd9"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\avatar.tsx": {
+    "mtime": 1782286521.275226,
+    "hash": "8b41492907a73176027427a3f0fd2302"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\badge.tsx": {
+    "mtime": 1782286521.469062,
+    "hash": "e4ec840217040d5630ee6ed7213a1d72"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\button.tsx": {
+    "mtime": 1782285545.6224918,
+    "hash": "7ca74150b020a5ef671cf1b43954edf6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\card.tsx": {
+    "mtime": 1782285545.6239586,
+    "hash": "09a9b419cdd81f4b23cda1c4230a55b7"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\collapsible.tsx": {
+    "mtime": 1782286642.284719,
+    "hash": "bc00817a4471ae1d76774aa4c50a7c31"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\dialog.tsx": {
+    "mtime": 1782320976.482201,
+    "hash": "d9618a63d34473ec512321cc12d43692"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\dropdown-menu.tsx": {
+    "mtime": 1782314197.908952,
+    "hash": "29e6308dc96de088d71851bb013531e6"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\form.tsx": {
+    "mtime": 1782285545.6239586,
+    "hash": "00dfaa78c3db7bf12f193a2688aa0275"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\input.tsx": {
+    "mtime": 1782285545.624465,
+    "hash": "da33823853390b57ac04230a67657585"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\navigation-menu.tsx": {
+    "mtime": 1782285545.624465,
+    "hash": "b1f2090e1c07d0458e90b8c05b36249a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\separator.tsx": {
+    "mtime": 1782286642.576894,
+    "hash": "3de2dca3e47ab29c4b1f632671545628"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\sheet.tsx": {
+    "mtime": 1782285545.624465,
+    "hash": "dc77250eabf1036cb4f1666c7e02ce51"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\sidebar.tsx": {
+    "mtime": 1782286643.2405412,
+    "hash": "9936c9b77d3af2d69fa40d2eb468bcbd"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\skeleton.tsx": {
+    "mtime": 1782286642.6794386,
+    "hash": "0e6e825c43d858d98c9903f4da975382"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\table.tsx": {
+    "mtime": 1782286641.9962995,
+    "hash": "44f87727e60080863edb00fdd2fcd8da"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\tabs.tsx": {
+    "mtime": 1782286641.8533819,
+    "hash": "429035bc858475cd3bcedbb08a5ba8da"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\components\\ui\\tooltip.tsx": {
+    "mtime": 1782286642.788272,
+    "hash": "6566a444ce6c0a87d6611903430534fa"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\config\\sidebar-roles.ts": {
+    "mtime": 1782373211.4016821,
+    "hash": "984a46c88a3d983de052b354bb3c2363"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\hooks\\use-mobile.ts": {
+    "mtime": 1782286642.9126143,
+    "hash": "209b5193af16624cdd89d3591480dd48"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\lib\\registrationUtils.ts": {
+    "mtime": 1782913204.906062,
+    "hash": "da1d9a228e530d46988d0e374cb42f98"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\lib\\utils.ts": {
+    "mtime": 1782285545.6254723,
+    "hash": "1d8011eb18769078bf77502b220daa5e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\store\\authStore.ts": {
+    "mtime": 1782913445.1467276,
+    "hash": "9d6a89306029ee081a29e4ff3de8ff3a"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\store\\schoolStore.ts": {
+    "mtime": 1782913767.8836782,
+    "hash": "4d8dab298e417e17e247d8ce9eb9abb2"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\types\\types.ts": {
+    "mtime": 1782320744.4622142,
+    "hash": "c2d0b73c1ef02c1746c8914b1571f3a5"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\AGENTS.md": {
+    "mtime": 1782285545.6132987,
+    "hash": "9346a4897ff955555ddedb7bebf77adb"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\CLAUDE.md": {
+    "mtime": 1782285545.6132987,
+    "hash": "771faa62feb60b7de901a397aebb29b0"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\README.md": {
+    "mtime": 1782285545.6132987,
+    "hash": "9162add00befbcdb432430f405c4ad8d"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\file.svg": {
+    "mtime": 1782285545.6384845,
+    "hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\globe.svg": {
+    "mtime": 1782285545.639506,
+    "hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\next.svg": {
+    "mtime": 1782285545.6400113,
+    "hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\vercel.svg": {
+    "mtime": 1782285545.6400113,
+    "hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\window.svg": {
+    "mtime": 1782285545.6400113,
+    "hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\Images\\deskboard-preview.jpg": {
+    "mtime": 1782285545.6287622,
+    "hash": "166528a780389388ab29a57a6156db16"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\Images\\error-mascot.png": {
+    "mtime": 1782285545.6384845,
+    "hash": "536a9f094cab92c0b3e704fe3e0c9764"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\public\\Images\\feature1.png": {
+    "mtime": 1782285545.6384845,
+    "hash": "00aa2352892b52e8934f795d2ab0c805"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 135708.png": {
+    "mtime": 1782894428.3180573,
+    "hash": "2f8d49504d9878eb6c7d2097e7c9a9f5"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 135802.png": {
+    "mtime": 1782894482.8284314,
+    "hash": "53a4065ac91c600fdcca918ee6e4026e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140219.png": {
+    "mtime": 1782894739.5621743,
+    "hash": "1a5fda795c7923aa5551183a5c664255"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140243.png": {
+    "mtime": 1782894763.1466634,
+    "hash": "6483b46e9f495db842dbd98117bce100"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140325.png": {
+    "mtime": 1782894805.9082103,
+    "hash": "c050b5abe33cd072294124de320bd5da"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140342.png": {
+    "mtime": 1782894823.0131626,
+    "hash": "2a90ea4aa50fb05df1ccd1e2fc69772c"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140427.png": {
+    "mtime": 1782894867.724051,
+    "hash": "f3c038ac983ae0907a5914ac15c5070b"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140517.png": {
+    "mtime": 1782894917.4978595,
+    "hash": "fa2154982a60afa9ef9fbf6306cd70c3"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 140643.png": {
+    "mtime": 1782895003.2384913,
+    "hash": "21117b0eafca401f2f05d6a3eaf30740"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 174608.png": {
+    "mtime": 1782908168.9478755,
+    "hash": "50eef4b4194ce7cd626776aa9c3890d0"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175036.png": {
+    "mtime": 1782908436.5653324,
+    "hash": "b0acba04251e8783020e5cbc8dd1103c"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175105.png": {
+    "mtime": 1782908465.7838106,
+    "hash": "6ae315f50bdef79e8a45b94efdc6601e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175115.png": {
+    "mtime": 1782908475.595407,
+    "hash": "6e31522e0043564857e70eb88bbf7e21"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175156.png": {
+    "mtime": 1782908516.2451415,
+    "hash": "71c5af677130b4d466a17e2561e41fa4"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175232.png": {
+    "mtime": 1782908552.436271,
+    "hash": "aeb4df8f7e97480879e8dd84a675a79e"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175319.png": {
+    "mtime": 1782908599.9415214,
+    "hash": "461f0e0758ce272afbb4a7ff22df78cf"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175607.png": {
+    "mtime": 1782908767.605288,
+    "hash": "5814cd6aa4a136d757e61b6075340af0"
+  },
+  "C:\\Users\\HP\\Documents\\claude-code\\New folder\\school-pro-web\\refrenceimgtobuilt\\Screenshot 2026-07-01 175655.png": {
+    "mtime": 1782908816.0318954,
+    "hash": "bfa4c02c07078d280ecead17a780112c"
+  }
+}

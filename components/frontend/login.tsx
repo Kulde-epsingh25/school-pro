@@ -19,6 +19,9 @@ import * as z from "zod";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { createServerSession } from "@/actions/auth";
+import { useAuthStore } from "@/store/authStore";
+import { useSchoolStore } from "@/store/schoolStore";
 
 // Define the validation schema with Zod
 const loginSchema = z.object({
@@ -48,18 +51,57 @@ export default function LoginV2() {
     setIsLoading(true);
 
     try {
-      // const result = await loginUser(values);
-      // if (result.success) {
-      //   toast.success("Success!", {
-      //     description: result.message,
-      //   });
-      //   // Optional: redirect to login page
-      //   router.push("/dashboard");
-      // } else {
-      //   toast.error("Error", {
-      //     description: result.message,
-      //   });
-      // }
+      // Mock Authentication Flow
+      let role = "teacher"; // Default to teacher
+      let redirectUrl = "/dashboard";
+
+      // Super Admin special case
+      if (values.email === "super@admin.com") {
+        role = "super_admin";
+        redirectUrl = "/school-onboarding";
+      } else if (values.email.includes("admin")) {
+        role = "admin";
+      } else if (values.email.includes("student")) {
+        role = "student";
+      } else if (values.email.includes("parent")) {
+        role = "parent";
+      }
+
+      const mockUser = {
+        id: "usr_" + Date.now().toString(),
+        email: values.email,
+        name: values.email.split("@")[0],
+        role: role,
+        schoolId: role === "super_admin" ? undefined : "sch_001",
+        schoolName: role === "super_admin" ? undefined : "School Pro Academy"
+      };
+
+      const mockAccessToken = "mock_access_token_" + Date.now();
+      const mockRefreshToken = "mock_refresh_token_" + Date.now();
+
+      // Set cookies via server action
+      await createServerSession(mockUser, mockAccessToken, mockRefreshToken);
+
+      // Set client Zustand state
+      useAuthStore.getState().setAuth(mockUser, mockAccessToken);
+      
+      // Populate Global School Data
+      if (role !== "super_admin") {
+        useSchoolStore.getState().setSchool({
+          id: mockUser.schoolId || "sch_001",
+          name: mockUser.schoolName || "School Pro Academy",
+          logo: "https://utfs.io/f/5a88ce2b-65bc-4f7f-bdc7-27b5e406f85d-8vj8v7.png" // placeholder logo
+        });
+      } else {
+        useSchoolStore.getState().clearSchool();
+      }
+
+      toast.success("Login Successful!", {
+        description: `Welcome back, ${mockUser.name}!`
+      });
+
+      // Redirect based on role
+      router.push(redirectUrl);
     } catch (error) {
       toast.error("Error", {
         description: "Something went wrong. Please try again.",

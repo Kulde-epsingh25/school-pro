@@ -7,8 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardSidebar } from "../../dashboard-sidebar";
+
 
 const selectClassName =
   "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50";
@@ -31,8 +30,7 @@ export function ParentDetails() {
 
   return (
 
-    <SidebarProvider>
-      <DashboardSidebar />
+    <div>
       <h3 className="text-lg font-medium mb-4">Parent Details</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
@@ -166,6 +164,6 @@ export function ParentDetails() {
           )}
         />
       </div>
-    </ SidebarProvider>
+    </div>
   );
 }

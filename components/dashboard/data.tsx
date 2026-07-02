@@ -91,6 +91,14 @@ export const data = {
                 { title: "Backup & Security", url: "/settings/security" },
             ],
         },
+        {
+            title: "Admin Only",
+            url: "/dashboard/admin",
+            icon: Settings2,
+            items: [
+                { title: "Contacts", url: "/dashboard/admin/contacts" },
+            ],
+        },
     ],
     projects: [
         {

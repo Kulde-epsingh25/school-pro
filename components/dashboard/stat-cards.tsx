@@ -7,6 +7,8 @@ export interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
+  color?: string;
+  bgColor?: string;
 }
 
 export function StatCards({ cards }: { cards: StatCardProps[] }) {
@@ -15,8 +17,10 @@ export function StatCards({ cards }: { cards: StatCardProps[] }) {
       {cards.map((card) => (
         <Card key={card.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-            <card.icon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-600">{card.title}</CardTitle>
+            <div className={`p-2 rounded-full ${card.bgColor || 'bg-gray-100'}`}>
+              <card.icon className={`h-4 w-4 ${card.color || 'text-gray-600'}`} />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{card.value}</p>

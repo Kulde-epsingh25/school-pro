@@ -20,7 +20,10 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { RecentDataTable } from "@/components/dashboard/recent-data-table";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { SalesChart } from "@/components/dashboard/sales-chart";
-import { StatCards } from "@/components/dashboard/stat-cards";
+import { StatCards, StatCardProps } from "@/components/dashboard/stat-cards";
+import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
+import { useSchoolStore } from "@/store/schoolStore";
+import { useEffect, useState } from "react";
 
 const attendanceData = [
   { name: "Sun", value: 0 },
@@ -32,11 +35,13 @@ const attendanceData = [
   { name: "Sat", value: 0 },
 ];
 
-const statsCards = [
-  { title: "Total Students", value: "1,284", icon: Users },
-  { title: "Total Revenue", value: "₹8,45,200", icon: DollarSign },
-  { title: "Staff Members", value: "94", icon: ClipboardList },
-  { title: "Active Classes", value: "38", icon: GraduationCap },
+import { LayoutGrid } from "lucide-react";
+
+const defaultStats: StatCardProps[] = [
+  { title: "Students", value: "0", icon: LayoutGrid, color: "text-blue-600", bgColor: "bg-blue-100" },
+  { title: "Teachers", value: "0", icon: LayoutGrid, color: "text-teal-600", bgColor: "bg-teal-100" },
+  { title: "Parents", value: "0", icon: LayoutGrid, color: "text-green-600", bgColor: "bg-green-100" },
+  { title: "Classes", value: "1", icon: LayoutGrid, color: "text-orange-600", bgColor: "bg-orange-100" },
 ];
 
 const feeCollectionData = [
@@ -209,25 +214,23 @@ const data = {
   ],
 };
 export default function DashboardPage() {
+  const school = useSchoolStore((state) => state.school);
+  const [stats, setStats] = useState<StatCardProps[]>(defaultStats);
+
+  useEffect(() => {
+    // Force showing default stats
+    setStats(defaultStats);
+  }, []);
+
   return (
-    <SidebarProvider>
-      <DashboardSidebar
-        user={data.user}
-        teams={data.teams}
-        navMain={data.navMain}
-        projects={data.projects}
-      />
-      <SidebarInset>
-        <DashboardHeader />
-        <div className="flex-1 space-y-4 p-4">
-          <StatCards cards={statsCards} />
-          <div className="grid gap-4 md:grid-cols-2">
-            <SalesChart data={attendanceData} />
-            <RevenueChart data={feeCollectionData} />
-          </div>
-          <RecentDataTable data={recentAdmissions} />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex-1 space-y-4">
+      <WelcomeBanner />
+      <StatCards cards={stats} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <SalesChart data={attendanceData} />
+        <RevenueChart data={feeCollectionData} />
+      </div>
+      <RecentDataTable data={recentAdmissions} />
+    </div>
   );
 }
