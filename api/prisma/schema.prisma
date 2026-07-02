@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------
+// CORE SYSTEM & MULTI-TENANCY
+// ---------------------------------------------------------
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String   // e.g. "College of Engineering", "Main University"
+  domain      String?  @unique // e.g. "engineering.university.edu"
+  isMaster    Boolean  @default(false) // True for University Headquarters Super Admin
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  users       UserTenant[]
+  departments Department[]
+  classes     Class[]
+  terms       Term[]
+}
+
+// ---------------------------------------------------------
+// AUTHENTICATION & RBAC
+// ---------------------------------------------------------
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique // Official structured email (e.g. admin@college.edu)
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  isActive    Boolean  @default(false) // Needs verification
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Auth Relations
+  tenants     UserTenant[]
+  
+  // Profile Relations (A user can optionally have specific profiles)
+  teacherProfile TeacherProfile?
+  studentProfile StudentProfile?
+  parentProfile  ParentProfile?
+  staffProfile   StaffProfile?
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
+  description String?
+  userRoles   UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  action      String   // e.g. "CREATE", "READ", "UPDATE", "DELETE"
+  subject     String   // e.g. "FEES", "STUDENTS", "ACADEMICS"
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+// Maps a User to a Tenant, and assigns Roles within that specific Tenant
+model UserTenant {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  roles       UserRole[]
+
+  @@unique([userId, tenantId])
+}
+
+// Maps a UserTenant mapping to specific Roles
+model UserRole {
+  id           String     @id @default(uuid())
+  userTenantId String
+  userTenant   UserTenant @relation(fields: [userTenantId], references: [id], onDelete: Cascade)
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userTenantId, roleId])
+}
+
+// ---------------------------------------------------------
+// USER PROFILES
+// ---------------------------------------------------------
+
+model TeacherProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects    Subject[]
+}
+
+model StaffProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle    String
+}
+
+model ParentProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students    StudentProfile[]
+}
+
+model StudentProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  nationality String?
+  imageUrl    String?
+  address     String?
+  pinCode     String?
+  state       String?
+  country     String?
+  gender      String?
+  dob         DateTime?
+  
+  parentId    String?
+  parent      ParentProfile?   @relation(fields: [parentId], references: [id])
+  
+  classId     String?
+  class       Class?    @relation(fields: [classId], references: [id])
+  
+  streamId    String?
+  stream      Stream?   @relation(fields: [streamId], references: [id])
+
+  payments    Payment[]
+}
+
+// ---------------------------------------------------------
+// ACADEMICS
+// ---------------------------------------------------------
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subjects    Subject[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, tenantId])
+}
+
+model Subject {
+  id           String      @id @default(uuid())
+  name         String
+  code         String?
+  departmentId String
+  department   Department  @relation(fields: [departmentId], references: [id])
+  teacherId    String?
+  teacher      TeacherProfile? @relation(fields: [teacherId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([code, departmentId])
+}
+
+model Term {
+  id        String   @id @default(uuid())
+  name      String   // e.g. "Term 1"
+  year      Int      // e.g. 2025
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fees      Fee[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Class {
+  id        String    @id @default(uuid())
+  name      String
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  streams   Stream[]
+  students  StudentProfile[]
+  fees      Fee[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([name, tenantId])
+}
+
+model Stream {
+  id        String   @id @default(uuid())
+  name      String
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students  StudentProfile[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, classId])
+}
+
+// ---------------------------------------------------------
+// FINANCE
+// ---------------------------------------------------------
+
+model Fee {
+  id        String    @id @default(uuid())
+  tenantId  String
+  classId   String
+  class     Class     @relation(fields: [classId], references: [id])
+  termId    String
+  term      Term      @relation(fields: [termId], references: [id])
+  items     FeeItem[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model FeeItem {
+  id        String   @id @default(uuid())
+  title     String
+  amount    Float
+  feeId     String
+  fee       Fee      @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     StudentProfile  @relation(fields: [studentId], references: [id])
+  amount      Float
+  status      String   // e.g. PENDING, PAID
+  prn         String   @unique // The generated Payment Reference Number
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
