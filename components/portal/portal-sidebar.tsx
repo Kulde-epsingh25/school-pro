@@ -37,11 +37,9 @@ export function PortalSidebar() {
             const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
             return (
               <SidebarMenuItem key={item.url}>
-                <SidebarMenuButton asChild isActive={isActive} className={`w-full justify-start h-11 px-4 rounded-md transition-colors ${isActive ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
-                  <Link href={item.url}>
-                    <item.icon className="w-5 h-5 mr-3" />
-                    <span>{item.title}</span>
-                  </Link>
+                <SidebarMenuButton render={<Link href={item.url} />} isActive={isActive} className={`w-full justify-start h-11 px-4 rounded-md transition-colors ${isActive ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
+                  <item.icon className="w-5 h-5 mr-3" />
+                  <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );

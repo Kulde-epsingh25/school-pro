@@ -51,11 +51,9 @@ export default function MyChildrenPage() {
               </div>
             </div>
 
-            <Button asChild variant="outline" className="w-full font-medium border-gray-200 text-gray-700 hover:bg-gray-50">
-              <Link href={`/portal/parent/student/${child.id}`}>
-                View Details
-              </Link>
-            </Button>
+            <Link href={`/portal/parent/student/${child.id}`} className="w-full inline-flex items-center justify-center font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 h-10 rounded-md">
+              View Details
+            </Link>
             
           </div>
         ))}

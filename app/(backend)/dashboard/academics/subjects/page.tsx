@@ -78,8 +78,8 @@ export default function SubjectsPage() {
                 Subjects
               </div>
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900">
+                <DialogTrigger>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" type="button">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
