@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -12,12 +12,12 @@ datasource db {
 // ---------------------------------------------------------
 
 model Tenant {
-  id          String   @id @default(uuid())
-  name        String   // e.g. "College of Engineering", "Main University"
-  domain      String?  @unique // e.g. "engineering.university.edu"
-  isMaster    Boolean  @default(false) // True for University Headquarters Super Admin
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String // e.g. "College of Engineering", "Main University"
+  domain    String?  @unique // e.g. "engineering.university.edu"
+  isMaster  Boolean  @default(false) // True for University Headquarters Super Admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
   users       UserTenant[]
@@ -31,19 +31,19 @@ model Tenant {
 // ---------------------------------------------------------
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique // Official structured email (e.g. admin@college.edu)
-  password    String
-  firstName   String
-  lastName    String
-  phone       String?
-  isActive    Boolean  @default(false) // Needs verification
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique // Official structured email (e.g. admin@college.edu)
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  isActive  Boolean  @default(false) // Needs verification
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Auth Relations
-  tenants     UserTenant[]
-  
+  tenants UserTenant[]
+
   // Profile Relations (A user can optionally have specific profiles)
   teacherProfile TeacherProfile?
   studentProfile StudentProfile?
@@ -52,48 +52,49 @@ model User {
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  name        String           @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
   description String?
   userRoles   UserRole[]
   permissions RolePermission[]
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  action      String   // e.g. "CREATE", "READ", "UPDATE", "DELETE"
-  subject     String   // e.g. "FEES", "STUDENTS", "ACADEMICS"
-  roles       RolePermission[]
+  id      String           @id @default(auto()) @map("_id") @db.ObjectId
+  action  String // e.g. "CREATE", "READ", "UPDATE", "DELETE"
+  subject String // e.g. "FEES", "STUDENTS", "ACADEMICS"
+  roles   RolePermission[]
 }
 
 model RolePermission {
-  roleId       String
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  roleId       String     @db.ObjectId
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permissionId String
+  permissionId String     @db.ObjectId
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@id([roleId, permissionId])
+  @@unique([roleId, permissionId])
 }
 
 // Maps a User to a Tenant, and assigns Roles within that specific Tenant
 model UserTenant {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  roles       UserRole[]
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  roles UserRole[]
 
   @@unique([userId, tenantId])
 }
 
 // Maps a UserTenant mapping to specific Roles
 model UserRole {
-  id           String     @id @default(uuid())
-  userTenantId String
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  userTenantId String     @db.ObjectId
   userTenant   UserTenant @relation(fields: [userTenantId], references: [id], onDelete: Cascade)
-  roleId       String
+  roleId       String     @db.ObjectId
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userTenantId, roleId])
@@ -104,31 +105,31 @@ model UserRole {
 // ---------------------------------------------------------
 
 model TeacherProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subjects    Subject[]
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String    @unique @db.ObjectId
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects Subject[]
 }
 
 model StaffProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobTitle    String
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @unique @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle String
 }
 
 model ParentProfile {
-  id          String    @id @default(uuid())
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  students    StudentProfile[]
+  id       String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String           @unique @db.ObjectId
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students StudentProfile[]
 }
 
 model StudentProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   nationality String?
   imageUrl    String?
   address     String?
@@ -137,17 +138,17 @@ model StudentProfile {
   country     String?
   gender      String?
   dob         DateTime?
-  
-  parentId    String?
-  parent      ParentProfile?   @relation(fields: [parentId], references: [id])
-  
-  classId     String?
-  class       Class?    @relation(fields: [classId], references: [id])
-  
-  streamId    String?
-  stream      Stream?   @relation(fields: [streamId], references: [id])
 
-  payments    Payment[]
+  parentId String?        @db.ObjectId
+  parent   ParentProfile? @relation(fields: [parentId], references: [id])
+
+  classId String? @db.ObjectId
+  class   Class?  @relation(fields: [classId], references: [id])
+
+  streamId String? @db.ObjectId
+  stream   Stream? @relation(fields: [streamId], references: [id])
+
+  payments Payment[]
 }
 
 // ---------------------------------------------------------
@@ -155,39 +156,39 @@ model StudentProfile {
 // ---------------------------------------------------------
 
 model Department {
-  id          String   @id @default(uuid())
-  name        String
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  subjects    Subject[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  tenantId  String    @db.ObjectId
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subjects  Subject[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@unique([name, tenantId])
 }
 
 model Subject {
-  id           String      @id @default(uuid())
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   code         String?
-  departmentId String
-  department   Department  @relation(fields: [departmentId], references: [id])
-  teacherId    String?
+  departmentId String          @db.ObjectId
+  department   Department      @relation(fields: [departmentId], references: [id])
+  teacherId    String?         @db.ObjectId
   teacher      TeacherProfile? @relation(fields: [teacherId], references: [id])
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@unique([code, departmentId])
 }
 
 model Term {
-  id        String   @id @default(uuid())
-  name      String   // e.g. "Term 1"
-  year      Int      // e.g. 2025
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String // e.g. "Term 1"
+  year      Int // e.g. 2025
   startDate DateTime
   endDate   DateTime
   isActive  Boolean  @default(false)
-  tenantId  String
+  tenantId  String   @db.ObjectId
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   fees      Fee[]
   createdAt DateTime @default(now())
@@ -195,27 +196,27 @@ model Term {
 }
 
 model Class {
-  id        String    @id @default(uuid())
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  tenantId  String
-  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String           @db.ObjectId
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   streams   Stream[]
   students  StudentProfile[]
   fees      Fee[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   @@unique([name, tenantId])
 }
 
 model Stream {
-  id        String   @id @default(uuid())
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  classId   String
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId   String           @db.ObjectId
+  class     Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
   students  StudentProfile[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   @@unique([name, classId])
 }
@@ -225,11 +226,11 @@ model Stream {
 // ---------------------------------------------------------
 
 model Fee {
-  id        String    @id @default(uuid())
-  tenantId  String
-  classId   String
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String    @db.ObjectId
+  classId   String    @db.ObjectId
   class     Class     @relation(fields: [classId], references: [id])
-  termId    String
+  termId    String    @db.ObjectId
   term      Term      @relation(fields: [termId], references: [id])
   items     FeeItem[]
   createdAt DateTime  @default(now())
@@ -237,23 +238,23 @@ model Fee {
 }
 
 model FeeItem {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   amount    Float
-  feeId     String
+  feeId     String   @db.ObjectId
   fee       Fee      @relation(fields: [feeId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Payment {
-  id          String   @id @default(uuid())
-  studentId   String
-  student     StudentProfile  @relation(fields: [studentId], references: [id])
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  studentId   String         @db.ObjectId
+  student     StudentProfile @relation(fields: [studentId], references: [id])
   amount      Float
-  status      String   // e.g. PENDING, PAID
-  prn         String   @unique // The generated Payment Reference Number
+  status      String // e.g. PENDING, PAID
+  prn         String         @unique // The generated Payment Reference Number
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
