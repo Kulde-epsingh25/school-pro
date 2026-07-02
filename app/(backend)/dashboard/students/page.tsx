@@ -25,7 +25,7 @@ export default function StudentsPage() {
   const fetchStudents = async (query?: string) => {
     try {
       setLoading(true);
-      const url = query ? `http://localhost:8000/students?search=${encodeURIComponent(query)}` : "http://localhost:8000/students";
+      const url = query ? `https://school-pro-api-6mxq.onrender.com/students?search=${encodeURIComponent(query)}` : "https://school-pro-api-6mxq.onrender.com/students";
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

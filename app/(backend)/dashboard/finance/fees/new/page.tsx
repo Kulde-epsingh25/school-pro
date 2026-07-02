@@ -27,7 +27,7 @@ export default function NewSchoolFeePage() {
 
   useEffect(() => {
     // Fetch terms
-    fetch("http://localhost:8000/academics/terms")
+    fetch("https://school-pro-api-6mxq.onrender.com/academics/terms")
       .then(res => res.json())
       .then(data => {
         setTerms(data);
@@ -36,7 +36,7 @@ export default function NewSchoolFeePage() {
       .catch(console.error);
     
     // TODO: We need a getClasses endpoint, but for now we'll hardcode or let it fail gracefully
-    // fetch("http://localhost:8000/academics/classes")
+    // fetch("https://school-pro-api-6mxq.onrender.com/academics/classes")
   }, []);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function NewSchoolFeePage() {
     }
 
     try {
-      await fetch("http://localhost:8000/finance/fees", {
+      await fetch("https://school-pro-api-6mxq.onrender.com/finance/fees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

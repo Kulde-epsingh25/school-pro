@@ -37,7 +37,7 @@ export default function ClassesPage() {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/classes");
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/classes");
       if (res.ok) {
         const data = await res.json();
         setClasses(data);
@@ -52,7 +52,7 @@ export default function ClassesPage() {
   const handleAddClass = async () => {
     if (!newClassName.trim()) return;
     try {
-      const res = await fetch("http://localhost:8000/classes", {
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newClassName }),
@@ -73,7 +73,7 @@ export default function ClassesPage() {
   const handleAddStream = async () => {
     if (!selectedClass || !newStreamName.trim()) return;
     try {
-      const res = await fetch("http://localhost:8000/streams", {
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/streams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newStreamName, classId: selectedClass.id }),

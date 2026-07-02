@@ -40,7 +40,7 @@ export default function SchoolOnboardingForm() {
         logo: logoBase64 || "https://dummyimage.com/200x200",
       };
       
-      const res = await fetch("http://localhost:8000/schools", {
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/schools", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

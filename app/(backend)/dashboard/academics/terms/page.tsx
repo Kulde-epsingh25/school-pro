@@ -20,7 +20,7 @@ export default function AcademicPeriodsPage() {
 
   const fetchTerms = async () => {
     try {
-      const res = await fetch("http://localhost:8000/academics/terms");
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/academics/terms");
       const data = await res.json();
       setTerms(data);
     } catch (error) {
@@ -41,7 +41,7 @@ export default function AcademicPeriodsPage() {
     }
 
     try {
-      await fetch("http://localhost:8000/academics/terms", {
+      await fetch("https://school-pro-api-6mxq.onrender.com/academics/terms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -28,7 +28,7 @@ export default function OnboardingWizard() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/auth/onboard", {
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/auth/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

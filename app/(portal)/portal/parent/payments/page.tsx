@@ -17,7 +17,7 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     // For demonstration, we'd normally fetch the logged-in parent's students
-    // fetch("http://localhost:8000/parents/me/students").then(...)
+    // fetch("https://school-pro-api-6mxq.onrender.com/parents/me/students").then(...)
     // Since we cleared the DB, let's just show empty states gracefully until data is added
     setChildren([]);
     setLoading(false);
@@ -25,7 +25,7 @@ export default function PaymentsPage() {
 
   const fetchPayments = async (studentId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/finance/payments/student/${studentId}`);
+      const res = await fetch(`https://school-pro-api-6mxq.onrender.com/finance/payments/student/${studentId}`);
       const data = await res.json();
       setPayments(data);
     } catch (error) {
@@ -44,7 +44,7 @@ export default function PaymentsPage() {
 
     try {
       // Create a pending payment
-      const res = await fetch("http://localhost:8000/finance/payments", {
+      const res = await fetch("https://school-pro-api-6mxq.onrender.com/finance/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
