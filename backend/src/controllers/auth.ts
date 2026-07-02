@@ -53,9 +53,11 @@ export const onboardSchool = async (req: Request, res: Response) => {
       tenantId: tenant.id
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API Error in auth.ts]', error);
-    console.error(error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: "A school with this domain or an admin with this email already exists." });
+    }
     res.status(500).json({ error: "Failed to onboard school" });
   }
 };

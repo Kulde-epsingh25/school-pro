@@ -37,7 +37,8 @@ export default function OnboardingWizard() {
       if (res.ok) {
         setStep(4); // Success step
       } else {
-        alert("Failed to onboard. Please try again.");
+        const data = await res.json().catch(() => null);
+        alert(data?.error || "Failed to onboard. Please try again.");
       }
     } catch (error) {
       console.error(error);
