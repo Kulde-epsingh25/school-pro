@@ -31,7 +31,7 @@ function VerifyContent() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://school-pro-api-6mxq.onrender.com/auth/setup-password", {
+      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/auth/setup-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password })

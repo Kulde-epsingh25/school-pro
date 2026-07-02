@@ -11,7 +11,7 @@ export default function FinanceFeesPage() {
 
   const fetchFees = async () => {
     try {
-      const res = await fetch("https://school-pro-api-6mxq.onrender.com/finance/fees");
+      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/finance/fees");
       const data = await res.json();
       setFees(data);
     } catch (error) {

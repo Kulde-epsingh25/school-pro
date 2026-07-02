@@ -37,7 +37,7 @@ export default function AdminContactsPage() {
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`https://school-pro-api-6mxq.onrender.com/contacts${search ? `?search=${encodeURIComponent(search)}` : ""}`);
+      const res = await fetch(`https://school-pro-api-6mxq-5qzq.onrender.com/contacts${search ? `?search=${encodeURIComponent(search)}` : ""}`);
       if (res.ok) {
         const data = await res.json();
         setContacts(data);
