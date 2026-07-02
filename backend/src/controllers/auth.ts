@@ -7,6 +7,10 @@ export const onboardSchool = async (req: Request, res: Response) => {
   const { schoolName, domain, adminFirstName, adminLastName, adminEmail } = req.body;
 
   try {
+    // DEBUG: Print the connection string to verify Render is using the right one
+    const dbUrl = process.env.DATABASE_URL || "NOT SET";
+    console.log("[DEBUG] Render DATABASE_URL:", dbUrl.replace(/:[^:@]+@/, ':***@'));
+
     // 1. Create the Tenant (School/University)
     const tenant = await prisma.tenant.create({
       data: {
