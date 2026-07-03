@@ -72,3 +72,40 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create user" });
   }
 };
+
+export const getUsers = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+
+  if (!tenantId || typeof tenantId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID is required" });
+  }
+
+  try {
+    const users = await prisma.userTenant.findMany({
+      where: { tenantId },
+      include: {
+        user: true,
+        roles: {
+          include: {
+            role: true
+          }
+        }
+      }
+    });
+
+    const formattedUsers = users.map(ut => ({
+      id: ut.user.id,
+      firstName: ut.user.firstName,
+      lastName: ut.user.lastName,
+      email: ut.user.email,
+      phone: ut.user.phone,
+      isActive: ut.user.isActive,
+      roles: ut.roles.map(r => r.role.name)
+    }));
+
+    res.status(200).json(formattedUsers);
+  } catch (error) {
+    console.error('[API Error in getUsers]', error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+};

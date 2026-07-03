@@ -96,6 +96,7 @@ export const data = {
             url: "/dashboard/admin",
             icon: Settings2,
             items: [
+                { title: "User Management", url: "/dashboard/admin/users" },
                 { title: "Contacts", url: "/dashboard/admin/contacts" },
             ],
         },

@@ -5,6 +5,7 @@ import academicsRouter from "./routes/academics";
 import financeRouter from "./routes/finance";
 import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
+import rolesRouter from "./routes/roles";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -20,6 +21,7 @@ app.use((req, res, next) => {
 
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
+app.use("/roles", rolesRouter);
 app.use("/", schoolRouter);
 app.use("/academics", academicsRouter);
 app.use("/finance", financeRouter);
