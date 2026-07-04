@@ -15,14 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  Body,
-  Cell,
-  Head,
-  Header,
-  Row
-} from "@/components/ui/table"; // Assuming some table component exists, otherwise using standard HTML table for simplicity if shadcn table is not fully set up.
+
 
 export default function UserManagementPage() {
   const { school } = useSchoolStore();
