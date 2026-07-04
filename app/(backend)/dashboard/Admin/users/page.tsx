@@ -83,11 +83,9 @@ export default function UserManagementPage() {
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Admin
-            </Button>
+          <DialogTrigger render={<Button />}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Admin
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
