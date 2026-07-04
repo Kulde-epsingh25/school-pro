@@ -53,7 +53,7 @@ export default function LoginV2() {
     try {
       // Mock Authentication Flow
       let role = "teacher"; // Default to teacher
-      let redirectUrl = "/dashboard";
+      let redirectUrl = "/dashboard/teacher";
 
       // Super Admin special case
       if (values.email === "super@admin.com") {
@@ -61,10 +61,13 @@ export default function LoginV2() {
         redirectUrl = "/school-onboarding";
       } else if (values.email.includes("admin")) {
         role = "admin";
+        redirectUrl = "/dashboard/admin";
       } else if (values.email.includes("student")) {
         role = "student";
+        redirectUrl = "/dashboard/students";
       } else if (values.email.includes("parent")) {
         role = "parent";
+        redirectUrl = "/dashboard/users/parents";
       }
 
       const mockUser = {
