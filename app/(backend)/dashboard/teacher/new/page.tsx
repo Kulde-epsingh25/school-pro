@@ -43,15 +43,6 @@ export default function NewTeacherPage() {
     fetchSequence();
   }, []);
   return (
-    <SidebarProvider>
-      <DashboardSidebar
-        user={data.user}
-        teams={data.teams}
-        navMain={data.navMain}
-        projects={data.projects}
-      />
-      <SidebarInset>
-        <DashboardHeader />
         <div className="p-6 max-w-6xl mx-auto w-full">
           <div className="bg-white rounded-xl shadow-sm border border-blue-600/20 ring-1 ring-blue-600/10 p-6 sm:p-8">
             {/* Header */}
@@ -174,7 +165,5 @@ export default function NewTeacherPage() {
             </form>
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }

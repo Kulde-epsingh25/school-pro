@@ -3,15 +3,22 @@ import { redirect } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { data } from "@/components/dashboard/data";
-export default function DashboardLayout({ children }: {
+import { data, getNavData } from "@/components/dashboard/data";
+import { getServerUser } from "@/actions/auth";
+
+export default async function DashboardLayout({ children }: {
   children: ReactNode;
 }) {
+  const user = await getServerUser();
+
   const sessionUser = {
-    name: "Loading...",
-    email: "",
-    avatar: "",
+    name: user?.name || "Loading...",
+    email: user?.email || "",
+    avatar: user?.image || "",
+    roles: user?.roles || ["teacher"] // Default role during load or if missing
   };
+
+  const navData = getNavData(sessionUser.roles);
 
   return (
     <SidebarProvider>
@@ -19,9 +26,9 @@ export default function DashboardLayout({ children }: {
         {/* Sidebar */}
         <DashboardSidebar 
           user={sessionUser}
-          teams={data.teams}
-          navMain={data.navMain}
-          projects={data.projects}
+          teams={navData.teams}
+          navMain={navData.navMain}
+          projects={navData.projects}
         />
 
         {/* Main Content */}

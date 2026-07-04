@@ -26,7 +26,7 @@ export function WelcomeBanner() {
           Welcome back, {user?.name || "Timothy Okiring"}!
         </h1>
         <p className="text-blue-100 text-sm font-medium tracking-wide uppercase">
-          {user?.role || "ADMIN"} at {school?.name || "Hillside Primary School"}
+          {user?.roles?.[0] ? user.roles[0].replace('_', ' ').toUpperCase() : "ADMIN"} at {school?.name || "Hillside Primary School"}
         </p>
       </div>
     </div>

@@ -4,18 +4,9 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
-  import { data } from "@/components/dashboard/data";
+
 export default function ParentForm() {
   return (
-   <SidebarProvider>
-       <DashboardSidebar
-              user={data.user}
-              teams={data.teams}
-              navMain={data.navMain}
-              projects={data.projects}
-            />
       <div className="bg-white rounded-xl shadow-sm border border-blue-600/20 ring-1 ring-blue-600/10 p-6 sm:p-8">
 
         {/* Header */}
@@ -137,6 +128,5 @@ export default function ParentForm() {
         </div>
 
       </div>
-    </SidebarProvider>
   );
 }

@@ -64,11 +64,7 @@ export default function SubjectsPage() {
   );
 
   return (
-    <SidebarProvider>
-      <DashboardSidebar user={data.user} teams={data.teams} navMain={data.navMain} projects={data.projects} />
-      <SidebarInset>
-        <DashboardHeader />
-        <div className="flex-1 flex bg-white min-h-[calc(100vh-64px)]">
+        <div className="flex-1 flex bg-white min-h-[calc(100vh-64px)] -m-6 rounded-lg overflow-hidden border shadow-sm">
           
           {/* Left Side: Subject List */}
           <div className="w-80 border-r flex flex-col bg-gray-50/30">
@@ -256,7 +252,5 @@ export default function SubjectsPage() {
           </div>
 
         </div>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }

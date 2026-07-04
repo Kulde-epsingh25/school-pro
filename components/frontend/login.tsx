@@ -52,31 +52,41 @@ export default function LoginV2() {
 
     try {
       // Mock Authentication Flow
-      let role = "teacher"; // Default to teacher
+      let roles: string[] = ["teacher"]; // Default
       let redirectUrl = "/dashboard/teacher";
 
       // Super Admin special case
       if (values.email === "super@admin.com") {
-        role = "super_admin";
+        roles = ["super_admin"];
+      } else {
+        roles = [];
+        if (values.email.includes("admin")) roles.push("admin");
+        if (values.email.includes("teacher")) roles.push("teacher");
+        if (values.email.includes("student")) roles.push("student");
+        if (values.email.includes("parent")) roles.push("parent");
+        if (roles.length === 0) roles = ["teacher"];
+      }
+
+      // Priority routing
+      if (roles.includes("super_admin")) {
         redirectUrl = "/school-onboarding";
-      } else if (values.email.includes("admin")) {
-        role = "admin";
+      } else if (roles.includes("admin")) {
         redirectUrl = "/dashboard/admin";
-      } else if (values.email.includes("student")) {
-        role = "student";
-        redirectUrl = "/dashboard/students";
-      } else if (values.email.includes("parent")) {
-        role = "parent";
-        redirectUrl = "/dashboard/users/parents";
+      } else if (roles.includes("teacher")) {
+        redirectUrl = "/dashboard/teacher";
+      } else if (roles.includes("parent")) {
+        redirectUrl = "/portal/parent"; // Assuming portal for parents
+      } else if (roles.includes("student")) {
+        redirectUrl = "/portal/student"; // Assuming portal for students
       }
 
       const mockUser = {
         id: "usr_" + Date.now().toString(),
         email: values.email,
         name: values.email.split("@")[0],
-        role: role,
-        schoolId: role === "super_admin" ? undefined : "sch_001",
-        schoolName: role === "super_admin" ? undefined : "School Pro Academy"
+        roles: roles,
+        schoolId: roles.includes("super_admin") ? undefined : "sch_001",
+        schoolName: roles.includes("super_admin") ? undefined : "School Pro Academy"
       };
 
       const mockAccessToken = "mock_access_token_" + Date.now();
@@ -89,7 +99,7 @@ export default function LoginV2() {
       useAuthStore.getState().setAuth(mockUser, mockAccessToken);
       
       // Populate Global School Data
-      if (role !== "super_admin") {
+      if (!roles.includes("super_admin")) {
         useSchoolStore.getState().setSchool({
           id: mockUser.schoolId || "sch_001",
           name: mockUser.schoolName || "School Pro Academy",

@@ -1,5 +1,4 @@
 "use client";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   AudioWaveform,
   ClipboardList,
@@ -15,8 +14,6 @@ import {
 } from "lucide-react";
 
 // Import extracted components
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { RecentDataTable } from "@/components/dashboard/recent-data-table";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { SalesChart } from "@/components/dashboard/sales-chart";
@@ -95,124 +92,6 @@ const recentAdmissions = [
     amount: "₹45,000",
   },
 ];
-
-const navMain = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-    isActive: true,
-    items: [
-      { title: "Overview", url: "/dashboard" },
-    ],
-  },
-  {
-    title: "Student Management",
-    url: "/dashboard/students",
-    icon: Users,
-    items: [
-      { title: "Student Directory", url: "/dashboard/students" },
-      { title: "Fees", url: "/dashboard/students/fees" },
-      { title: "Student Ids", url: "/dashboard/students/id" },
-      { title: "Attendance", url: "/dashboard/students/attendance" },
-    ],
-  },
-  {
-    title: "Users",
-    url: "/dashboard/users",
-    icon: Users,
-  },
-  {
-    title: "Academics",
-    url: "/dashboard/academics",
-    icon: GraduationCap,
-    items: [
-      { title: "Curriculum", url: "/dashboard/academics/curriculum" },
-      { title: "Timetable", url: "/dashboard/academics/timetable" },
-      { title: "Examinations", url: "/dashboard/academics/examinations" },
-      { title: "Assignments", url: "/dashboard/academics/assignments" },
-      { title: "Report Cards", url: "/dashboard/academics/report-cards" },
-    ],
-  },
-  {
-    title: "Staff Management",
-    url: "/dashboard/staff",
-    icon: ClipboardList,
-  },
-  {
-    title: "Communication",
-    url: "/dashboard/communication",
-    icon: AudioWaveform,
-  },
-  {
-    title: "Finance",
-    url: "/dashboard/finance",
-    icon: DollarSign,
-  },
-  {
-    title: "Transport",
-    url: "/dashboard/transport",
-    icon: Map,
-  },
-  {
-    title: "Resources",
-    url: "/dashboard/resources",
-    icon: Command,
-  },
-  {
-    title: "Reports & Analytics",
-    url: "/dashboard/reports",
-    icon: PieChart,
-  },
-  {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings2,
-  },
-];
-
-const data = {
-  user: {
-    name: "Admin User",
-    email: "admin@schoolname.edu",
-    avatar: "/avatars/admin.jpg",
-  },
-  teams: [
-    {
-      name: "School Pro",
-      logo: GraduationCap,
-      plan: "Premium",
-    },
-    {
-      name: "Sunrise Academy",
-      logo: AudioWaveform,
-      plan: "Standard",
-    },
-    {
-      name: "Demo School",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: navMain,
-  projects: [
-    {
-      name: "Annual Examination",
-      url: "/academics/examinations",
-      icon: Frame,
-    },
-    {
-      name: "Fee Collection Drive",
-      url: "/finance/fees",
-      icon: PieChart,
-    },
-    {
-      name: "Transport Routes",
-      url: "/transport/routes",
-      icon: Map,
-    },
-  ],
-};
 export default function DashboardPage() {
   const school = useSchoolStore((state) => state.school);
   const [stats, setStats] = useState<StatCardProps[]>(defaultStats);

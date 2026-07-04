@@ -59,7 +59,7 @@ export async function logOut() {
 
 export async function getServerSchool() {
   const user = await getServerUser();
-  if (!user || user.role === "super_admin") {
+  if (!user || user.roles?.includes("super_admin")) {
     return null;
   }
   return {
