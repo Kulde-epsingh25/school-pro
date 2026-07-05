@@ -69,8 +69,10 @@ export default function LoginV2() {
       let redirectUrl = "/dashboard/teacher";
 
       // Priority routing
-      if (roles.includes("super_admin")) {
-        redirectUrl = "/super-admin";
+      if (roles.includes("saas_super_admin")) {
+        redirectUrl = "/saas-admin";
+      } else if (roles.includes("super_admin")) {
+        redirectUrl = "/dashboard";
       } else if (roles.includes("admin")) {
         redirectUrl = "/dashboard/admin";
       } else if (roles.includes("teacher")) {
