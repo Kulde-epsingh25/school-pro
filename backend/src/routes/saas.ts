@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPlatformStats, getTenants } from "../controllers/saas";
+import { getPlatformStats, getTenants, getTenantDetails, toggleTenantSuspension, getAuditLogs, getAccountDetails, updatePassword, shareAccount, revokeShare } from "../controllers/saas";
 import { tenantIsolation } from "../middleware/tenantIsolation";
 
 const saasRouter = Router();
@@ -20,5 +20,14 @@ saasRouter.use((req, res, next) => {
 
 saasRouter.get("/stats", getPlatformStats);
 saasRouter.get("/tenants", getTenants);
+saasRouter.get("/tenants/:id", getTenantDetails);
+saasRouter.put("/tenants/:id/suspend", toggleTenantSuspension);
+
+saasRouter.get("/audit-logs", getAuditLogs);
+
+saasRouter.get("/account", getAccountDetails);
+saasRouter.put("/account/password", updatePassword);
+saasRouter.post("/account/share", shareAccount);
+saasRouter.delete("/account/share/:email", revokeShare);
 
 export default saasRouter;

@@ -43,7 +43,7 @@ export default function NewTenantPage() {
     setError(null);
     
     try {
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/tenants", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,47 +1,6 @@
 import { AudioWaveform, Command, ClipboardList, DollarSign, Frame, GraduationCap, LayoutDashboard, Map, PieChart, Settings2, Users, ShieldAlert } from "lucide-react";
 
-export const data = {
-    user: {
-        name: "Admin User",
-        email: "admin@schoolname.edu",
-        avatar: "/avatars/admin.jpg",
-    },
-    teams: [
-        {
-            name: "School Pro",
-            logo: GraduationCap,
-            plan: "Premium",
-        },
-        {
-            name: "Sunrise Academy",
-            logo: AudioWaveform,
-            plan: "Standard",
-        },
-        {
-            name: "Demo School",
-            logo: Command,
-            plan: "Free",
-        },
-    ],
-    projects: [
-        {
-            name: "Annual Examination",
-            url: "/academics/examinations",
-            icon: Frame,
-        },
-        {
-            name: "Fee Collection Drive",
-            url: "/finance/fees",
-            icon: PieChart,
-        },
-        {
-            name: "Transport Routes",
-            url: "/transport/routes",
-            icon: Map,
-        },
-    ],
-};
-
+export const data = {};
 export const getNavData = (roles: string[] = []) => {
     const isSaaSSuperAdmin = roles.includes("saas_super_admin");
     const isTenantSuperAdmin = roles.includes("super_admin");
@@ -64,6 +23,7 @@ export const getNavData = (roles: string[] = []) => {
                 { title: "Platform Settings", url: "/saas-admin/settings" },
                 { title: "Analytics", url: "/saas-admin/analytics" },
                 { title: "Audit Logs", url: "/saas-admin/audit" },
+                { title: "Account & Security", url: "/saas-admin/account" },
             ],
         });
     }

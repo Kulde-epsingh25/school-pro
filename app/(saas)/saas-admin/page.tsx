@@ -33,7 +33,7 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/analytics");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/analytics`);
         if (res.ok) {
           const json = await res.json();
           setData(json);

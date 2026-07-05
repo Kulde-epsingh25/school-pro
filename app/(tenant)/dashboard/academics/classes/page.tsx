@@ -37,7 +37,7 @@ export default function ClassesPage() {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/classes");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`);
       if (res.ok) {
         const data = await res.json();
         setClasses(data);
@@ -52,7 +52,7 @@ export default function ClassesPage() {
   const handleAddClass = async () => {
     if (!newClassName.trim()) return;
     try {
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/classes", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newClassName }),
@@ -73,7 +73,7 @@ export default function ClassesPage() {
   const handleAddStream = async () => {
     if (!selectedClass || !newStreamName.trim()) return;
     try {
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/streams", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/streams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newStreamName, classId: selectedClass.id }),

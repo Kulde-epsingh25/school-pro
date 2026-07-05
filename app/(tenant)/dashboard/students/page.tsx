@@ -25,7 +25,7 @@ export default function StudentsPage() {
   const fetchStudents = async (query?: string) => {
     try {
       setLoading(true);
-      const url = query ? `https://school-pro-api-6mxq-5qzq.onrender.com/students?search=${encodeURIComponent(query)}` : "https://school-pro-api-6mxq-5qzq.onrender.com/students";
+      const url = query ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com")}/students?search=${encodeURIComponent(query)}` : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

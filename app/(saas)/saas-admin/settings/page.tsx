@@ -30,7 +30,7 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/system");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/system`);
         if (res.ok) {
           const data: Setting[] = await res.json();
           
@@ -65,7 +65,7 @@ export default function SystemSettingsPage() {
     setMessage(null);
 
     try {
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/system", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/system`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ settings })

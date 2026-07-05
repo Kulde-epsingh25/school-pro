@@ -35,7 +35,7 @@ export function CreateAdminForm({ onAdminCreated, roles }: { onAdminCreated: () 
     setError("");
 
     try {
-      const response = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/users", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -33,7 +33,7 @@ export default function ContactUsForm() {
 
     try {
       setLoading(true);
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/contacts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

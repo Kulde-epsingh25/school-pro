@@ -27,7 +27,7 @@ export default function NewSchoolFeePage() {
 
   useEffect(() => {
     // Fetch terms
-    fetch("https://school-pro-api-6mxq-5qzq.onrender.com/academics/terms")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`)
       .then(res => res.json())
       .then(data => {
         setTerms(data);
@@ -36,7 +36,7 @@ export default function NewSchoolFeePage() {
       .catch(console.error);
     
     // TODO: We need a getClasses endpoint, but for now we'll hardcode or let it fail gracefully
-    // fetch("https://school-pro-api-6mxq-5qzq.onrender.com/academics/classes")
+    // fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/classes`)
   }, []);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function NewSchoolFeePage() {
     }
 
     try {
-      await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/finance/fees", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/fees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

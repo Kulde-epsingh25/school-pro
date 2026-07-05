@@ -28,7 +28,7 @@ export default function TenantsPage() {
   useEffect(() => {
     async function fetchTenants() {
       try {
-        const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/tenants");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`);
         if (res.ok) {
           const data = await res.json();
           setTenants(data);
@@ -94,7 +94,9 @@ export default function TenantsPage() {
                     </TableCell>
                     <TableCell>{tenant._count?.users || 0}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">Manage</Button>
+                      <Link href={`/saas-admin/tenants/${tenant.id}`}>
+                        <Button variant="ghost" size="sm">Manage</Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}

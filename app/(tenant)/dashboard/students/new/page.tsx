@@ -75,8 +75,8 @@ export default function NewStudentPage() {
   const fetchData = async () => {
     try {
       const [parentsRes, classesRes] = await Promise.all([
-        fetch("https://school-pro-api-6mxq-5qzq.onrender.com/parents").catch(() => null),
-        fetch("https://school-pro-api-6mxq-5qzq.onrender.com/classes").catch(() => null)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`).catch(() => null),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`).catch(() => null)
       ]);
       
       if (parentsRes && parentsRes.ok) {
@@ -134,7 +134,7 @@ export default function NewStudentPage() {
     try {
       setParentLoading(true);
       // Simulate saving parent and getting full parent object back
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/parents", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parentForm),
@@ -180,7 +180,7 @@ export default function NewStudentPage() {
         schoolName: school?.name || "N/A",
       };
 
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/students", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
