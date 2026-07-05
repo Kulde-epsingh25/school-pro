@@ -22,13 +22,14 @@ export async function getTenants(req: Request, res: Response) {
 
 export async function createTenant(req: Request, res: Response) {
   try {
-    const { name, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
+    const { name, schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
+    const finalName = name || schoolName;
 
     const tenant = await db.$transaction(async (tx) => {
       // 1. Create the tenant
       const tenant = await tx.tenant.create({
         data: {
-          name,
+          name: finalName,
           domain,
           subscription: {
             create: {
@@ -80,7 +81,7 @@ export async function createTenant(req: Request, res: Response) {
           resourceType: "TENANT",
           resourceId: tenant.id,
           actorEmail: "superadmin@system.local", // System actor for now
-          details: JSON.stringify({ name, domain, plan }),
+          details: JSON.stringify({ name: finalName, domain, plan }),
           status: "SUCCESS"
         }
       });
