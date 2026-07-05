@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
     } catch (e) { }
 
     if (roles.includes('super_admin')) {
-      return NextResponse.redirect(new URL('/school-onboarding', request.url));
+      return NextResponse.redirect(new URL('/super-admin', request.url));
     } else if (roles.includes('admin')) {
       return NextResponse.redirect(new URL('/dashboard/admin', request.url));
     } else if (roles.includes('teacher')) {
