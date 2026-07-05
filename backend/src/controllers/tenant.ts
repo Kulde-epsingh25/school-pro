@@ -61,26 +61,87 @@ export async function createTenant(req: Request, res: Response) {
         }
       });
 
-      // 4. Create default SUPER_ADMIN TenantRole
-      const adminRole = await tx.tenantRole.create({
-        data: { 
-          tenantId: tenant.id,
-          name: "SUPER_ADMIN", 
-          displayName: "Super Administrator",
-          description: "Full administrative access",
-          createdBy: adminUser.id
+      // 4. Create default permissions for the tenant
+      const defaultSubjects = ["USERS", "ROLES", "FEES", "CLASSES", "STUDENTS", "SETTINGS", "REPORTS", "DEPARTMENTS", "SUBJECTS"];
+      const defaultActions = ["CREATE", "READ", "UPDATE", "DELETE"];
+      
+      const permissionsToCreate = [];
+      for (const subject of defaultSubjects) {
+        for (const action of defaultActions) {
+          permissionsToCreate.push({
+            tenantId: tenant.id,
+            action,
+            subject,
+            scope: "ALL",
+            description: `Can ${action.toLowerCase()} ${subject.toLowerCase()}`
+          });
         }
+      }
+
+      await tx.tenantPermission.createMany({
+        data: permissionsToCreate
       });
 
-      // 5. Link User to TenantRole via TenantUserRole
-      await tx.tenantUserRole.create({
-        data: {
-          userId: adminUser.id,
-          tenantId: tenant.id,
-          roleId: adminRole.id,
-          assignedBy: adminUser.id
-        }
+      // Fetch the created permissions to link them
+      const createdPermissions = await tx.tenantPermission.findMany({
+        where: { tenantId: tenant.id }
       });
+
+      // 5. Create default roles
+      const defaultRoles = [
+        { name: "SUPER_ADMIN", displayName: "Super Administrator", desc: "Full administrative access" },
+        { name: "DEPARTMENT_ADMIN", displayName: "Department Head", desc: "Department level access" },
+        { name: "FINANCE_ADMIN", displayName: "Finance Officer", desc: "Financial management access" },
+        { name: "ACADEMIC_ADMIN", displayName: "Academic Coordinator", desc: "Academic management access" }
+      ];
+
+      let superAdminRole;
+      
+      for (const roleData of defaultRoles) {
+        const role = await tx.tenantRole.create({
+          data: {
+            tenantId: tenant.id,
+            name: roleData.name,
+            displayName: roleData.displayName,
+            description: roleData.desc,
+            createdBy: adminUser.id
+          }
+        });
+
+        if (roleData.name === "SUPER_ADMIN") {
+          superAdminRole = role;
+          // SUPER_ADMIN gets all permissions
+          const rolePerms = createdPermissions.map(p => ({
+            roleId: role.id,
+            permissionId: p.id
+          }));
+          await tx.tenantRolePermission.createMany({ data: rolePerms });
+        } else if (roleData.name === "FINANCE_ADMIN") {
+          // Add some finance permissions
+          const financePerms = createdPermissions
+            .filter(p => ["FEES", "REPORTS", "STUDENTS"].includes(p.subject))
+            .map(p => ({ roleId: role.id, permissionId: p.id }));
+          await tx.tenantRolePermission.createMany({ data: financePerms });
+        } else if (roleData.name === "ACADEMIC_ADMIN") {
+          // Add some academic permissions
+          const academicPerms = createdPermissions
+            .filter(p => ["CLASSES", "SUBJECTS", "STUDENTS", "REPORTS", "DEPARTMENTS"].includes(p.subject))
+            .map(p => ({ roleId: role.id, permissionId: p.id }));
+          await tx.tenantRolePermission.createMany({ data: academicPerms });
+        }
+      }
+
+      // 6. Link User to SUPER_ADMIN TenantRole via TenantUserRole
+      if (superAdminRole) {
+        await tx.tenantUserRole.create({
+          data: {
+            userId: adminUser.id,
+            tenantId: tenant.id,
+            roleId: superAdminRole.id,
+            assignedBy: adminUser.id
+          }
+        });
+      }
 
       // 6. Audit Log
       await tx.tenantAuditLog.create({
