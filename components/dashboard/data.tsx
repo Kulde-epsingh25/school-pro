@@ -111,6 +111,10 @@ export const getNavData = (roles: string[] = []) => {
             url: "/dashboard/academics",
             icon: GraduationCap,
             items: [
+                { title: "Classes", url: "/dashboard/academics/classes" },
+                { title: "Departments", url: "/dashboard/academics/departments" },
+                { title: "Subjects", url: "/dashboard/academics/subjects" },
+                { title: "Terms", url: "/dashboard/academics/terms" },
                 { title: "Timetable", url: "/dashboard/academics/timetable" },
                 { title: "Examinations", url: "/dashboard/academics/examinations" },
                 { title: "Assignments", url: "/dashboard/academics/assignments" },
