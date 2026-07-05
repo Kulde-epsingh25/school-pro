@@ -86,10 +86,24 @@ export async function createTenant(req: Request, res: Response) {
         }
       });
 
-      return tenant;
+      return { tenant, adminUser };
     });
 
-    res.status(201).json(tenant);
+    // 6. Generate the "Magic Link" token (mocking email sending)
+    const verificationToken = Buffer.from(`${tenant.adminUser.id}:${tenant.tenant.id}`).toString('base64');
+    
+    // Use the actual request origin or a fallback
+    const baseUrl = req.headers.origin || "https://school-pro-mocha-beta.vercel.app";
+    const magicLink = `${baseUrl}/auth/verify?token=${verificationToken}`;
+
+    console.log("=========================================================");
+    console.log(`[MOCK EMAIL] To: ${adminEmail}`);
+    console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
+    console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
+    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+    console.log("=========================================================");
+
+    res.status(201).json(tenant.tenant);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create tenant" });

@@ -22,6 +22,7 @@ const getTerms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.json(terms);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed to fetch terms" });
     }
 });
@@ -54,6 +55,7 @@ const createTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.json(term);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed to create term" });
     }
 });
@@ -67,6 +69,7 @@ const getDepartments = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.json(depts);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed" });
     }
 });
@@ -79,6 +82,7 @@ const createDepartment = (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.json(dept);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed" });
     }
 });
@@ -91,6 +95,7 @@ const getSubjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json(subjects);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed" });
     }
 });
@@ -107,6 +112,7 @@ const createSubject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json(subject);
     }
     catch (error) {
+        console.error('[API Error in academics.ts]', error);
         res.status(500).json({ error: "Failed" });
     }
 });

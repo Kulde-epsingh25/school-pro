@@ -27,6 +27,7 @@ const getFees = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.json(formatted);
     }
     catch (error) {
+        console.error('[API Error in finance.ts]', error);
         res.status(500).json({ error: "Failed to fetch fees" });
     }
 });
@@ -55,6 +56,7 @@ const createFee = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.json(fee);
     }
     catch (error) {
+        console.error('[API Error in finance.ts]', error);
         res.status(500).json({ error: "Failed to create fee" });
     }
 });
@@ -72,6 +74,7 @@ const getPayments = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json(payments);
     }
     catch (error) {
+        console.error('[API Error in finance.ts]', error);
         res.status(500).json({ error: "Failed to fetch payments" });
     }
 });
@@ -92,6 +95,7 @@ const createPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json(payment);
     }
     catch (error) {
+        console.error('[API Error in finance.ts]', error);
         res.status(500).json({ error: "Failed to create payment" });
     }
 });
@@ -105,6 +109,7 @@ const getStudentPayments = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.json(payments);
     }
     catch (error) {
+        console.error('[API Error in finance.ts]', error);
         res.status(500).json({ error: "Failed to fetch student payments" });
     }
 });
