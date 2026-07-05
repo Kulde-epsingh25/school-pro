@@ -15,7 +15,8 @@ export default function OnboardingWizard() {
     domain: "",
     adminFirstName: "",
     adminLastName: "",
-    adminEmail: ""
+    adminEmail: "",
+    logoBase64: ""
   });
 
   const handleNext = () => setStep(s => Math.min(s + 1, 3));
@@ -25,10 +26,25 @@ export default function OnboardingWizard() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        alert("Image size should be less than 1MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, logoBase64: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/auth/onboard", {
+      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/tenants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -130,6 +146,33 @@ export default function OnboardingWizard() {
                     />
                   </div>
                   <p className="mt-2 text-xs text-gray-500 font-medium">This domain will be strictly enforced for all multi-tenant logins.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Institution Logo</label>
+                  <div className="flex items-center gap-4">
+                    {formData.logoBase64 ? (
+                      <img src={formData.logoBase64} alt="Logo" className="w-12 h-12 rounded-full object-cover shadow-sm border border-gray-200" />
+                    ) : (
+                      <div className="bg-gray-100 p-2 rounded-full flex items-center justify-center w-12 h-12 border border-gray-200">
+                        <School className="text-gray-400 text-xl" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <Input
+                        type="file"
+                        id="logoUpload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
+                      <label htmlFor="logoUpload">
+                        <Button type="button" variant="outline" className="h-10 border-gray-200 text-gray-700 cursor-pointer w-full text-sm font-semibold hover:bg-gray-50" onClick={() => document.getElementById('logoUpload')?.click()}>
+                          Upload Logo (Max 1MB)
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

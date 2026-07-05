@@ -53,10 +53,10 @@ export async function createTenant(req: Request, res: Response) {
       });
 
       // 3. Get or Create SUPER_ADMIN Role (Tenant level)
-      let adminRole = await tx.role.findUnique({ where: { name: "ADMIN" } });
+      let adminRole = await tx.role.findUnique({ where: { name: "SUPER_ADMIN" } });
       if (!adminRole) {
         adminRole = await tx.role.create({
-          data: { name: "ADMIN", description: "Tenant Administrator" }
+          data: { name: "SUPER_ADMIN", description: "Platform / Master Administrator", isSystemRole: true, isPlatformLevel: true }
         });
       }
 

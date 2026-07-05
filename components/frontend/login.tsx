@@ -51,21 +51,22 @@ export default function LoginV2() {
     setIsLoading(true);
 
     try {
-      // Mock Authentication Flow
-      let roles: string[] = ["teacher"]; // Default
-      let redirectUrl = "/dashboard/teacher";
+      // Live Authentication Flow
+      const res = await fetch("https://school-pro-api-6mxq-5qzq.onrender.com/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, password: values.password })
+      });
 
-      // Super Admin special case
-      if (values.email === "super@admin.com") {
-        roles = ["super_admin"];
-      } else {
-        roles = [];
-        if (values.email.includes("admin")) roles.push("admin");
-        if (values.email.includes("teacher")) roles.push("teacher");
-        if (values.email.includes("student")) roles.push("student");
-        if (values.email.includes("parent")) roles.push("parent");
-        if (roles.length === 0) roles = ["teacher"];
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || "Invalid credentials");
       }
+
+      const data = await res.json();
+      
+      const roles: string[] = data.user.roles || [];
+      let redirectUrl = "/dashboard/teacher";
 
       // Priority routing
       if (roles.includes("super_admin")) {
@@ -80,29 +81,21 @@ export default function LoginV2() {
         redirectUrl = "/portal/student"; // Assuming portal for students
       }
 
-      const mockUser = {
-        id: "usr_" + Date.now().toString(),
-        email: values.email,
-        name: values.email.split("@")[0],
-        roles: roles,
-        schoolId: roles.includes("super_admin") ? undefined : "sch_001",
-        schoolName: roles.includes("super_admin") ? undefined : "School Pro Academy"
-      };
-
-      const mockAccessToken = "mock_access_token_" + Date.now();
-      const mockRefreshToken = "mock_refresh_token_" + Date.now();
+      const user = data.user;
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken;
 
       // Set cookies via server action
-      await createServerSession(mockUser, mockAccessToken, mockRefreshToken);
+      await createServerSession(user, accessToken, refreshToken);
 
       // Set client Zustand state
-      useAuthStore.getState().setAuth(mockUser, mockAccessToken);
+      useAuthStore.getState().setAuth(user, accessToken);
       
       // Populate Global School Data
-      if (!roles.includes("super_admin")) {
+      if (!roles.includes("super_admin") && user.schoolId) {
         useSchoolStore.getState().setSchool({
-          id: mockUser.schoolId || "sch_001",
-          name: mockUser.schoolName || "School Pro Academy",
+          id: user.schoolId,
+          name: user.schoolName || "School Pro Academy",
           logo: "https://utfs.io/f/5a88ce2b-65bc-4f7f-bdc7-27b5e406f85d-8vj8v7.png" // placeholder logo
         });
       } else {
@@ -110,7 +103,7 @@ export default function LoginV2() {
       }
 
       toast.success("Login Successful!", {
-        description: `Welcome back, ${mockUser.name}!`
+        description: `Welcome back, ${user.name}!`
       });
 
       // Redirect based on role
