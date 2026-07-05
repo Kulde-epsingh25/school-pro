@@ -69,7 +69,7 @@ export default function LoginV2() {
 
       // Priority routing
       if (roles.includes("super_admin")) {
-        redirectUrl = "/school-onboarding";
+        redirectUrl = "/super-admin";
       } else if (roles.includes("admin")) {
         redirectUrl = "/dashboard/admin";
       } else if (roles.includes("teacher")) {

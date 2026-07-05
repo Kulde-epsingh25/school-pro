@@ -29,7 +29,7 @@ export function HeroSection() {
         {/* Buttons */}
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <a
-            href="#"
+            href="/school-onboarding"
             className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-md ring-2 ring-background/60 transition-colors hover:bg-primary/90"
           >
             Get Started
