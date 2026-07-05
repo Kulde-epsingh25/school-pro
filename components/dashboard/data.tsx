@@ -1,5 +1,5 @@
 "use client"
-import { AudioWaveform, Command, ClipboardList, DollarSign, Frame, GraduationCap, LayoutDashboard, Map, PieChart, Settings2, Users } from "lucide-react";
+import { AudioWaveform, Command, ClipboardList, DollarSign, Frame, GraduationCap, LayoutDashboard, Map, PieChart, Settings2, Users, ShieldAlert } from "lucide-react";
 
 export const data = {
     user: {
@@ -51,6 +51,24 @@ export const getNavData = (roles: string[] = []) => {
     const isParent = roles.includes("parent");
 
     const navMain = [];
+
+    if (isSuperAdmin) {
+        navMain.push({
+            title: "Platform Admin",
+            url: "/super-admin",
+            icon: ShieldAlert,
+            isActive: true,
+            items: [
+                { title: "Overview", url: "/super-admin" },
+                { title: "Tenants", url: "/super-admin/tenants" },
+                { title: "Users & Roles", url: "/super-admin/users" },
+                { title: "System Settings", url: "/super-admin/settings" },
+                { title: "Analytics", url: "/super-admin/analytics" },
+                { title: "Monitoring", url: "/super-admin/monitoring" },
+                { title: "Audit Logs", url: "/super-admin/audit" },
+            ],
+        });
+    }
 
     if (isAdmin || isTeacher) {
         navMain.push({

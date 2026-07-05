@@ -24,6 +24,7 @@ model Tenant {
   departments Department[]
   classes     Class[]
   terms       Term[]
+  subscription Subscription?
 }
 
 // ---------------------------------------------------------
@@ -52,11 +53,13 @@ model User {
 }
 
 model Role {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  name        String           @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
-  description String?
-  userRoles   UserRole[]
-  permissions RolePermission[]
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String           @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
+  description     String?
+  isSystemRole    Boolean          @default(false)
+  isPlatformLevel Boolean          @default(false)
+  userRoles       UserRole[]
+  permissions     RolePermission[]
 }
 
 model Permission {
@@ -257,4 +260,49 @@ model Payment {
   description String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+}
+
+// ---------------------------------------------------------
+// SUPER ADMIN & SYSTEM
+// ---------------------------------------------------------
+
+model Subscription {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String    @unique @db.ObjectId
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan            String    // "Starter", "Professional", "Enterprise"
+  status          String    // "ACTIVE", "TRIAL", "CANCELLED", "PAST_DUE"
+  billingCycle    String    // "MONTHLY", "YEARLY"
+  startDate       DateTime  @default(now())
+  endDate         DateTime?
+  amount          Float
+  currency        String    @default("USD")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model AuditLog {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  action       String    // e.g. "CREATE", "UPDATE", "DELETE", "LOGIN"
+  actorId      String?   @db.ObjectId
+  actorEmail   String?
+  resourceType String    // e.g. "TENANT", "USER", "ROLE", "SETTINGS"
+  resourceId   String?
+  tenantId     String?   @db.ObjectId
+  details      String?   // JSON string of before/after changes
+  ipAddress    String?
+  userAgent    String?
+  status       String    @default("SUCCESS")
+  createdAt    DateTime  @default(now())
+}
+
+model SystemSettings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  key             String   @unique
+  value           String   // JSON or string value
+  description     String?
+  isPublic        Boolean  @default(false)
+  updatedBy       String?  @db.ObjectId
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
 }
