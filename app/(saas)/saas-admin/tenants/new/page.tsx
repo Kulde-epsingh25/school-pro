@@ -55,7 +55,7 @@ export default function NewTenantPage() {
         throw new Error("Failed to create tenant");
       }
 
-      router.push("/super-admin/tenants");
+      router.push("/saas-admin/tenants");
     } catch (err) {
       console.error(err);
       setError("An error occurred while creating the tenant.");

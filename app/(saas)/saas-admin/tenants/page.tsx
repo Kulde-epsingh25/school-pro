@@ -51,7 +51,7 @@ export default function TenantsPage() {
             Manage all organizations and schools on the platform.
           </p>
         </div>
-        <Link href="/super-admin/tenants/new">
+        <Link href="/saas-admin/tenants/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" /> Add Tenant
           </Button>

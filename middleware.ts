@@ -23,8 +23,10 @@ export function middleware(request: NextRequest) {
       }
     } catch (e) { }
 
-    if (roles.includes('super_admin')) {
-      return NextResponse.redirect(new URL('/super-admin', request.url));
+    if (roles.includes('saas_super_admin')) {
+      return NextResponse.redirect(new URL('/saas-admin', request.url));
+    } else if (roles.includes('super_admin')) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     } else if (roles.includes('admin')) {
       return NextResponse.redirect(new URL('/dashboard/admin', request.url));
     } else if (roles.includes('teacher')) {
@@ -42,5 +44,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/school-admin/:path*', '/portal/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/school-admin/:path*', '/portal/:path*', '/saas-admin/:path*', '/admin/:path*', '/login'],
 };
