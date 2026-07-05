@@ -10,6 +10,7 @@ import tenantRouter from "./routes/tenant";
 import platformUserRouter from "./routes/platformUser";
 import systemRouter from "./routes/system";
 import analyticsRouter from "./routes/analytics";
+import saasRouter from "./routes/saas";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -30,6 +31,7 @@ app.use("/tenants", tenantRouter);
 app.use("/platform-users", platformUserRouter);
 app.use("/system", systemRouter);
 app.use("/analytics", analyticsRouter);
+app.use("/saas", saasRouter);
 app.use("/", schoolRouter);
 app.use("/academics", academicsRouter);
 app.use("/finance", financeRouter);

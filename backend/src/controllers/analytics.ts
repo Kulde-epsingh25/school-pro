@@ -12,7 +12,7 @@ export async function getDashboardMetrics(req: Request, res: Response) {
     });
     const monthlyRevenue = activeSubs.reduce((acc: number, sub: any) => acc + sub.amount, 0);
 
-    const recentLogs = await db.auditLog.findMany({
+    const recentLogs = await db.tenantAuditLog.findMany({
       take: 5,
       orderBy: { createdAt: "desc" }
     });

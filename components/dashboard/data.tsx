@@ -43,28 +43,42 @@ export const data = {
 };
 
 export const getNavData = (roles: string[] = []) => {
-    const isSuperAdmin = roles.includes("super_admin");
-    const isAdmin = roles.includes("admin") || isSuperAdmin;
+    const isSaaSSuperAdmin = roles.includes("saas_super_admin");
+    const isTenantSuperAdmin = roles.includes("super_admin");
+    const isAdmin = roles.includes("admin") || isTenantSuperAdmin;
     const isTeacher = roles.includes("teacher");
     const isStudent = roles.includes("student");
     const isParent = roles.includes("parent");
 
     const navMain = [];
 
-    if (isSuperAdmin) {
+    if (isSaaSSuperAdmin) {
         navMain.push({
             title: "Platform Admin",
-            url: "/super-admin",
+            url: "/saas-admin",
             icon: ShieldAlert,
             isActive: true,
             items: [
-                { title: "Overview", url: "/super-admin" },
-                { title: "Tenants", url: "/super-admin/tenants" },
-                { title: "Users & Roles", url: "/super-admin/users" },
-                { title: "System Settings", url: "/super-admin/settings" },
-                { title: "Analytics", url: "/super-admin/analytics" },
-                { title: "Monitoring", url: "/super-admin/monitoring" },
-                { title: "Audit Logs", url: "/super-admin/audit" },
+                { title: "Overview", url: "/saas-admin" },
+                { title: "Tenants", url: "/saas-admin/tenants" },
+                { title: "Platform Settings", url: "/saas-admin/settings" },
+                { title: "Analytics", url: "/saas-admin/analytics" },
+                { title: "Audit Logs", url: "/saas-admin/audit" },
+            ],
+        });
+    }
+
+    if (isTenantSuperAdmin) {
+        navMain.push({
+            title: "Organization Admin",
+            url: "/admin",
+            icon: ShieldAlert,
+            isActive: true,
+            items: [
+                { title: "Roles & Permissions", url: "/admin/roles" },
+                { title: "Users", url: "/admin/users" },
+                { title: "Audit Logs", url: "/admin/audit" },
+                { title: "Organization Settings", url: "/admin/settings" },
             ],
         });
     }
@@ -134,18 +148,8 @@ export const getNavData = (roles: string[] = []) => {
             icon: Settings2,
             items: [
                 { title: "School Profile", url: "/settings/profile" },
-                { title: "User Management", url: "/settings/users" },
                 { title: "System Settings", url: "/settings/system" },
                 { title: "Backup & Security", url: "/settings/security" },
-            ],
-        });
-        navMain.push({
-            title: "Admin Only",
-            url: "/dashboard/admin",
-            icon: Settings2,
-            items: [
-                { title: "User Management", url: "/dashboard/admin/users" },
-                { title: "Contacts", url: "/dashboard/admin/contacts" },
             ],
         });
     }

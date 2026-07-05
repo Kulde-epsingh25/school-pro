@@ -7,7 +7,7 @@ export async function getTenants(req: Request, res: Response) {
       include: {
         subscription: true,
         _count: {
-          select: { users: true }
+          select: { tenantUserRoles: true }
         }
       },
       orderBy: { createdAt: "desc" }
@@ -25,7 +25,7 @@ export async function createTenant(req: Request, res: Response) {
     const { name, schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
     const finalName = name || schoolName;
 
-    const tenant = await db.$transaction(async (tx) => {
+    const tenantResult = await db.$transaction(async (tx) => {
       // 1. Create the tenant
       const tenant = await tx.tenant.create({
         data: {
@@ -53,35 +53,44 @@ export async function createTenant(req: Request, res: Response) {
         }
       });
 
-      // 3. Get or Create SUPER_ADMIN Role (Tenant level)
-      let adminRole = await tx.role.findUnique({ where: { name: "SUPER_ADMIN" } });
-      if (!adminRole) {
-        adminRole = await tx.role.create({
-          data: { name: "SUPER_ADMIN", description: "Platform / Master Administrator", isSystemRole: true, isPlatformLevel: true }
-        });
-      }
-
-      // 4. Link User to Tenant and Role
-      await tx.userTenant.create({
+      // 3. Set as Tenant Super Admin
+      await tx.tenantSuperAdmin.create({
         data: {
-          userId: adminUser.id,
           tenantId: tenant.id,
-          roles: {
-            create: {
-              roleId: adminRole.id
-            }
-          }
+          userId: adminUser.id
         }
       });
 
-      // 5. Audit Log
-      await tx.auditLog.create({
+      // 4. Create default SUPER_ADMIN TenantRole
+      const adminRole = await tx.tenantRole.create({
+        data: { 
+          tenantId: tenant.id,
+          name: "SUPER_ADMIN", 
+          displayName: "Super Administrator",
+          description: "Full administrative access",
+          createdBy: adminUser.id
+        }
+      });
+
+      // 5. Link User to TenantRole via TenantUserRole
+      await tx.tenantUserRole.create({
         data: {
+          userId: adminUser.id,
+          tenantId: tenant.id,
+          roleId: adminRole.id,
+          assignedBy: adminUser.id
+        }
+      });
+
+      // 6. Audit Log
+      await tx.tenantAuditLog.create({
+        data: {
+          tenantId: tenant.id,
           action: "CREATE",
           resourceType: "TENANT",
           resourceId: tenant.id,
-          actorEmail: "superadmin@system.local", // System actor for now
-          details: JSON.stringify({ name: finalName, domain, plan }),
+          actorId: adminUser.id, // The one who conceptually created this state
+          changes: JSON.stringify({ name: finalName, domain, plan }),
           status: "SUCCESS"
         }
       });
@@ -89,8 +98,8 @@ export async function createTenant(req: Request, res: Response) {
       return { tenant, adminUser };
     });
 
-    // 6. Generate the "Magic Link" token (mocking email sending)
-    const verificationToken = Buffer.from(`${tenant.adminUser.id}:${tenant.tenant.id}`).toString('base64');
+    // 7. Generate the "Magic Link" token (mocking email sending)
+    const verificationToken = Buffer.from(`${tenantResult.adminUser.id}:${tenantResult.tenant.id}`).toString('base64');
     
     // Use the actual request origin or a fallback
     const baseUrl = req.headers.origin || "https://school-pro-mocha-beta.vercel.app";
@@ -103,7 +112,7 @@ export async function createTenant(req: Request, res: Response) {
     console.log(`[MOCK EMAIL] Link: ${magicLink}`);
     console.log("=========================================================");
 
-    res.status(201).json(tenant.tenant);
+    res.status(201).json(tenantResult.tenant);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create tenant" });

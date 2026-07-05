@@ -20,87 +20,149 @@ model Tenant {
   updatedAt DateTime @updatedAt
 
   // Relationships
-  users       UserTenant[]
-  departments Department[]
-  classes     Class[]
-  terms       Term[]
-  subscription Subscription?
+  // Roles & Users
+  tenantRoles       TenantRole[]
+  tenantPermissions TenantPermission[]
+  tenantUserRoles   TenantUserRole[]
+  tenantSuperAdmin  TenantSuperAdmin?
+
+  // Audits
+  tenantAuditLogs  TenantAuditLog[]
+  roleChangeAudits RoleChangeAudit[]
+  departments      Department[]
+  classes          Class[]
+  terms            Term[]
+  subscription     Subscription?
 }
 
 // ---------------------------------------------------------
-// AUTHENTICATION & RBAC
+// AUTHENTICATION & RBAC (TWO-TIER SUPER ADMIN ARCHITECTURE)
 // ---------------------------------------------------------
 
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique // Official structured email (e.g. admin@college.edu)
+  email     String   @unique
   password  String
   firstName String
   lastName  String
   phone     String?
-  isActive  Boolean  @default(false) // Needs verification
+  isActive  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Auth Relations
-  tenants UserTenant[]
+  // SaaS Level Super Admin flag
+  saasSuperAdmin SaaSSuperAdmin?
 
-  // Profile Relations (A user can optionally have specific profiles)
+  // Tenant Level Super Admin flag
+  tenantSuperAdmin TenantSuperAdmin?
+
+  // Tenant-scoped Roles
+  tenantRoles TenantUserRole[]
+
+  // Action actor references
+  tenantAuditLogs TenantAuditLog[]
+
+  // Profile Relations
   teacherProfile TeacherProfile?
   studentProfile StudentProfile?
   parentProfile  ParentProfile?
   staffProfile   StaffProfile?
 }
 
-model Role {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  name            String           @unique // e.g. "SUPER_ADMIN", "FINANCE_ADMIN", "TEACHER"
-  description     String?
-  isSystemRole    Boolean          @default(false)
-  isPlatformLevel Boolean          @default(false)
-  userRoles       UserRole[]
-  permissions     RolePermission[]
+// Global Level - Only for SaaS super admin
+model SaaSRole {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // "SAAS_SUPER_ADMIN"
+  description String
 }
 
-model Permission {
-  id      String           @id @default(auto()) @map("_id") @db.ObjectId
-  action  String // e.g. "CREATE", "READ", "UPDATE", "DELETE"
-  subject String // e.g. "FEES", "STUDENTS", "ACADEMICS"
-  roles   RolePermission[]
+model SaaSSuperAdmin {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @unique @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedWith String[] // Email addresses given access
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-model RolePermission {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  roleId       String     @db.ObjectId
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permissionId String     @db.ObjectId
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+model TenantSuperAdmin {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String   @unique @db.ObjectId
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String   @unique @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedWith String[] // Email addresses of people who know the password
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Tenant Level - Each tenant has own roles
+model TenantRole {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String  @db.ObjectId
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String // e.g., "FINANCE_ADMIN", "DEPARTMENT_HEAD"
+  displayName String // User-friendly name
+  description String
+  color       String?
+
+  permissions TenantRolePermission[]
+  userRoles   TenantUserRole[]
+  roleChanges RoleChangeAudit[]
+
+  createdBy String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, name])
+}
+
+// Tenant-level permissions
+model TenantPermission {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  action   String // CREATE, READ, UPDATE, DELETE, APPROVE
+  subject  String // STUDENTS, FEES, TEACHERS, REPORTS, DEPARTMENTS
+  scope    String // ALL, DEPARTMENT, OWN_ONLY
+
+  description String?
+
+  roles TenantRolePermission[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, action, subject, scope])
+}
+
+// Junction table for Roles and Permissions
+model TenantRolePermission {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  roleId       String           @db.ObjectId
+  role         TenantRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String           @db.ObjectId
+  permission   TenantPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId])
 }
 
-// Maps a User to a Tenant, and assigns Roles within that specific Tenant
-model UserTenant {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String @db.ObjectId
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenantId String @db.ObjectId
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+// Tenant-scoped user-role assignment
+model TenantUserRole {
+  id       String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String     @db.ObjectId
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId   String     @db.ObjectId
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId   String     @db.ObjectId
+  role     TenantRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  roles UserRole[]
+  expiresAt DateTime?
 
-  @@unique([userId, tenantId])
-}
+  assignedBy String   @db.ObjectId
+  assignedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-// Maps a UserTenant mapping to specific Roles
-model UserRole {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  userTenantId String     @db.ObjectId
-  userTenant   UserTenant @relation(fields: [userTenantId], references: [id], onDelete: Cascade)
-  roleId       String     @db.ObjectId
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userTenantId, roleId])
+  @@unique([tenantId, userId, roleId])
 }
 
 // ---------------------------------------------------------
@@ -267,42 +329,61 @@ model Payment {
 // ---------------------------------------------------------
 
 model Subscription {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId        String    @unique @db.ObjectId
-  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plan            String    // "Starter", "Professional", "Enterprise"
-  status          String    // "ACTIVE", "TRIAL", "CANCELLED", "PAST_DUE"
-  billingCycle    String    // "MONTHLY", "YEARLY"
-  startDate       DateTime  @default(now())
-  endDate         DateTime?
-  amount          Float
-  currency        String    @default("USD")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String    @unique @db.ObjectId
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan         String // "Starter", "Professional", "Enterprise"
+  status       String // "ACTIVE", "TRIAL", "CANCELLED", "PAST_DUE"
+  billingCycle String // "MONTHLY", "YEARLY"
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  amount       Float
+  currency     String    @default("USD")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
-model AuditLog {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  action       String    // e.g. "CREATE", "UPDATE", "DELETE", "LOGIN"
-  actorId      String?   @db.ObjectId
-  actorEmail   String?
-  resourceType String    // e.g. "TENANT", "USER", "ROLE", "SETTINGS"
+model TenantAuditLog {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String  @db.ObjectId
+  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  action       String // CREATE, UPDATE, DELETE, LOGIN
+  resourceType String // USER, ROLE, DEPARTMENT
   resourceId   String?
-  tenantId     String?   @db.ObjectId
-  details      String?   // JSON string of before/after changes
-  ipAddress    String?
-  userAgent    String?
-  status       String    @default("SUCCESS")
-  createdAt    DateTime  @default(now())
+  actorId      String  @db.ObjectId
+  actor        User    @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  changes   String? // JSON: before/after values
+  ipAddress String?
+  userAgent String?
+  status    String // SUCCESS, FAILED
+
+  createdAt DateTime @default(now())
+}
+
+model RoleChangeAudit {
+  id       String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String     @db.ObjectId
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleId   String     @db.ObjectId
+  role     TenantRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  action String // CREATED, UPDATED, DELETED
+
+  previousPermissions String? // JSON
+  newPermissions      String? // JSON
+
+  changedBy String   @db.ObjectId
+  changedAt DateTime @default(now())
 }
 
 model SystemSettings {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  key             String   @unique
-  value           String   // JSON or string value
-  description     String?
-  isPublic        Boolean  @default(false)
-  updatedBy       String?  @db.ObjectId
-  updatedAt       DateTime @updatedAt
-  createdAt       DateTime @default(now())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  value       String // JSON or string value
+  description String?
+  isPublic    Boolean  @default(false)
+  updatedBy   String?  @db.ObjectId
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 }

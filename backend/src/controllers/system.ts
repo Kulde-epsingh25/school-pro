@@ -36,7 +36,8 @@ export async function updateSettings(req: Request, res: Response) {
 
     await db.$transaction(operations);
 
-    // Audit log
+    // Audit log (TODO: Implement SaaS global audit log)
+    /*
     await db.auditLog.create({
        data: {
          action: "UPDATE",
@@ -46,6 +47,7 @@ export async function updateSettings(req: Request, res: Response) {
          status: "SUCCESS"
        }
     });
+    */
 
     res.json({ message: "Settings updated successfully" });
   } catch (error) {

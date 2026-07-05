@@ -51,13 +51,11 @@ export const login = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        tenants: {
+        saasSuperAdmin: true,
+        tenantSuperAdmin: true,
+        tenantRoles: {
           include: {
-            roles: {
-              include: {
-                role: true
-              }
-            },
+            role: true,
             tenant: true
           }
         }
@@ -74,12 +72,31 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // 3. Extract Roles and Tenant Info
-    // If the user belongs to multiple tenants, we would handle tenant selection.
-    // For now, assume they belong to their primary tenant (the first one) or none.
-    const userTenant = user.tenants[0];
-    const roles = userTenant ? userTenant.roles.map(r => r.role.name.toLowerCase()) : [];
-    
-    // Additional check for globally defined SUPER_ADMIN if you want, but for now it's mapped per tenant.
+    let roles: string[] = [];
+    let schoolId: string | undefined = undefined;
+    let schoolName: string | undefined = undefined;
+
+    if (user.saasSuperAdmin) {
+      roles.push("saas_super_admin");
+    }
+
+    if (user.tenantSuperAdmin) {
+      // By definition a tenant super admin has super_admin rights for their tenant
+      roles.push("super_admin");
+      schoolId = user.tenantSuperAdmin.tenantId;
+      // Note: to get the name we'd need to fetch the tenant or include it in tenantSuperAdmin. 
+      // For now, if they also have a tenantRole, we can extract the name from there.
+    }
+
+    const userTenant = user.tenantRoles[0];
+    if (userTenant) {
+      roles.push(userTenant.role.name.toLowerCase());
+      schoolId = userTenant.tenant.id;
+      schoolName = userTenant.tenant.name;
+    }
+
+    // De-duplicate roles
+    roles = [...new Set(roles)];
 
     const mockAccessToken = "live_access_token_" + Date.now();
     const mockRefreshToken = "live_refresh_token_" + Date.now();
@@ -91,8 +108,8 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
         roles: roles,
-        schoolId: userTenant ? userTenant.tenant.id : undefined,
-        schoolName: userTenant ? userTenant.tenant.name : undefined
+        schoolId: schoolId,
+        schoolName: schoolName
       },
       accessToken: mockAccessToken,
       refreshToken: mockRefreshToken

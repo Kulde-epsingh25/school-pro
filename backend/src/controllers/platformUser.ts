@@ -5,30 +5,40 @@ export async function getPlatformUsers(req: Request, res: Response) {
   try {
     const users = await db.user.findMany({
       include: {
-        tenants: {
+        tenantRoles: {
           include: {
             tenant: true,
-            roles: {
-              include: {
-                role: true
-              }
-            }
+            role: true
           }
-        }
+        },
+        tenantSuperAdmin: {
+          include: { tenant: true }
+        },
+        saasSuperAdmin: true
       },
       orderBy: { createdAt: "desc" }
     });
 
     const formattedUsers = users.map((user: any) => {
       // Flattening the tenant/roles for the platform view
-      // Just taking the first tenant for simplicity of the table view, though a user can have many
-      const primaryTenant = user.tenants[0];
+      const primaryTenant = user.tenantRoles[0]?.tenant || user.tenantSuperAdmin?.tenant;
+      
+      let roles: string[] = [];
+      if (user.saasSuperAdmin) roles.push("SAAS_SUPER_ADMIN");
+      if (user.tenantSuperAdmin) roles.push("SUPER_ADMIN");
+      
+      if (user.tenantRoles.length > 0) {
+        roles.push(...user.tenantRoles.map((r: any) => r.role.name));
+      }
+
+      if (roles.length === 0) roles.push("USER");
+
       return {
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
-        tenant: primaryTenant ? primaryTenant.tenant.name : "System",
-        roles: primaryTenant ? primaryTenant.roles.map((r: any) => r.role.name) : ["USER"],
+        tenant: primaryTenant ? primaryTenant.name : "System",
+        roles: [...new Set(roles)],
         status: user.isActive ? "Active" : "Inactive"
       };
     });

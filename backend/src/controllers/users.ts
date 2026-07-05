@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const createUser = async (req: Request, res: Response) => {
-  const { email, firstName, lastName, phone, roleId, tenantId } = req.body;
+  const { email, firstName, lastName, phone, roleId, tenantId, assignedBy } = req.body;
 
   try {
     // Check if user already exists
@@ -28,25 +28,19 @@ export const createUser = async (req: Request, res: Response) => {
       }
     });
 
-    // 2. Map User to Tenant
-    const userTenant = await prisma.userTenant.create({
-      data: {
-        userId: user.id,
-        tenantId
-      }
-    });
-
-    // 3. Assign Role if provided
-    if (roleId) {
-      await prisma.userRole.create({
+    // 2. Map User to Tenant Role
+    if (roleId && tenantId) {
+      await prisma.tenantUserRole.create({
         data: {
-          userTenantId: userTenant.id,
-          roleId
+          userId: user.id,
+          tenantId,
+          roleId,
+          assignedBy: assignedBy || user.id // Default to self if not provided
         }
       });
     }
 
-    // 4. Generate the "Magic Link" token
+    // 3. Generate the "Magic Link" token
     const verificationToken = Buffer.from(`${user.id}:${tenantId}`).toString('base64');
     const magicLink = `https://school-pro-mocha-beta.vercel.app/auth/verify?token=${verificationToken}`;
 
@@ -81,27 +75,33 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 
   try {
-    const users = await prisma.userTenant.findMany({
+    const userRoles = await prisma.tenantUserRole.findMany({
       where: { tenantId },
       include: {
         user: true,
-        roles: {
-          include: {
-            role: true
-          }
-        }
+        role: true
       }
     });
 
-    const formattedUsers = users.map(ut => ({
-      id: ut.user.id,
-      firstName: ut.user.firstName,
-      lastName: ut.user.lastName,
-      email: ut.user.email,
-      phone: ut.user.phone,
-      isActive: ut.user.isActive,
-      roles: ut.roles.map(r => r.role.name)
-    }));
+    // A user might have multiple roles, so let's group them by user
+    const userMap = new Map();
+
+    for (const ur of userRoles) {
+      if (!userMap.has(ur.user.id)) {
+        userMap.set(ur.user.id, {
+          id: ur.user.id,
+          firstName: ur.user.firstName,
+          lastName: ur.user.lastName,
+          email: ur.user.email,
+          phone: ur.user.phone,
+          isActive: ur.user.isActive,
+          roles: []
+        });
+      }
+      userMap.get(ur.user.id).roles.push(ur.role.name);
+    }
+
+    const formattedUsers = Array.from(userMap.values());
 
     res.status(200).json(formattedUsers);
   } catch (error) {
