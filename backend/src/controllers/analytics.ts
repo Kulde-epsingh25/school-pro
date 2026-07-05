@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
-import { prisma } from "../db";
+import { db } from "../db";
 
 export async function getDashboardMetrics(req: Request, res: Response) {
   try {
-    const totalTenants = await prisma.tenant.count();
-    const totalUsers = await prisma.user.count({ where: { isActive: true } });
+    const totalTenants = await db.tenant.count();
+    const totalUsers = await db.user.count({ where: { isActive: true } });
     
     // Simulate revenue by summing up active subscriptions
-    const activeSubs = await prisma.subscription.findMany({
+    const activeSubs = await db.subscription.findMany({
       where: { status: "ACTIVE" }
     });
-    const monthlyRevenue = activeSubs.reduce((acc, sub) => acc + sub.amount, 0);
+    const monthlyRevenue = activeSubs.reduce((acc: number, sub: any) => acc + sub.amount, 0);
 
-    const recentLogs = await prisma.auditLog.findMany({
+    const recentLogs = await db.auditLog.findMany({
       take: 5,
       orderBy: { createdAt: "desc" }
     });

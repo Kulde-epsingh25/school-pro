@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { prisma } from "../db";
+import { db } from "../db";
 
 export async function getSettings(req: Request, res: Response) {
   try {
-    const settings = await prisma.systemSettings.findMany({
+    const settings = await db.systemSettings.findMany({
       orderBy: { key: "asc" }
     });
     res.json(settings);
@@ -22,8 +22,8 @@ export async function updateSettings(req: Request, res: Response) {
     }
 
     // Perform upserts for all settings
-    const operations = settings.map(setting => 
-      prisma.systemSettings.upsert({
+    const operations = settings.map((setting: any) => 
+      db.systemSettings.upsert({
         where: { key: setting.key },
         update: { value: setting.value },
         create: { 
@@ -34,10 +34,10 @@ export async function updateSettings(req: Request, res: Response) {
       })
     );
 
-    await prisma.$transaction(operations);
+    await db.$transaction(operations);
 
     // Audit log
-    await prisma.auditLog.create({
+    await db.auditLog.create({
        data: {
          action: "UPDATE",
          resourceType: "SETTINGS",

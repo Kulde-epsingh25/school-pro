@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { prisma } from "../db";
+import { db } from "../db";
 
 export async function getPlatformUsers(req: Request, res: Response) {
   try {
-    const users = await prisma.user.findMany({
+    const users = await db.user.findMany({
       include: {
         tenants: {
           include: {
@@ -19,7 +19,7 @@ export async function getPlatformUsers(req: Request, res: Response) {
       orderBy: { createdAt: "desc" }
     });
 
-    const formattedUsers = users.map(user => {
+    const formattedUsers = users.map((user: any) => {
       // Flattening the tenant/roles for the platform view
       // Just taking the first tenant for simplicity of the table view, though a user can have many
       const primaryTenant = user.tenants[0];
@@ -28,7 +28,7 @@ export async function getPlatformUsers(req: Request, res: Response) {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         tenant: primaryTenant ? primaryTenant.tenant.name : "System",
-        roles: primaryTenant ? primaryTenant.roles.map(r => r.role.name) : ["USER"],
+        roles: primaryTenant ? primaryTenant.roles.map((r: any) => r.role.name) : ["USER"],
         status: user.isActive ? "Active" : "Inactive"
       };
     });
