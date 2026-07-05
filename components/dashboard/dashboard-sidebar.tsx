@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/collapsible";
 import Logo from "@/components/frontend/logo";
 import { useSchoolStore } from "@/store/schoolStore";
+import { getNavData } from "./data";
 
 export interface DashboardSidebarProps {
   user: {
@@ -58,34 +59,15 @@ export interface DashboardSidebarProps {
     email: string;
     avatar: string;
   };
-  teams: {
-    name: string;
-    logo?: LucideIcon;
-    plan: string;
-  }[];
-  navMain: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
+  roles: string[];
 }
 
 export function DashboardSidebar({
   user = { name: "Guest", email: "", avatar: "" },
-  teams = [],
-  navMain = [],
-  projects = [],
+  roles = [],
 }: DashboardSidebarProps) {
+  const navData = getNavData(roles);
+  const { teams, navMain, projects } = navData;
   const [activeTeam, setActiveTeam] = React.useState(teams[0] || null);
   const school = useSchoolStore((state) => state.school);
 

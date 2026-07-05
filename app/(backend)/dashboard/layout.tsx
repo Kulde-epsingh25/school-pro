@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { data, getNavData } from "@/components/dashboard/data";
 import { getServerUser } from "@/actions/auth";
 
 export default async function DashboardLayout({ children }: {
@@ -18,17 +17,13 @@ export default async function DashboardLayout({ children }: {
     roles: user?.roles || ["teacher"] // Default role during load or if missing
   };
 
-  const navData = getNavData(sessionUser.roles);
-
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Sidebar */}
         <DashboardSidebar 
           user={sessionUser}
-          teams={navData.teams}
-          navMain={navData.navMain}
-          projects={navData.projects}
+          roles={sessionUser.roles}
         />
 
         {/* Main Content */}

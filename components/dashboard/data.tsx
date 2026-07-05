@@ -1,4 +1,3 @@
-"use client"
 import { AudioWaveform, Command, ClipboardList, DollarSign, Frame, GraduationCap, LayoutDashboard, Map, PieChart, Settings2, Users, ShieldAlert } from "lucide-react";
 
 export const data = {
