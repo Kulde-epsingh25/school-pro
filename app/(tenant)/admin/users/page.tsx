@@ -61,7 +61,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/users?tenantId=${school?.id}`);
+      const res = await fetch(`\/users?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -75,7 +75,7 @@ export default function UsersPage() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/roles?tenantId=${school?.id}`);
+      const res = await fetch(`\/roles?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setRoles(data);
@@ -89,7 +89,7 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:8000/users`, {
+      const res = await fetch(`\/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -120,7 +120,7 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:8000/users/${selectedUser.id}?tenantId=${school?.id}`, {
+      const res = await fetch(`\/users/${selectedUser.id}?tenantId=${school?.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -149,7 +149,7 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:8000/users/${selectedUser.id}/roles?tenantId=${school?.id}`, {
+      const res = await fetch(`\/users/${selectedUser.id}/roles?tenantId=${school?.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ export default function UsersPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm("Are you sure you want to remove this user from the organization?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/users/${userId}?tenantId=${school?.id}`, {
+      const res = await fetch(`\/users/${userId}?tenantId=${school?.id}`, {
         method: "DELETE"
       });
       if (res.ok) {

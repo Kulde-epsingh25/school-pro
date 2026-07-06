@@ -33,7 +33,7 @@ export default function SaaSAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`http://localhost:8000/audit/saas?${queryParams.toString()}`);
+      const res = await fetch(`\/audit/saas?${queryParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);

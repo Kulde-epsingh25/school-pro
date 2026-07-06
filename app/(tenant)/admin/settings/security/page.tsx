@@ -26,7 +26,7 @@ export default function SecuritySettingsPage() {
   const fetchSharedAccess = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/security/shared-access?tenantId=${school?.id}`);
+      const res = await fetch(`\/security/shared-access?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setSharedWith(data.sharedWith || []);
@@ -57,7 +57,7 @@ export default function SecuritySettingsPage() {
   const handleSave = async () => {
     try {
       setIsSubmitting(true);
-      const res = await fetch(`http://localhost:8000/security/shared-access?tenantId=${school?.id}`, {
+      const res = await fetch(`\/security/shared-access?tenantId=${school?.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sharedWith })

@@ -38,7 +38,7 @@ export default function TenantAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`http://localhost:8000/audit?${queryParams.toString()}`);
+      const res = await fetch(`\/audit?${queryParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
