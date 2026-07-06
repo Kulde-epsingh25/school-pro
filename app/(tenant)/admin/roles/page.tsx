@@ -54,7 +54,7 @@ export default function RolesPage() {
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`\/roles?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setRoles(data);
@@ -68,7 +68,7 @@ export default function RolesPage() {
 
   const fetchPermissions = async () => {
     try {
-      const res = await fetch(`\/roles/permissions?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/permissions?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setPermissions(data);
@@ -83,8 +83,8 @@ export default function RolesPage() {
     setIsSubmitting(true);
     try {
       const url = formData.id 
-        ? `\/roles/${formData.id}?tenantId=${school?.id}`
-        : `\/roles`;
+        ? `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/${formData.id}?tenantId=${school?.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles`;
       const method = formData.id ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -122,7 +122,7 @@ export default function RolesPage() {
   const handleDeleteRole = async (roleId: string) => {
     if (!confirm("Are you sure you want to delete this role?")) return;
     try {
-      const res = await fetch(`\/roles/${roleId}?tenantId=${school?.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/${roleId}?tenantId=${school?.id}`, {
         method: "DELETE",
         headers: { "x-user-id": "placeholder-user-id" } // In real app, attach actual user ID
       });

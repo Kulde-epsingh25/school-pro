@@ -33,7 +33,7 @@ export default function SaaSAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`\/audit/saas?${queryParams.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/audit/saas?${queryParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
