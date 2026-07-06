@@ -35,7 +35,10 @@ export default function UsersPage() {
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isManageRolesModalOpen, setIsManageRolesModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -113,6 +116,110 @@ export default function UsersPage() {
     }
   };
 
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`http://localhost:8000/users/${selectedUser.id}?tenantId=${school?.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone
+        })
+      });
+
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to update user");
+      }
+    } catch (error) {
+      console.error("Error updating user", error);
+      alert("Error updating user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateRoles = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`http://localhost:8000/users/${selectedUser.id}/roles?tenantId=${school?.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roleIds: formData.roleId.split(',').filter(Boolean)
+        })
+      });
+
+      if (res.ok) {
+        setIsManageRolesModalOpen(false);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to update roles");
+      }
+    } catch (error) {
+      console.error("Error updating roles", error);
+      alert("Error updating roles");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to remove this user from the organization?")) return;
+    try {
+      const res = await fetch(`http://localhost:8000/users/${userId}?tenantId=${school?.id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to remove user");
+      }
+    } catch (error) {
+      console.error("Error removing user", error);
+      alert("Error removing user");
+    }
+  };
+
+  const openEditModal = (user: any) => {
+    setSelectedUser(user);
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone || "",
+      roleId: ""
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const openManageRolesModal = (user: any) => {
+    setSelectedUser(user);
+    setFormData({
+      ...formData,
+      roleId: user.roles.map((r: any) => r.id).join(',')
+    });
+    setIsManageRolesModalOpen(true);
+  };
+
+  const toggleRole = (id: string) => {
+    const currentRoles = formData.roleId ? formData.roleId.split(',') : [];
+    if (currentRoles.includes(id)) {
+      setFormData({ ...formData, roleId: currentRoles.filter(r => r !== id).join(',') });
+    } else {
+      setFormData({ ...formData, roleId: [...currentRoles, id].join(',') });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -177,9 +284,9 @@ export default function UsersPage() {
                     </div>
                     <div className="col-span-3">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles.map((role: string) => (
-                          <Badge key={role} variant="outline" className="bg-primary/5 text-xs font-normal">
-                            {role.replace('_', ' ')}
+                        {user.roles.map((role: any) => (
+                          <Badge key={role.id} variant="outline" className="bg-primary/5 text-xs font-normal">
+                            {role.name.replace('_', ' ')}
                           </Badge>
                         ))}
                         {user.roles.length === 0 && <span className="text-muted-foreground text-xs italic">No roles</span>}
@@ -198,9 +305,9 @@ export default function UsersPage() {
                           </Button>
                         } />
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Edit Details</DropdownMenuItem>
-                          <DropdownMenuItem>Manage Roles</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Deactivate</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditModal(user)}>Edit Details</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openManageRolesModal(user)}>Manage Roles</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleRemoveUser(user.id)}>Deactivate / Remove</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -283,6 +390,72 @@ export default function UsersPage() {
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Inviting..." : "Send Invitation"}
               </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Details</DialogTitle>
+            <DialogDescription>
+              Update the user's personal information.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditUser} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">First Name <span className="text-red-500">*</span></label>
+                <Input required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Last Name <span className="text-red-500">*</span></label>
+                <Input required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email Address (Cannot be changed)</label>
+              <Input type="email" disabled value={formData.email} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone Number</label>
+              <Input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            </div>
+            <DialogFooter className="pt-4 border-t mt-6">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Updating..." : "Save Changes"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isManageRolesModalOpen} onOpenChange={setIsManageRolesModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Roles for {selectedUser?.firstName}</DialogTitle>
+            <DialogDescription>
+              Assign or remove roles for this user in the organization.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateRoles} className="space-y-4 mt-4">
+            <div className="space-y-3">
+              {roles.map(role => {
+                const isSelected = formData.roleId ? formData.roleId.split(',').includes(role.id) : false;
+                return (
+                  <label key={role.id} className="flex items-start gap-3 p-3 rounded border hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" className="mt-1 w-4 h-4 text-primary" checked={isSelected} onChange={() => toggleRole(role.id)} />
+                    <div>
+                      <div className="font-medium text-sm">{role.displayName}</div>
+                      <div className="text-xs text-muted-foreground">{role.description || "No description"}</div>
+                    </div>
+                  </label>
+                );
+              })}
+              {roles.length === 0 && <div className="text-sm text-muted-foreground">No roles available in this organization.</div>}
+            </div>
+            <DialogFooter className="pt-4 border-t mt-6">
+              <Button type="button" variant="outline" onClick={() => setIsManageRolesModalOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save Roles"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -12,9 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSchoolStore } from "@/store/schoolStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 
-export default function SaaSAuditPage() {
+export default function TenantAuditPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -22,24 +23,28 @@ export default function SaaSAuditPage() {
     resourceType: "ALL"
   });
 
+  const school = useSchoolStore((state) => state.school);
+
   useEffect(() => {
-    fetchLogs();
-  }, [filters]);
+    if (school?.id) {
+      fetchLogs();
+    }
+  }, [school?.id, filters]);
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const queryParams = new URLSearchParams();
+      const queryParams = new URLSearchParams({ tenantId: school?.id || '' });
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`http://localhost:8000/audit/saas?${queryParams.toString()}`);
+      const res = await fetch(`http://localhost:8000/audit?${queryParams.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
       }
     } catch (error) {
-      console.error("Failed to fetch SaaS audit logs:", error);
+      console.error("Failed to fetch audit logs:", error);
     } finally {
       setLoading(false);
     }
@@ -58,7 +63,7 @@ export default function SaaSAuditPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Global Audit Logs"
+        title="Audit Logs"
         count={logs.length}
       />
 
@@ -66,8 +71,8 @@ export default function SaaSAuditPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
-              <CardTitle>Global Activity</CardTitle>
-              <CardDescription>Track changes across all tenants in the platform.</CardDescription>
+              <CardTitle>System Activity</CardTitle>
+              <CardDescription>Track changes and access across the organization.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val }))}>
@@ -94,7 +99,6 @@ export default function SaaSAuditPage() {
                   <SelectItem value="ROLE">Role</SelectItem>
                   <SelectItem value="DEPARTMENT">Department</SelectItem>
                   <SelectItem value="PERMISSION">Permission</SelectItem>
-                  <SelectItem value="TENANT">Tenant</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -102,7 +106,7 @@ export default function SaaSAuditPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading global audit logs...</div>
+            <div className="py-8 text-center text-muted-foreground">Loading audit logs...</div>
           ) : logs.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground flex flex-col items-center">
               <History className="w-12 h-12 text-slate-200 mb-2" />
@@ -111,32 +115,27 @@ export default function SaaSAuditPage() {
           ) : (
             <div className="rounded-md border">
               <div className="grid grid-cols-12 gap-4 p-4 font-semibold text-sm border-b bg-slate-50 text-slate-600">
-                <div className="col-span-2">Date & Time</div>
-                <div className="col-span-3">Tenant</div>
-                <div className="col-span-2">Actor</div>
+                <div className="col-span-3">Date & Time</div>
+                <div className="col-span-3">Actor</div>
                 <div className="col-span-2">Action</div>
-                <div className="col-span-3">Details</div>
+                <div className="col-span-4">Details</div>
               </div>
               <div className="divide-y">
                 {logs.map((log) => (
                   <div key={log.id} className="grid grid-cols-12 gap-4 p-4 items-center text-sm hover:bg-slate-50 transition-colors">
-                    <div className="col-span-2 text-slate-500 text-xs">
+                    <div className="col-span-3 text-slate-500 text-xs">
                       {new Date(log.createdAt).toLocaleString()}
                     </div>
                     <div className="col-span-3">
-                      <div className="font-medium text-slate-900 truncate">
-                        {log.tenant?.name || 'System / Unassigned'}
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <div className="font-medium text-slate-900 truncate">
+                      <div className="font-medium text-slate-900">
                         {log.actor?.firstName} {log.actor?.lastName}
                       </div>
+                      <div className="text-xs text-muted-foreground">{log.actor?.email}</div>
                     </div>
                     <div className="col-span-2">
                       {getActionBadge(log.action)}
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-4">
                       <div className="font-medium text-slate-700">{log.resourceType}</div>
                       {log.changes && (
                         <div className="text-xs text-muted-foreground truncate max-w-full mt-1" title={log.changes}>

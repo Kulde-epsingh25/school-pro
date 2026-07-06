@@ -27,6 +27,7 @@ export default function RolesPage() {
   
   // Form State
   const [formData, setFormData] = useState({
+    id: "",
     name: "",
     displayName: "",
     description: "",
@@ -70,14 +71,20 @@ export default function RolesPage() {
     }
   };
 
-  const handleCreateRole = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:8000/roles`, {
-        method: "POST",
+      const url = formData.id 
+        ? `http://localhost:8000/roles/${formData.id}?tenantId=${school?.id}`
+        : `http://localhost:8000/roles`;
+      const method = formData.id ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-user-id": "placeholder-user-id" // Replace with real ID
         },
         body: JSON.stringify({
           tenantId: school?.id,
@@ -91,18 +98,50 @@ export default function RolesPage() {
 
       if (res.ok) {
         setIsCreateModalOpen(false);
-        setFormData({ name: "", displayName: "", description: "", color: "#3b82f6", selectedPermissions: [] });
+        setFormData({ id: "", name: "", displayName: "", description: "", color: "#3b82f6", selectedPermissions: [] });
         fetchRoles(); // Refresh the list
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to create role");
+        alert(err.error || `Failed to ${formData.id ? 'update' : 'create'} role`);
       }
     } catch (error) {
-      console.error("Error creating role", error);
-      alert("Error creating role");
+      console.error(`Error ${formData.id ? 'updating' : 'creating'} role`, error);
+      alert(`Error ${formData.id ? 'updating' : 'creating'} role`);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    if (!confirm("Are you sure you want to delete this role?")) return;
+    try {
+      const res = await fetch(`http://localhost:8000/roles/${roleId}?tenantId=${school?.id}`, {
+        method: "DELETE",
+        headers: { "x-user-id": "placeholder-user-id" } // In real app, attach actual user ID
+      });
+      if (res.ok) {
+        fetchRoles();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to delete role");
+      }
+    } catch (error) {
+      console.error("Error deleting role", error);
+      alert("Error deleting role");
+    }
+  };
+
+  const openEditModal = (role: any) => {
+    // Basic implementation for now, should populate form data
+    setFormData({
+      id: role.id,
+      name: role.name,
+      displayName: role.displayName,
+      description: role.description || "",
+      color: role.color || "#3b82f6",
+      selectedPermissions: role.permissions?.map((p: any) => p.permissionId) || []
+    });
+    setIsCreateModalOpen(true);
   };
 
   const togglePermission = (id: string) => {
@@ -114,12 +153,24 @@ export default function RolesPage() {
     }));
   };
 
-  // Group permissions by subject
+  // Group permissions by subject and action
   const groupedPermissions = permissions.reduce((acc: any, p: any) => {
-    if (!acc[p.subject]) acc[p.subject] = [];
-    acc[p.subject].push(p);
+    if (!acc[p.subject]) acc[p.subject] = {};
+    if (!acc[p.subject][p.action]) acc[p.subject][p.action] = [];
+    acc[p.subject][p.action].push(p);
     return acc;
   }, {});
+
+  const handleScopeChange = (subject: string, action: string, newPermissionId: string) => {
+    const actionPermIds = groupedPermissions[subject][action].map((p: any) => p.id);
+    setFormData(prev => {
+      const filtered = prev.selectedPermissions.filter(id => !actionPermIds.includes(id));
+      if (newPermissionId !== "NONE") {
+        filtered.push(newPermissionId);
+      }
+      return { ...prev, selectedPermissions: filtered };
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -127,7 +178,10 @@ export default function RolesPage() {
         title="Roles & Permissions"
         count={roles.length}
         addLabel="Create Role"
-        onAdd={() => setIsCreateModalOpen(true)}
+        onAdd={() => {
+          setFormData({ id: "", name: "", displayName: "", description: "", color: "#3b82f6", selectedPermissions: [] });
+          setIsCreateModalOpen(true);
+        }}
       />
 
       <Card>
@@ -181,10 +235,10 @@ export default function RolesPage() {
                         {role.permissions?.length || 0} Permissions
                       </span>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="h-8 w-8">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openEditModal(role)}>
                           <Edit2 className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                        <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteRole(role.id)}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
@@ -200,13 +254,15 @@ export default function RolesPage() {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New Role</DialogTitle>
+            <DialogTitle>{formData.id ? "Edit Role" : "Create New Role"}</DialogTitle>
             <DialogDescription>
-              Define a new role and configure its specific permissions within the organization.
+              {formData.id 
+                ? "Modify the existing role details and update its permissions."
+                : "Define a new role and configure its specific permissions within the organization."}
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleCreateRole} className="space-y-6 mt-4">
+          <form onSubmit={handleSubmit} className="space-y-6 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Display Name <span className="text-red-500">*</span></label>
@@ -268,30 +324,27 @@ export default function RolesPage() {
                       <h5 className="font-semibold text-sm capitalize mb-3 text-slate-800 border-b pb-2">
                         {subject.toLowerCase()} Management
                       </h5>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {perms.map((p: any) => {
-                          const isSelected = formData.selectedPermissions.includes(p.id);
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(perms as Record<string, any[]>).map(([action, scopes]) => {
+                          // Find which scope is selected
+                          const selectedPerm = scopes.find(p => formData.selectedPermissions.includes(p.id));
+                          const currentValue = selectedPerm ? selectedPerm.id : "NONE";
+
                           return (
-                            <label 
-                              key={p.id} 
-                              className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors border ${
-                                isSelected ? 'bg-primary/5 border-primary/20' : 'hover:bg-slate-100 border-transparent'
-                              }`}
-                            >
-                              <div className="mt-0.5">
-                                <input 
-                                  type="checkbox" 
-                                  className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
-                                  checked={isSelected}
-                                  onChange={() => togglePermission(p.id)}
-                                />
-                              </div>
-                              <div className="flex flex-col">
-                                <span className={`text-xs font-medium ${isSelected ? 'text-primary' : 'text-slate-700'}`}>
-                                  {p.action}
-                                </span>
-                              </div>
-                            </label>
+                            <div key={action} className="flex flex-col gap-1.5 p-3 bg-white rounded border">
+                              <label className="text-xs font-semibold text-slate-700">{action}</label>
+                              <Select value={currentValue} onValueChange={(val) => handleScopeChange(subject, action, val)}>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Select Scope" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="NONE" className="text-xs text-muted-foreground">None</SelectItem>
+                                  {scopes.map(p => (
+                                    <SelectItem key={p.id} value={p.id} className="text-xs">{p.scope.replace('_', ' ')}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           );
                         })}
                       </div>
@@ -306,7 +359,7 @@ export default function RolesPage() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting || formData.selectedPermissions.length === 0}>
-                {isSubmitting ? "Creating..." : "Create Role"}
+                {isSubmitting ? (formData.id ? "Updating..." : "Creating...") : (formData.id ? "Update Role" : "Create Role")}
               </Button>
             </DialogFooter>
           </form>

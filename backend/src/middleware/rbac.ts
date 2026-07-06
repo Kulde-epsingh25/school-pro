@@ -47,16 +47,22 @@ export const requirePermission = (action: string, subject: string) => {
         }
       });
 
+      // Scope precedence: ALL > DEPARTMENT > OWN_ONLY
+      const scopeRank: Record<string, number> = { "ALL": 3, "DEPARTMENT": 2, "OWN_ONLY": 1 };
+      
+      let highestScope: string | null = null;
       let hasPermission = false;
+
       for (const assignment of userRoleAssignments) {
         for (const rolePerm of assignment.role.permissions) {
           const p = rolePerm.permission;
           if (p.action === action && p.subject === subject) {
             hasPermission = true;
-            break;
+            if (!highestScope || scopeRank[p.scope] > scopeRank[highestScope]) {
+              highestScope = p.scope;
+            }
           }
         }
-        if (hasPermission) break;
       }
 
       if (!hasPermission) {
@@ -66,6 +72,7 @@ export const requirePermission = (action: string, subject: string) => {
         });
       }
 
+      (req as any).permissionScope = highestScope;
       next();
     } catch (error) {
       console.error("[RBAC Error]", error);

@@ -65,16 +65,19 @@ export async function createTenant(req: Request, res: Response) {
       const defaultSubjects = ["USERS", "ROLES", "FEES", "CLASSES", "STUDENTS", "SETTINGS", "REPORTS", "DEPARTMENTS", "SUBJECTS"];
       const defaultActions = ["CREATE", "READ", "UPDATE", "DELETE"];
       
+      const defaultScopes = ["ALL", "DEPARTMENT", "OWN_ONLY"];
       const permissionsToCreate = [];
       for (const subject of defaultSubjects) {
         for (const action of defaultActions) {
-          permissionsToCreate.push({
-            tenantId: tenant.id,
-            action,
-            subject,
-            scope: "ALL",
-            description: `Can ${action.toLowerCase()} ${subject.toLowerCase()}`
-          });
+          for (const scope of defaultScopes) {
+            permissionsToCreate.push({
+              tenantId: tenant.id,
+              action,
+              subject,
+              scope,
+              description: `Can ${action.toLowerCase()} ${subject.toLowerCase()} (${scope.toLowerCase()})`
+            });
+          }
         }
       }
 
