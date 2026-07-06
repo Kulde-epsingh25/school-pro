@@ -3,12 +3,14 @@ import { redirect } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { getServerUser } from "@/actions/auth";
+import { getServerSchool, getServerUser } from "@/actions/auth";
+import { SessionHydrator } from "@/components/auth/session-hydrator";
 
 export default async function DashboardLayout({ children }: {
   children: ReactNode;
 }) {
   const user = await getServerUser();
+  const school = await getServerSchool();
 
   const sessionUser = {
     name: user?.name || "Loading...",
@@ -19,6 +21,7 @@ export default async function DashboardLayout({ children }: {
 
   return (
     <SidebarProvider>
+      <SessionHydrator user={user} school={school} />
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Sidebar */}
         <DashboardSidebar 
