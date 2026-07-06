@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useSchoolStore } from "@/store/schoolStore";
 
 interface Stream {
   id: string;
@@ -30,14 +31,18 @@ export default function ClassesPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const school = useSchoolStore((state) => state.school);
+
   useEffect(() => {
-    fetchClasses();
-  }, []);
+    if (school?.id) {
+      fetchClasses();
+    }
+  }, [school?.id]);
 
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`);
       if (res.ok) {
         const data = await res.json();
         setClasses(data);
@@ -55,7 +60,7 @@ export default function ClassesPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newClassName }),
+        body: JSON.stringify({ name: newClassName, tenantId: school?.id }),
       });
       if (res.ok) {
         toast.success("Class created");
@@ -76,7 +81,7 @@ export default function ClassesPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/streams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newStreamName, classId: selectedClass.id }),
+        body: JSON.stringify({ name: newStreamName, classId: selectedClass.id, tenantId: school?.id }),
       });
       if (res.ok) {
         toast.success("Stream added");

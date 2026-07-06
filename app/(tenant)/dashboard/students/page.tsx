@@ -18,14 +18,20 @@ export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const school = useSchoolStore((state) => state.school);
+
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    if (school?.id) {
+      fetchStudents();
+    }
+  }, [school?.id]);
 
   const fetchStudents = async (query?: string) => {
     try {
       setLoading(true);
-      const url = query ? `${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com")}/students?search=${encodeURIComponent(query)}` : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students`;
+      const url = query 
+        ? `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}&search=${encodeURIComponent(query)}` 
+        : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

@@ -61,7 +61,9 @@ export default function NewStudentPage() {
   const [selectedParentData, setSelectedParentData] = useState<any | null>(null);
 
   useEffect(() => {
-    fetchData();
+    if (school?.id) {
+      fetchData();
+    }
     // Simulate fetching the sequence from /students/sequence API
     const mockSeq = 1;
     setSequenceNo(mockSeq);
@@ -75,8 +77,8 @@ export default function NewStudentPage() {
   const fetchData = async () => {
     try {
       const [parentsRes, classesRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`).catch(() => null),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`).catch(() => null)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents?tenantId=${school?.id}`).catch(() => null),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`).catch(() => null)
       ]);
       
       if (parentsRes && parentsRes.ok) {
@@ -134,10 +136,11 @@ export default function NewStudentPage() {
     try {
       setParentLoading(true);
       // Simulate saving parent and getting full parent object back
+      const payload = { ...parentForm, tenantId: school?.id };
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parentForm),
+        body: JSON.stringify(payload),
       }).catch(() => null);
 
       let newParent;
@@ -178,6 +181,7 @@ export default function NewStudentPage() {
         ...formData,
         schoolId: school?.id || "N/A",
         schoolName: school?.name || "N/A",
+        tenantId: school?.id
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students`, {

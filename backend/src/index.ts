@@ -13,6 +13,9 @@ import analyticsRouter from "./routes/analytics";
 import saasRouter from "./routes/saas";
 import auditRouter from "./routes/audit";
 import securityRouter from "./routes/security";
+import classesRouter from "./routes/classes";
+import studentsRouter from "./routes/students";
+import parentsRouter from "./routes/parents";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -39,6 +42,9 @@ app.use("/security", securityRouter);
 app.use("/", schoolRouter);
 app.use("/academics", academicsRouter);
 app.use("/finance", financeRouter);
+app.use("/classes", classesRouter);
+app.use("/students", studentsRouter);
+app.use("/parents", parentsRouter);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
