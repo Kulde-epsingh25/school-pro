@@ -93,8 +93,9 @@ export default function LoginV2() {
       // Set client Zustand state
       useAuthStore.getState().setAuth(user, accessToken);
       
-      // Populate Global School Data
-      if (!roles.includes("super_admin") && user.schoolId) {
+      // Populate school context whenever the backend provides a tenant school ID.
+      // Tenant super admins still need this for tenant-scoped pages like roles and classes.
+      if (user.schoolId) {
         useSchoolStore.getState().setSchool({
           id: user.schoolId,
           name: user.schoolName || "School Pro Academy",

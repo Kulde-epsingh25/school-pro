@@ -59,11 +59,11 @@ export async function logOut() {
 
 export async function getServerSchool() {
   const user = await getServerUser();
-  if (!user || user.roles?.includes("super_admin") || user.roles?.includes("saas_super_admin")) {
+  if (!user?.schoolId) {
     return null;
   }
   return {
-    id: user.schoolId || null,
+    id: user.schoolId,
     name: user.schoolName || null,
   };
 }

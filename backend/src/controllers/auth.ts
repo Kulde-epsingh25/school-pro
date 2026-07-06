@@ -52,7 +52,11 @@ export const login = async (req: Request, res: Response) => {
       where: { email },
       include: {
         saasSuperAdmin: true,
-        tenantSuperAdmin: true,
+        tenantSuperAdmin: {
+          include: {
+            tenant: true
+          }
+        },
         tenantRoles: {
           include: {
             role: true,
@@ -84,8 +88,7 @@ export const login = async (req: Request, res: Response) => {
       // By definition a tenant super admin has super_admin rights for their tenant
       roles.push("super_admin");
       schoolId = user.tenantSuperAdmin.tenantId;
-      // Note: to get the name we'd need to fetch the tenant or include it in tenantSuperAdmin. 
-      // For now, if they also have a tenantRole, we can extract the name from there.
+      schoolName = user.tenantSuperAdmin.tenant?.name;
     }
 
     const userTenant = user.tenantRoles[0];
