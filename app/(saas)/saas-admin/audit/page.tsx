@@ -70,7 +70,7 @@ export default function SaaSAuditPage() {
               <CardDescription>Track changes across all tenants in the platform.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val }))}>
+              <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val as string }))}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Action" />
@@ -84,7 +84,7 @@ export default function SaaSAuditPage() {
                 </SelectContent>
               </Select>
               
-              <Select value={filters.resourceType} onValueChange={(val) => setFilters(prev => ({ ...prev, resourceType: val }))}>
+              <Select value={filters.resourceType} onValueChange={(val) => setFilters(prev => ({ ...prev, resourceType: val as string }))}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Resource" />
                 </SelectTrigger>

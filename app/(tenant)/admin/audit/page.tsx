@@ -75,7 +75,7 @@ export default function TenantAuditPage() {
               <CardDescription>Track changes and access across the organization.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val }))}>
+              <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val as string }))}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Action" />
@@ -89,7 +89,7 @@ export default function TenantAuditPage() {
                 </SelectContent>
               </Select>
               
-              <Select value={filters.resourceType} onValueChange={(val) => setFilters(prev => ({ ...prev, resourceType: val }))}>
+              <Select value={filters.resourceType} onValueChange={(val) => setFilters(prev => ({ ...prev, resourceType: val as string }))}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Resource" />
                 </SelectTrigger>
