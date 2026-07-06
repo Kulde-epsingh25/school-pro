@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function RolesPage() {
@@ -43,6 +44,7 @@ export default function RolesPage() {
   });
 
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (school?.id) {
@@ -54,7 +56,9 @@ export default function RolesPage() {
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`, {
+        headers: { "x-user-id": user?.id || "" }
+      });
       if (res.ok) {
         const data = await res.json();
         setRoles(data);
@@ -68,7 +72,9 @@ export default function RolesPage() {
 
   const fetchPermissions = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/permissions?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/permissions?tenantId=${school?.id}`, {
+        headers: { "x-user-id": user?.id || "" }
+      });
       if (res.ok) {
         const data = await res.json();
         setPermissions(data);
@@ -91,7 +97,7 @@ export default function RolesPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": "placeholder-user-id" // Replace with real ID
+          "x-user-id": user?.id || ""
         },
         body: JSON.stringify({
           tenantId: school?.id,
@@ -124,7 +130,7 @@ export default function RolesPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/${roleId}?tenantId=${school?.id}`, {
         method: "DELETE",
-        headers: { "x-user-id": "placeholder-user-id" } // In real app, attach actual user ID
+        headers: { "x-user-id": user?.id || "" }
       });
       if (res.ok) {
         fetchRoles();
