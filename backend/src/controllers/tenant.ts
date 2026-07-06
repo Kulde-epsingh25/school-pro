@@ -24,13 +24,14 @@ export async function createTenant(req: Request, res: Response) {
   try {
     const { name, schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
     const finalName = name || schoolName;
+    const finalDomain = domain && domain.trim() !== "" ? domain.trim() : undefined;
 
     const tenantResult = await db.$transaction(async (tx) => {
       // 1. Create the tenant
       const tenant = await tx.tenant.create({
         data: {
           name: finalName,
-          domain,
+          domain: finalDomain,
           subscription: {
             create: {
               plan: plan || "starter",
