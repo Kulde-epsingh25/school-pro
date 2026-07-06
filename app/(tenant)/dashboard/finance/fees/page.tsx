@@ -1,11 +1,13 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Plus, Download, Upload, Calendar as CalendarIcon, Filter, Eye, MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function FinanceFeesPage() {
+  const user = useAuthStore((state) => state.user);
   const [fees, setFees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

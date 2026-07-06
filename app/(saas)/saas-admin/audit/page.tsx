@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Search, History, Filter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import {
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function SaaSAuditPage() {
+  const user = useAuthStore((state) => state.user);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({

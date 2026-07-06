@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
@@ -22,6 +23,7 @@ interface Tenant {
 }
 
 export default function TenantsPage() {
+  const user = useAuthStore((state) => state.user);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
 

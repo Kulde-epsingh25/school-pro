@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,6 +35,7 @@ interface TenantDetail {
 }
 
 export default function TenantDetailsPage() {
+  const user = useAuthStore((state) => state.user);
   const params = useParams();
   const router = useRouter();
   const tenantId = params.id as string;

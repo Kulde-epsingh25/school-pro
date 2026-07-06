@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
@@ -17,6 +18,7 @@ interface PlatformUser {
 }
 
 export default function UsersPage() {
+  const user = useAuthStore((state) => state.user);
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [loading, setLoading] = useState(true);
 

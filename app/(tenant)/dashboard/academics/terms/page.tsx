@@ -1,11 +1,13 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Plus, X, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function AcademicPeriodsPage() {
+  const user = useAuthStore((state) => state.user);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isActiveToggle, setIsActiveToggle] = useState(true);
   

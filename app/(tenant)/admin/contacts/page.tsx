@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { useAuthStore } from "@/store/authStore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Globe, Users, Briefcase, Calendar, Building, MoreHorizontal, ArrowUpDown } from "lucide-react";
@@ -25,6 +26,7 @@ interface Contact {
 }
 
 export default function AdminContactsPage() {
+  const user = useAuthStore((state) => state.user);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ interface AccountDetails {
 }
 
 export default function AccountPage() {
+  const user = useAuthStore((state) => state.user);
   const [account, setAccount] = useState<AccountDetails | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -104,7 +106,7 @@ export default function AccountPage() {
   const handleRevoke = async (email: string) => {
     if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share/${encodeURIComponent(email, { headers: { "x-user-id": user?.id || "" } })}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share/${encodeURIComponent(email)}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`

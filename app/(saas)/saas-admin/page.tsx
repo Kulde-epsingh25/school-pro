@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Activity, DollarSign, Loader2 } from "lucide-react";
@@ -27,6 +28,7 @@ interface AnalyticsData {
 }
 
 export default function SuperAdminDashboard() {
+  const user = useAuthStore((state) => state.user);
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 

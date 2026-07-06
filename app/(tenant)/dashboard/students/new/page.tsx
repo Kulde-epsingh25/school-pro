@@ -79,8 +79,8 @@ export default function NewStudentPage() {
   const fetchData = async () => {
     try {
       const [parentsRes, classesRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents?tenantId=${school?.id}`).catch(() => null, { headers: { "x-user-id": user?.id || "" } }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`).catch(() => null, { headers: { "x-user-id": user?.id || "" } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } }).catch(() => null),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } }).catch(() => null)
       ]);
       
       if (parentsRes && parentsRes.ok) {

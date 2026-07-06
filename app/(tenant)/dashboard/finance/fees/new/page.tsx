@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ interface FeeItem {
 }
 
 export default function NewSchoolFeePage() {
+  const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const [feeItems, setFeeItems] = useState<FeeItem[]>([
     { id: "1", title: "", amount: "" }
