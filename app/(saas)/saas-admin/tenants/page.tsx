@@ -28,7 +28,7 @@ export default function TenantsPage() {
   useEffect(() => {
     async function fetchTenants() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`, { headers: { "x-user-id": user?.id || "" } });
         if (res.ok) {
           const data = await res.json();
           setTenants(data);

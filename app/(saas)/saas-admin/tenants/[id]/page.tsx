@@ -46,7 +46,7 @@ export default function TenantDetailsPage() {
   const fetchTenant = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/tenants/${tenantId}`, {
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });
@@ -72,7 +72,7 @@ export default function TenantDetailsPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/tenants/${tenantId}/suspend`, {
         method: "PUT",
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
       });

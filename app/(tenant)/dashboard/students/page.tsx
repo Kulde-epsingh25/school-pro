@@ -19,6 +19,7 @@ export default function StudentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (school?.id) {
@@ -32,7 +33,7 @@ export default function StudentsPage() {
       const url = query 
         ? `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}&search=${encodeURIComponent(query)}` 
         : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         const data = await res.json();
         setStudents(data);

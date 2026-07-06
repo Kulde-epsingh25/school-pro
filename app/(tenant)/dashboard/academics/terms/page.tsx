@@ -20,7 +20,7 @@ export default function AcademicPeriodsPage() {
 
   const fetchTerms = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`, { headers: { "x-user-id": user?.id || "" } });
       const data = await res.json();
       setTerms(data);
     } catch (error) {
@@ -43,7 +43,7 @@ export default function AcademicPeriodsPage() {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify({
           name: termName,
           year: year,

@@ -10,10 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 import { generateRegistrationNumber, generateRollNumber } from "@/lib/registrationUtils";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 
 export default function NewStudentPage() {
   const router = useRouter();
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [parents, setParents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -77,8 +79,8 @@ export default function NewStudentPage() {
   const fetchData = async () => {
     try {
       const [parentsRes, classesRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents?tenantId=${school?.id}`).catch(() => null),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`).catch(() => null)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents?tenantId=${school?.id}`).catch(() => null, { headers: { "x-user-id": user?.id || "" } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`).catch(() => null, { headers: { "x-user-id": user?.id || "" } })
       ]);
       
       if (parentsRes && parentsRes.ok) {
@@ -139,7 +141,7 @@ export default function NewStudentPage() {
       const payload = { ...parentForm, tenantId: school?.id };
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }).catch(() => null);
 
@@ -186,7 +188,7 @@ export default function NewStudentPage() {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 

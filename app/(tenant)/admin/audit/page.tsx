@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function TenantAuditPage() {
@@ -24,6 +25,7 @@ export default function TenantAuditPage() {
   });
 
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (school?.id) {
@@ -38,7 +40,7 @@ export default function TenantAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/audit?${queryParams.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/audit?${queryParams.toString()}`, { headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         const data = await res.json();
         setLogs(data);

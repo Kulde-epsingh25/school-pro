@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function SecuritySettingsPage() {
@@ -16,6 +17,7 @@ export default function SecuritySettingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (school?.id) {
@@ -26,7 +28,7 @@ export default function SecuritySettingsPage() {
   const fetchSharedAccess = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/security/shared-access?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/security/shared-access?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         const data = await res.json();
         setSharedWith(data.sharedWith || []);
@@ -59,7 +61,7 @@ export default function SecuritySettingsPage() {
       setIsSubmitting(true);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/security/shared-access?tenantId=${school?.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify({ sharedWith })
       });
       

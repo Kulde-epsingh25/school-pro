@@ -33,7 +33,7 @@ export default function AccountPage() {
   const fetchAccount = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { "x-user-id": user?.id || "", Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       if (res.ok) setAccount(await res.json());
     } catch (err) {
@@ -54,7 +54,7 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/password`, {
         method: "PUT",
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         },
@@ -82,7 +82,7 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share`, {
         method: "POST",
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         },
@@ -104,7 +104,7 @@ export default function AccountPage() {
   const handleRevoke = async (email: string) => {
     if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share/${encodeURIComponent(email)}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share/${encodeURIComponent(email, { headers: { "x-user-id": user?.id || "" } })}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`

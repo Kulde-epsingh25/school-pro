@@ -10,7 +10,7 @@ export default function FinancePaymentsPage() {
 
   const fetchPayments = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/payments`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/payments`, { headers: { "x-user-id": user?.id || "" } });
       const data = await res.json();
       setPayments(data);
     } catch (error) {

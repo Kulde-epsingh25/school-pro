@@ -11,7 +11,7 @@ export default function FinanceFeesPage() {
 
   const fetchFees = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/fees`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/fees`, { headers: { "x-user-id": user?.id || "" } });
       const data = await res.json();
       setFees(data);
     } catch (error) {

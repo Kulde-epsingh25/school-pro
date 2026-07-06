@@ -45,7 +45,7 @@ export default function NewTenantPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`, {
         method: "POST",
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),

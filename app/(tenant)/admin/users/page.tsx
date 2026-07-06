@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function UsersPage() {
@@ -50,6 +51,7 @@ export default function UsersPage() {
   });
 
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (school?.id) {
@@ -61,7 +63,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -75,7 +77,7 @@ export default function UsersPage() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         const data = await res.json();
         setRoles(data);
@@ -91,7 +93,7 @@ export default function UsersPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users`, {
         method: "POST",
-        headers: {
+        headers: { "x-user-id": user?.id || "",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -122,7 +124,7 @@ export default function UsersPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${selectedUser.id}?tenantId=${school?.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -151,7 +153,7 @@ export default function UsersPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${selectedUser.id}/roles?tenantId=${school?.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
         body: JSON.stringify({
           roleIds: formData.roleId.split(',').filter(Boolean)
         })
@@ -177,7 +179,7 @@ export default function UsersPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${userId}?tenantId=${school?.id}`, {
         method: "DELETE"
-      });
+      , headers: { "x-user-id": user?.id || "" } });
       if (res.ok) {
         fetchUsers();
       } else {
