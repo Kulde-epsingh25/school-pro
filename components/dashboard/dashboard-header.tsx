@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Building2, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +16,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logOut } from "@/actions/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useSchoolStore } from "@/store/schoolStore";
+import { apiClient } from "@/lib/api-client";
 
 export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [tenants, setTenants] = React.useState<any[]>([]);
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
+  const { school, setSchool } = useSchoolStore();
+
+  React.useEffect(() => {
+    // Only fetch tenants if we are in the tenant route
+    if (pathname?.includes("/admin") || pathname?.includes("/teacher") || pathname?.includes("/student")) {
+      apiClient.get<any[]>("/users/me/tenants").then(res => {
+        if (res.ok && res.data) {
+          setTenants(res.data);
+          // If no school is set but we have tenants, set the first one
+          if (!school && res.data.length > 0) {
+            setSchool(res.data[0]);
+          }
+        }
+      });
+    }
+  }, [pathname]);
 
   const handleLogout = async () => {
     await logOut();
@@ -40,6 +61,37 @@ export function DashboardHeader() {
           className="max-w-sm"
         />
       </div>
+
+      {tenants.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={
+            <Button variant="outline" className="flex gap-2">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden md:inline-block max-w-[150px] truncate">
+                {school?.name || "Select School"}
+              </span>
+            </Button>
+          } />
+          <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuLabel>Switch Organization</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {tenants.map(t => (
+              <DropdownMenuItem 
+                key={t.id} 
+                onClick={() => {
+                  setSchool(t);
+                  window.location.reload(); // Hard reload to clear all tenant-specific state safely
+                }}
+                className="justify-between"
+              >
+                <span className="truncate">{t.name}</span>
+                {school?.id === t.id && <Check className="h-4 w-4 opacity-50" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
       <Button variant="outline" size="icon">
         <span className="sr-only">Toggle theme</span>
         <Sun className="h-5 w-5" />

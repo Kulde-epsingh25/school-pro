@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Key, Users, Trash2 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 interface AccountDetails {
   user: {
@@ -34,10 +35,8 @@ export default function AccountPage() {
 
   const fetchAccount = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account`, {
-        headers: { "x-user-id": user?.id || "", Authorization: `Bearer ${localStorage.getItem("token")}` }
-      });
-      if (res.ok) setAccount(await res.json());
+      const res = await apiClient.get<AccountDetails>("/saas/account");
+      if (res.ok && res.data) setAccount(res.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -54,21 +53,14 @@ export default function AccountPage() {
     setIsUpdatingPassword(true);
     setPasswordMsg({ text: "", type: "" });
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/password`, {
-        method: "PUT",
-        headers: { "x-user-id": user?.id || "",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
+      const res = await apiClient.put("/saas/account/password", { currentPassword, newPassword });
+      
       if (res.ok) {
         setPasswordMsg({ text: "Password updated successfully.", type: "success" });
         setCurrentPassword("");
         setNewPassword("");
       } else {
-        const err = await res.json();
-        setPasswordMsg({ text: err.error || "Failed to update password.", type: "error" });
+        setPasswordMsg({ text: res.error || "Failed to update password.", type: "error" });
       }
     } catch (err) {
       setPasswordMsg({ text: "An error occurred.", type: "error" });
@@ -82,19 +74,12 @@ export default function AccountPage() {
     if (!shareEmail) return;
     setIsSharing(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share`, {
-        method: "POST",
-        headers: { "x-user-id": user?.id || "",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ email: shareEmail })
-      });
+      const res = await apiClient.post("/saas/account/share", { email: shareEmail });
       if (res.ok) {
         setShareEmail("");
         fetchAccount();
       } else {
-        alert("Failed to share account");
+        alert(res.error || "Failed to share account");
       }
     } catch (err) {
       alert("Error sharing account");
@@ -106,16 +91,11 @@ export default function AccountPage() {
   const handleRevoke = async (email: string) => {
     if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/account/share/${encodeURIComponent(email)}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const res = await apiClient.delete(`/saas/account/share/${encodeURIComponent(email)}`);
       if (res.ok) {
         fetchAccount();
       } else {
-        alert("Failed to revoke access.");
+        alert(res.error || "Failed to revoke access.");
       }
     } catch (err) {
       alert("Error revoking access.");

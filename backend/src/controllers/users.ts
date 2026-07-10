@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TenantRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { createUserSchema } from "../schemas/user";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -7,6 +10,9 @@ export const createUser = async (req: Request, res: Response) => {
   const { email, firstName, lastName, phone, roleId, tenantId, assignedBy } = req.body;
 
   try {
+    const validated = createUserSchema.parse(req.body);
+    const { email, firstName, lastName, phone, roleId, tenantId, assignedBy } = validated;
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -17,14 +23,17 @@ export const createUser = async (req: Request, res: Response) => {
     }
 
     // 1. Create the user with pending status
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash("Password123!", saltRounds);
+
     const user = await prisma.user.create({
       data: {
         email,
-        password: "Password123!", // DEBUG: Bypassing email verification for now
+        password: hashedPassword, 
         firstName,
         lastName,
         phone,
-        isActive: true // DEBUG: Auto-activating account
+        isActive: false 
       }
     });
 
@@ -61,7 +70,10 @@ export const createUser = async (req: Request, res: Response) => {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation failed", details: (error as any).errors });
+    }
     console.error('[API Error in createUser (users.ts)]', error);
     res.status(500).json({ error: "Failed to create user" });
   }
@@ -202,6 +214,15 @@ export const updateUserRoles = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Role conflict detection logic
+    const roles = await prisma.tenantRole.findMany({
+      where: { id: { in: roleIds } }
+    });
+    const isSuperAdmin = roles.some((r: TenantRole) => r.name === "SUPER_ADMIN");
+    if (isSuperAdmin && roles.length > 1) {
+      return res.status(400).json({ error: "SUPER_ADMIN role cannot be combined with other roles. Please assign only SUPER_ADMIN." });
+    }
+
     await prisma.$transaction(async (prisma) => {
       // Remove all existing roles for this user in this tenant
       await prisma.tenantUserRole.deleteMany({
@@ -250,5 +271,41 @@ export const removeUserFromTenant = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('[API Error in removeUserFromTenant]', error);
     res.status(500).json({ error: "Failed to remove user from tenant" });
+  }
+};
+
+export const getMyTenants = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+    const userId = user.id;
+
+    // A user can be in a tenant via TenantUserRole or TenantSuperAdmin
+    const [roles, superAdmins] = await Promise.all([
+      prisma.tenantUserRole.findMany({
+        where: { userId },
+        include: { tenant: true }
+      }),
+      prisma.tenantSuperAdmin.findMany({
+        where: { userId },
+        include: { tenant: true }
+      })
+    ]);
+
+    const tenantMap = new Map();
+    
+    roles.forEach(r => {
+      if (r.tenant) tenantMap.set(r.tenantId, r.tenant);
+    });
+
+    superAdmins.forEach(sa => {
+      if (sa.tenant) tenantMap.set(sa.tenantId, sa.tenant);
+    });
+
+    res.status(200).json(Array.from(tenantMap.values()));
+  } catch (error) {
+    console.error('[API Error in getMyTenants]', error);
+    res.status(500).json({ error: "Failed to fetch user tenants" });
   }
 };

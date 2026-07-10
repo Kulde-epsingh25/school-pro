@@ -1,26 +1,35 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
-// In a real application, this would decode a JWT. 
-// For this prototype, we'll assume the frontend sends the userId in headers.
-export const tenantIsolation = async (req: Request, res: Response, next: NextFunction) => {
+export const tenantIsolation = async (
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
-    
-    // We also expect the tenantId to be provided, either in the URL params, query, or body
-    // However, some routes (like global SaaS routes) might not have a tenantId.
-    const requestedTenantId = req.params.tenantId || req.query.tenantId || req.body.tenantId;
-
-    if (!userId) {
-      // If no user is authenticated, we might let it pass if it's a public route,
-      // but assuming this middleware is applied to protected routes:
-      return res.status(401).json({ error: "Unauthorized: Missing user ID" });
+    // 1. Extract token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: "Unauthorized: Missing token" 
+      });
     }
 
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    // 2. Verify JWT token
+    const payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    
+    if (!payload.userId) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // 3. Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: payload.userId },
       include: {
         saasSuperAdmin: true,
         tenantSuperAdmin: { select: { tenantId: true } },
@@ -28,21 +37,22 @@ export const tenantIsolation = async (req: Request, res: Response, next: NextFun
       }
     });
 
-    if (!user) {
-      return res.status(401).json({ error: "Unauthorized: User not found" });
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: "User not found or inactive" });
     }
 
-    // Attach user to request for downstream use
+    // 4. Attach user to request
     (req as any).user = user;
+    (req as any).userId = user.id;
 
     // SaaS Super Admins bypass tenant isolation completely
     if (user.saasSuperAdmin) {
       return next();
     }
 
-    // If the route doesn't specify a tenantId, we can't enforce isolation here.
-    // Downstream controllers must handle it, OR we reject if tenantId is missing.
-    // For now, we'll enforce that if a tenantId IS provided, the user must belong to it.
+    // 6. For tenant-specific routes, verify access
+    const requestedTenantId = req.params.tenantId || req.query.tenantId;
+    
     if (requestedTenantId) {
       const authorizedTenantIds = new Set<string>();
       
@@ -54,17 +64,30 @@ export const tenantIsolation = async (req: Request, res: Response, next: NextFun
         authorizedTenantIds.add(tr.tenantId);
       });
 
-      if (!authorizedTenantIds.has(requestedTenantId)) {
+      if (!authorizedTenantIds.has(requestedTenantId as string)) {
         return res.status(403).json({ 
-          error: "Forbidden: You do not have access to this tenant's data",
-          code: "TENANT_ISOLATION_VIOLATION" 
+          error: "Forbidden: No access to this tenant",
+          code: "TENANT_ISOLATION_VIOLATION"
         });
       }
     }
 
     next();
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: "Token expired",
+        code: "TOKEN_EXPIRED"
+      });
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        error: "Invalid token" 
+      });
+    }
+
     console.error("[Tenant Isolation Error]", error);
-    res.status(500).json({ error: "Internal server error during isolation check" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

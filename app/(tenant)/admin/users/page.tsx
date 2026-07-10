@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Plus, Search, Users, MoreHorizontal, Mail, ShieldAlert } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Plus, Search, Users, MoreHorizontal, Mail, ShieldAlert, Download, Trash2, ShieldOff } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { apiClient } from "@/lib/api-client";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -41,6 +42,11 @@ export default function UsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   
+  // New features state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     firstName: "",
@@ -63,10 +69,10 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data);
+      const res = await apiClient.get<any[]>(`/users`);
+      if (res.ok && res.data) {
+        setUsers(res.data);
+        setSelectedUsers([]);
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -77,10 +83,9 @@ export default function UsersPage() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setRoles(data);
+      const res = await apiClient.get<any[]>(`/roles`);
+      if (res.ok && res.data) {
+        setRoles(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch roles:", error);
@@ -91,24 +96,14 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users`, {
-        method: "POST",
-        headers: { "x-user-id": user?.id || "",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          tenantId: school?.id,
-          ...formData
-        })
-      });
+      const res = await apiClient.post(`/users`, formData);
 
       if (res.ok) {
         setIsCreateModalOpen(false);
         setFormData({ firstName: "", lastName: "", email: "", phone: "", roleId: "" });
         fetchUsers(); // Refresh the list
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to create user");
+        alert(res.error || "Failed to create user");
       }
     } catch (error) {
       console.error("Error creating user", error);
@@ -122,22 +117,17 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${selectedUser.id}?tenantId=${school?.id}`, {
-        method: "PUT",
-        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone
-        })
+      const res = await apiClient.put(`/users/${selectedUser.id}`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone
       });
 
       if (res.ok) {
         setIsEditModalOpen(false);
         fetchUsers();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to update user");
+        alert(res.error || "Failed to update user");
       }
     } catch (error) {
       console.error("Error updating user", error);
@@ -151,20 +141,15 @@ export default function UsersPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${selectedUser.id}/roles?tenantId=${school?.id}`, {
-        method: "PUT",
-        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roleIds: formData.roleId.split(',').filter(Boolean)
-        })
+      const res = await apiClient.put(`/users/${selectedUser.id}/roles`, {
+        roleIds: formData.roleId.split(',').filter(Boolean)
       });
 
       if (res.ok) {
         setIsManageRolesModalOpen(false);
         fetchUsers();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to update roles");
+        alert(res.error || "Failed to update roles");
       }
     } catch (error) {
       console.error("Error updating roles", error);
@@ -177,19 +162,55 @@ export default function UsersPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm("Are you sure you want to remove this user from the organization?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users/${userId}?tenantId=${school?.id}`, {
-        method: "DELETE"
-      , headers: { "x-user-id": user?.id || "" } });
+      const res = await apiClient.delete(`/users/${userId}`);
       if (res.ok) {
         fetchUsers();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to remove user");
+        alert(res.error || "Failed to remove user");
       }
     } catch (error) {
       console.error("Error removing user", error);
       alert("Error removing user");
     }
+  };
+
+  const handleBulkRemove = async () => {
+    if (!confirm(`Are you sure you want to remove ${selectedUsers.length} users?`)) return;
+    setIsBulkDeleting(true);
+    try {
+      for (const id of selectedUsers) {
+        await apiClient.delete(`/users/${id}`);
+      }
+      fetchUsers();
+    } catch (error) {
+      alert("An error occurred during bulk removal");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const exportCsv = () => {
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Roles", "Status"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredUsers.map(u => [
+        `"${u.firstName}"`,
+        `"${u.lastName}"`,
+        `"${u.email}"`,
+        `"${u.phone || ''}"`,
+        `"${u.roles.map((r:any) => r.name).join(", ")}"`,
+        u.isActive ? "Active" : "Pending"
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `users_export_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const openEditModal = (user: any) => {
@@ -222,6 +243,29 @@ export default function UsersPage() {
     }
   };
 
+  const toggleUserSelection = (id: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(id) ? prev.filter(userId => userId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map(u => u.id));
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => {
+      const q = searchQuery.toLowerCase();
+      return u.firstName.toLowerCase().includes(q) || 
+             u.lastName.toLowerCase().includes(q) || 
+             u.email.toLowerCase().includes(q);
+    });
+  }, [users, searchQuery]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -233,18 +277,39 @@ export default function UsersPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <CardTitle>Organization Users</CardTitle>
               <CardDescription>Manage staff accounts and their assigned roles.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
+              {selectedUsers.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={
+                    <Button variant="outline" className="text-muted-foreground border-dashed">
+                      Bulk Actions ({selectedUsers.length})
+                    </Button>
+                  } />
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-destructive" onClick={handleBulkRemove} disabled={isBulkDeleting}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {isBulkDeleting ? "Removing..." : "Remove Selected"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <Button variant="outline" onClick={exportCsv} disabled={filteredUsers.length === 0}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search users by name or email..."
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-[250px] lg:w-[300px]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
@@ -257,19 +322,35 @@ export default function UsersPage() {
             <div className="py-8 text-center text-muted-foreground">
               No users found. Invite a new user to get started.
             </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              No users matching your search.
+            </div>
           ) : (
-            <div className="rounded-md border">
-              <div className="grid grid-cols-12 gap-4 p-4 font-semibold text-sm border-b bg-slate-50 text-slate-600">
-                <div className="col-span-4">User</div>
-                <div className="col-span-3">Contact</div>
-                <div className="col-span-3">Roles</div>
-                <div className="col-span-1 text-center">Status</div>
-                <div className="col-span-1 text-right">Actions</div>
+            <div className="rounded-md border overflow-x-auto">
+              <div className="min-w-[800px] grid grid-cols-[auto_4fr_3fr_3fr_1fr_1fr] gap-4 p-4 font-semibold text-sm border-b bg-slate-50 text-slate-600 items-center">
+                <input 
+                  type="checkbox" 
+                  className="w-4 h-4 rounded text-primary border-slate-300"
+                  checked={selectedUsers.length > 0 && selectedUsers.length === filteredUsers.length}
+                  onChange={toggleSelectAll}
+                />
+                <div>User</div>
+                <div>Contact</div>
+                <div>Roles</div>
+                <div className="text-center">Status</div>
+                <div className="text-right">Actions</div>
               </div>
-              <div className="divide-y">
-                {users.map((user) => (
-                  <div key={user.id} className="grid grid-cols-12 gap-4 p-4 items-center text-sm hover:bg-slate-50 transition-colors">
-                    <div className="col-span-4 flex items-center gap-3">
+              <div className="divide-y min-w-[800px]">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="grid grid-cols-[auto_4fr_3fr_3fr_1fr_1fr] gap-4 p-4 items-center text-sm hover:bg-slate-50 transition-colors">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded text-primary border-slate-300"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => toggleUserSelection(user.id)}
+                    />
+                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                         {user.firstName[0]}{user.lastName[0]}
                       </div>
@@ -278,13 +359,13 @@ export default function UsersPage() {
                         <div className="text-xs text-muted-foreground">{user.email}</div>
                       </div>
                     </div>
-                    <div className="col-span-3 text-slate-600">
+                    <div className="text-slate-600">
                       <div className="flex items-center gap-1">
                         <Mail className="w-3.5 h-3.5 text-muted-foreground" /> {user.email}
                       </div>
                       {user.phone && <div className="text-xs text-muted-foreground mt-1">{user.phone}</div>}
                     </div>
-                    <div className="col-span-3">
+                    <div>
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((role: any) => (
                           <Badge key={role.id} variant="outline" className="bg-primary/5 text-xs font-normal">
@@ -294,12 +375,12 @@ export default function UsersPage() {
                         {user.roles.length === 0 && <span className="text-muted-foreground text-xs italic">No roles</span>}
                       </div>
                     </div>
-                    <div className="col-span-1 text-center">
+                    <div className="text-center">
                       <Badge variant="outline" className={user.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-amber-50 text-amber-600 border-amber-200"}>
                         {user.isActive ? "Active" : "Pending"}
                       </Badge>
                     </div>
-                    <div className="col-span-1 text-right">
+                    <div className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger render={
                           <Button variant="ghost" className="h-8 w-8 p-0">

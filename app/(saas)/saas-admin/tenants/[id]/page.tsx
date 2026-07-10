@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 interface TenantDetail {
   id: string;
@@ -47,15 +48,11 @@ export default function TenantDetailsPage() {
 
   const fetchTenant = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/tenants/${tenantId}`, {
-        headers: { "x-user-id": user?.id || "",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
-      if (res.ok) {
-        setTenant(await res.json());
+      const res = await apiClient.get<TenantDetail>(`/saas/tenants/${tenantId}`);
+      if (res.ok && res.data) {
+        setTenant(res.data);
       } else {
-        setError("Failed to fetch tenant details.");
+        setError(res.error || "Failed to fetch tenant details.");
       }
     } catch (err) {
       setError("An error occurred while fetching.");
@@ -72,16 +69,11 @@ export default function TenantDetailsPage() {
     if (!confirm(`Are you sure you want to ${tenant?.subscription?.status === "SUSPENDED" ? "resume" : "suspend"} this tenant?`)) return;
     setSuspending(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/saas/tenants/${tenantId}/suspend`, {
-        method: "PUT",
-        headers: { "x-user-id": user?.id || "",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const res = await apiClient.put(`/saas/tenants/${tenantId}/suspend`);
       if (res.ok) {
         fetchTenant();
       } else {
-        alert("Failed to toggle suspension.");
+        alert(res.error || "Failed to toggle suspension.");
       }
     } catch (err) {
       alert("Error occurred.");

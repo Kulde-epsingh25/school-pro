@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSchoolStore } from "@/store/schoolStore";
 import { Users, Loader2 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 export function CreateAdminForm({ onAdminCreated, roles }: { onAdminCreated: () => void, roles: any[] }) {
   const { school } = useSchoolStore();
@@ -35,20 +36,13 @@ export function CreateAdminForm({ onAdminCreated, roles }: { onAdminCreated: () 
     setError("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          tenantId: school.id,
-        }),
+      const response = await apiClient.post("/users", {
+        ...formData,
+        tenantId: school.id,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create user");
+        throw new Error(response.error || "Failed to create user");
       }
 
       setFormData({

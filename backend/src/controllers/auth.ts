@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { generateTokens } from "../utils/jwt";
+import { loginSchema } from "../schemas/user";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -26,10 +30,13 @@ export const setupPassword = async (req: Request, res: Response) => {
     }
 
     // 3. Update Password & Activate Account
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     await prisma.user.update({
       where: { id: userId },
       data: {
-        password: password, // In production, hash this with bcrypt!
+        password: hashedPassword,
         isActive: true
       }
     });
@@ -44,9 +51,10 @@ export const setupPassword = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
   try {
+    const validated = loginSchema.parse(req.body);
+    const { email, password } = validated;
+
     // 1. Find User by email
     const user = await prisma.user.findUnique({
       where: { email },
@@ -70,9 +78,16 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // 2. Verify Password (mock comparison for now, in prod use bcrypt)
-    if (user.password !== password) {
+    // 2. Verify Password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ 
+        error: "Account not verified. Check your email." 
+      });
     }
 
     // 3. Extract Roles and Tenant Info
@@ -101,8 +116,7 @@ export const login = async (req: Request, res: Response) => {
     // De-duplicate roles
     roles = [...new Set(roles)];
 
-    const mockAccessToken = "live_access_token_" + Date.now();
-    const mockRefreshToken = "live_refresh_token_" + Date.now();
+    const { accessToken, refreshToken } = generateTokens(user.id, schoolId);
 
     res.json({
       message: "Login successful",
@@ -114,11 +128,14 @@ export const login = async (req: Request, res: Response) => {
         schoolId: schoolId,
         schoolName: schoolName
       },
-      accessToken: mockAccessToken,
-      refreshToken: mockRefreshToken
+      accessToken: accessToken,
+      refreshToken: refreshToken
     });
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation failed", details: (error as any).errors });
+    }
     console.error('[API Error in auth.ts]', error);
     res.status(500).json({ error: "Failed to login" });
   }

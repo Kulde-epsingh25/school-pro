@@ -2,8 +2,9 @@
 
 import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
-import { Search, History, Filter } from "lucide-react";
+import { Search, History, Filter, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,9 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { apiClient } from "@/lib/api-client";
 
 export default function SaaSAuditPage() {
-  const user = useAuthStore((state) => state.user);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -35,10 +36,11 @@ export default function SaaSAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/audit/saas?${queryParams.toString()}`, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data);
+      const res = await apiClient.get<any[]>(`/audit/saas?${queryParams.toString()}`);
+      if (res.ok && res.data) {
+        setLogs(res.data);
+      } else {
+        console.error("Failed to fetch SaaS audit logs:", res.error);
       }
     } catch (error) {
       console.error("Failed to fetch SaaS audit logs:", error);
@@ -57,6 +59,30 @@ export default function SaaSAuditPage() {
     }
   };
 
+  const exportCsv = () => {
+    const headers = ["Date", "Tenant", "Actor Name", "Action", "Resource Type", "Changes"];
+    const csvContent = [
+      headers.join(","),
+      ...logs.map(log => [
+        `"${new Date(log.createdAt).toLocaleString()}"`,
+        `"${log.tenant?.name || 'System / Unassigned'}"`,
+        `"${log.actor?.firstName || ''} ${log.actor?.lastName || ''}"`,
+        `"${log.action}"`,
+        `"${log.resourceType}"`,
+        `"${(log.changes || '').replace(/"/g, '""')}"`
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `global_audit_logs_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -71,7 +97,11 @@ export default function SaaSAuditPage() {
               <CardTitle>Global Activity</CardTitle>
               <CardDescription>Track changes across all tenants in the platform.</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" onClick={exportCsv} disabled={logs.length === 0}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
               <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val as string }))}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="w-4 h-4 mr-2" />

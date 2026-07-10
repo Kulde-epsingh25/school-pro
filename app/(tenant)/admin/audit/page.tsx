@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, History, Filter } from "lucide-react";
+import { Search, History, Filter, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +16,7 @@ import {
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { apiClient } from "@/lib/api-client";
 
 export default function TenantAuditPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -40,10 +42,11 @@ export default function TenantAuditPage() {
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/audit?${queryParams.toString()}`, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data);
+      const res = await apiClient.get<any[]>(`/audit?${queryParams.toString()}`);
+      if (res.ok && res.data) {
+        setLogs(res.data);
+      } else {
+        console.error("Failed to fetch audit logs:", res.error);
       }
     } catch (error) {
       console.error("Failed to fetch audit logs:", error);
@@ -62,6 +65,30 @@ export default function TenantAuditPage() {
     }
   };
 
+  const exportCsv = () => {
+    const headers = ["Date", "Actor Name", "Actor Email", "Action", "Resource Type", "Changes"];
+    const csvContent = [
+      headers.join(","),
+      ...logs.map(log => [
+        `"${new Date(log.createdAt).toLocaleString()}"`,
+        `"${log.actor?.firstName || ''} ${log.actor?.lastName || ''}"`,
+        `"${log.actor?.email || ''}"`,
+        `"${log.action}"`,
+        `"${log.resourceType}"`,
+        `"${(log.changes || '').replace(/"/g, '""')}"`
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `audit_logs_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -76,7 +103,11 @@ export default function TenantAuditPage() {
               <CardTitle>System Activity</CardTitle>
               <CardDescription>Track changes and access across the organization.</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" onClick={exportCsv} disabled={logs.length === 0}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
               <Select value={filters.action} onValueChange={(val) => setFilters(prev => ({ ...prev, action: val as string }))}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="w-4 h-4 mr-2" />

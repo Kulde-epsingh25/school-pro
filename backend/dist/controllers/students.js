@@ -8,43 +8,106 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudents = exports.createStudent = exports.getParents = exports.createParent = void 0;
-const db_1 = require("../db");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const createParent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.createStudent = exports.getStudents = void 0;
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+const getStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { tenantId } = req.query;
+    if (!tenantId || typeof tenantId !== 'string') {
+        return res.status(400).json({ error: "Tenant ID is required" });
+    }
     try {
-        const data = req.body;
-        const parent = yield db_1.db.parent.create({ data });
-        res.status(201).json(parent);
-    }
-    catch (error) {
-        res.status(500).json({ error: "Failed to create parent" });
-    }
-});
-exports.createParent = createParent;
-const getParents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const parents = yield db_1.db.parent.findMany();
-        res.status(200).json(parents);
-    }
-    catch (error) {
-        res.status(500).json({ error: "Failed to fetch parents" });
-    }
-});
-exports.getParents = getParents;
-const createStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const data = req.body;
-        // Hash the password
-        const hashedPassword = yield bcryptjs_1.default.hash(data.password, 10);
-        const student = yield db_1.db.student.create({
-            data: Object.assign(Object.assign({}, data), { password: hashedPassword })
+        const students = yield prisma.studentProfile.findMany({
+            where: {
+                user: {
+                    tenantRoles: {
+                        some: {
+                            tenantId
+                        }
+                    }
+                }
+            },
+            include: {
+                user: true,
+                class: true,
+                stream: true
+            },
+            orderBy: {
+                user: {
+                    firstName: 'asc'
+                }
+            }
         });
-        res.status(201).json(student);
+        res.json(students);
+    }
+    catch (error) {
+        console.error("Error fetching students:", error);
+        res.status(500).json({ error: "Failed to fetch students" });
+    }
+});
+exports.getStudents = getStudents;
+const createStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { tenantId, firstName, lastName, email, gender, dob, classId, streamId, parentId } = req.body;
+    if (!tenantId || typeof tenantId !== 'string' || !firstName || !lastName || !email) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+    try {
+        const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            // Create Base User
+            const user = yield tx.user.create({
+                data: {
+                    email,
+                    firstName,
+                    lastName,
+                    password: "TempPassword123!", // Should be generated and emailed
+                    isActive: true
+                }
+            });
+            // Find "STUDENT" role for this tenant
+            let studentRole = yield tx.tenantRole.findFirst({
+                where: { tenantId, name: "STUDENT" }
+            });
+            if (!studentRole) {
+                // Fallback create if not exists
+                studentRole = yield tx.tenantRole.create({
+                    data: {
+                        tenantId,
+                        name: "STUDENT",
+                        displayName: "Student",
+                        description: "Default student role",
+                        createdBy: user.id
+                    }
+                });
+            }
+            // Assign role
+            yield tx.tenantUserRole.create({
+                data: {
+                    userId: user.id,
+                    tenantId,
+                    roleId: studentRole.id,
+                    assignedBy: user.id
+                }
+            });
+            // Create Student Profile
+            const studentProfile = yield tx.studentProfile.create({
+                data: {
+                    userId: user.id,
+                    gender,
+                    dob: dob ? new Date(dob) : null,
+                    classId: classId || null,
+                    streamId: streamId || null,
+                    parentId: parentId || null
+                },
+                include: {
+                    user: true,
+                    class: true,
+                    stream: true
+                }
+            });
+            return studentProfile;
+        }));
+        res.status(201).json(result);
     }
     catch (error) {
         console.error("Error creating student:", error);
@@ -52,19 +115,3 @@ const createStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.createStudent = createStudent;
-const getStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const students = yield db_1.db.student.findMany({
-            include: {
-                parent: true,
-                class: true,
-                stream: true
-            }
-        });
-        res.status(200).json(students);
-    }
-    catch (error) {
-        res.status(500).json({ error: "Failed to fetch students" });
-    }
-});
-exports.getStudents = getStudents;

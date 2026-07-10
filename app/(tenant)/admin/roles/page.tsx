@@ -25,6 +25,7 @@ import {
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { apiClient } from "@/lib/api-client";
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<any[]>([]);
@@ -56,12 +57,9 @@ export default function RolesPage() {
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles?tenantId=${school?.id}`, {
-        headers: { "x-user-id": user?.id || "" }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRoles(data);
+      const res = await apiClient.get<any[]>(`/roles`);
+      if (res.ok && res.data) {
+        setRoles(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch roles:", error);
@@ -72,12 +70,9 @@ export default function RolesPage() {
 
   const fetchPermissions = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/permissions?tenantId=${school?.id}`, {
-        headers: { "x-user-id": user?.id || "" }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPermissions(data);
+      const res = await apiClient.get<any[]>(`/roles/permissions`);
+      if (res.ok && res.data) {
+        setPermissions(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch permissions:", error);
@@ -88,34 +83,26 @@ export default function RolesPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const url = formData.id 
-        ? `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/${formData.id}?tenantId=${school?.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles`;
-      const method = formData.id ? "PUT" : "POST";
+      const endpoint = formData.id ? `/roles/${formData.id}` : `/roles`;
+      
+      const payload = {
+        name: formData.name,
+        displayName: formData.displayName,
+        description: formData.description,
+        color: formData.color,
+        permissionIds: formData.selectedPermissions
+      };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": user?.id || ""
-        },
-        body: JSON.stringify({
-          tenantId: school?.id,
-          name: formData.name,
-          displayName: formData.displayName,
-          description: formData.description,
-          color: formData.color,
-          permissionIds: formData.selectedPermissions
-        })
-      });
+      const res = formData.id 
+        ? await apiClient.put(endpoint, payload)
+        : await apiClient.post(endpoint, payload);
 
       if (res.ok) {
         setIsCreateModalOpen(false);
         setFormData({ id: "", name: "", displayName: "", description: "", color: "#3b82f6", selectedPermissions: [] });
         fetchRoles(); // Refresh the list
       } else {
-        const err = await res.json();
-        alert(err.error || `Failed to ${formData.id ? 'update' : 'create'} role`);
+        alert(res.error || `Failed to ${formData.id ? 'update' : 'create'} role`);
       }
     } catch (error) {
       console.error(`Error ${formData.id ? 'updating' : 'creating'} role`, error);
@@ -128,15 +115,11 @@ export default function RolesPage() {
   const handleDeleteRole = async (roleId: string) => {
     if (!confirm("Are you sure you want to delete this role?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/roles/${roleId}?tenantId=${school?.id}`, {
-        method: "DELETE",
-        headers: { "x-user-id": user?.id || "" }
-      });
+      const res = await apiClient.delete(`/roles/${roleId}`);
       if (res.ok) {
         fetchRoles();
       } else {
-        const err = await res.json();
-        alert(err.error || "Failed to delete role");
+        alert(res.error || "Failed to delete role");
       }
     } catch (error) {
       console.error("Error deleting role", error);
@@ -145,7 +128,6 @@ export default function RolesPage() {
   };
 
   const openEditModal = (role: any) => {
-    // Basic implementation for now, should populate form data
     setFormData({
       id: role.id,
       name: role.name,

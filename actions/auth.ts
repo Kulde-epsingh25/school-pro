@@ -14,6 +14,7 @@ export async function createServerSession(user: User, accessToken: string, refre
   cookieStore.set(ACCESS_TOKEN_KEY, accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 60 * 60,
     path: "/",
   });
@@ -22,6 +23,7 @@ export async function createServerSession(user: User, accessToken: string, refre
   cookieStore.set(REFRESH_TOKEN_KEY, refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
   });
@@ -30,6 +32,7 @@ export async function createServerSession(user: User, accessToken: string, refre
   cookieStore.set(USER_KEY, JSON.stringify(user), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
   });
@@ -48,6 +51,11 @@ export async function getServerUser(): Promise<User | null> {
   } catch (error) {
     return null;
   }
+}
+
+export async function getAccessToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(ACCESS_TOKEN_KEY)?.value || null;
 }
 
 export async function logOut() {
