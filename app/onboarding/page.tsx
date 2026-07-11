@@ -19,7 +19,19 @@ export default function OnboardingWizard() {
     logoBase64: ""
   });
 
-  const handleNext = () => setStep(s => Math.min(s + 1, 3));
+  const handleNext = () => {
+    if (step === 1 && !formData.schoolName.trim()) {
+      alert("Please provide the Official Institution Name.");
+      return;
+    }
+    if (step === 2) {
+      if (!formData.adminFirstName.trim() || !formData.adminLastName.trim() || !formData.adminEmail.trim()) {
+        alert("Please fill out all admin details (First Name, Last Name, and Email).");
+        return;
+      }
+    }
+    setStep(s => Math.min(s + 1, 3));
+  };
   const handlePrev = () => setStep(s => Math.max(s - 1, 1));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
