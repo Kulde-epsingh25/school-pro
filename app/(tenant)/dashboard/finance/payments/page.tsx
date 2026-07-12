@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Plus, Download, Upload, Calendar as CalendarIcon, Filter, Eye, MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api-client";
 
 export default function FinancePaymentsPage() {
   const user = useAuthStore((state) => state.user);

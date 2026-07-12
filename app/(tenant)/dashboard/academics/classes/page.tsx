@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
+import { apiClient } from "@/lib/api-client";
 
 interface Stream {
   id: string;
@@ -44,10 +45,9 @@ export default function ClassesPage() {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes?tenantId=${school?.id}`, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setClasses(data);
+      const res = await apiClient.get<ClassItem[]>("/classes");
+      if (res.ok && res.data) {
+        setClasses(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch classes:", error);
@@ -59,11 +59,7 @@ export default function ClassesPage() {
   const handleAddClass = async () => {
     if (!newClassName.trim()) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/classes`, {
-        method: "POST",
-        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newClassName, tenantId: school?.id }),
-      });
+      const res = await apiClient.post("/classes", { name: newClassName });
       if (res.ok) {
         toast.success("Class created");
         setNewClassName("");
@@ -80,18 +76,13 @@ export default function ClassesPage() {
   const handleAddStream = async () => {
     if (!selectedClass || !newStreamName.trim()) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/streams`, {
-        method: "POST",
-        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newStreamName, classId: selectedClass.id, tenantId: school?.id }),
-      });
-      if (res.ok) {
+      const res = await apiClient.post("/classes/streams", { name: newStreamName, classId: selectedClass.id });
+      if (res.ok && res.data) {
         toast.success("Stream added");
         setNewStreamName("");
         fetchClasses();
         // Update selected class streams locally
-        const newStream = await res.json();
-        setSelectedClass({ ...selectedClass, streams: [...selectedClass.streams, newStream] });
+        setSelectedClass({ ...selectedClass, streams: [...selectedClass.streams, res.data as Stream] });
       } else {
         toast.error("Failed to add stream");
       }

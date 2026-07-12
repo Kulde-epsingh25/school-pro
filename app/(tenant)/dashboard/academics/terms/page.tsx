@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, X, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiClient } from "@/lib/api-client";
 
 export default function AcademicPeriodsPage() {
   const user = useAuthStore((state) => state.user);
@@ -22,9 +23,10 @@ export default function AcademicPeriodsPage() {
 
   const fetchTerms = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`, { headers: { "x-user-id": user?.id || "" } });
-      const data = await res.json();
-      setTerms(data);
+      const res = await apiClient.get<any[]>("/academics/terms");
+      if (res.ok && res.data) {
+        setTerms(res.data);
+      }
     } catch (error) {
       console.error("Failed to fetch terms:", error);
     } finally {
@@ -43,19 +45,17 @@ export default function AcademicPeriodsPage() {
     }
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`, {
-        method: "POST",
-        headers: { "x-user-id": user?.id || "", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: termName,
-          year: year,
-          startDate: startDate,
-          endDate: endDate,
-          isActive: isActiveToggle
-        })
+      const res = await apiClient.post("/academics/terms", {
+        name: termName,
+        year: year,
+        startDate: startDate,
+        endDate: endDate,
+        isActive: isActiveToggle
       });
-      setIsModalOpen(false);
-      fetchTerms(); // Refresh the list
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchTerms(); // Refresh the list
+      }
     } catch (error) {
       console.error("Failed to add term:", error);
     }

@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { TableFilters } from "@/components/dashboard/table-filters";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { UserInfoModal } from "@/components/dashboard/user-info-modal";
+import { apiClient } from "@/lib/api-client";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);

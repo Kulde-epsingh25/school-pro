@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api-client";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 

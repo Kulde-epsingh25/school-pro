@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { apiClient } from "@/lib/api-client";
 
 import { generateRegistrationNumber, generateRollNumber } from "@/lib/registrationUtils";
 import { useSchoolStore } from "@/store/schoolStore";
