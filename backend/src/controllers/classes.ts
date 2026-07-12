@@ -14,7 +14,13 @@ export const getClasses = async (req: Request, res: Response) => {
     const classes = await prisma.class.findMany({
       where: { tenantId },
       include: {
-        streams: true,
+        streams: {
+          include: {
+            _count: {
+              select: { students: true }
+            }
+          }
+        },
         _count: {
           select: { students: true }
         }
@@ -43,7 +49,13 @@ export const createClass = async (req: Request, res: Response) => {
         tenantId
       },
       include: {
-        streams: true,
+        streams: {
+          include: {
+            _count: {
+              select: { students: true }
+            }
+          }
+        },
         _count: {
           select: { students: true }
         }
@@ -69,6 +81,11 @@ export const createStream = async (req: Request, res: Response) => {
       data: {
         name,
         classId
+      },
+      include: {
+        _count: {
+          select: { students: true }
+        }
       }
     });
 

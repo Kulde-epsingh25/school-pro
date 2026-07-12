@@ -13,6 +13,9 @@ import { apiClient } from "@/lib/api-client";
 interface Stream {
   id: string;
   name: string;
+  _count?: {
+    students: number;
+  };
 }
 
 interface ClassItem {
@@ -194,7 +197,7 @@ export default function ClassesPage() {
                     <p className="text-sm text-gray-500 mb-2">Class Teacher: Not assigned</p>
                     <div className="text-xs text-gray-500 flex items-center gap-1">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                      0 students
+                      {stream._count?.students || 0} students
                     </div>
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600">
