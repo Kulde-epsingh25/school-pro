@@ -42,7 +42,7 @@ export default function VerifyPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/auth/setup-password", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/auth/setup-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password })

@@ -74,7 +74,7 @@ export default function LoginV2() {
       } else if (roles.includes("super_admin")) {
         redirectUrl = "/dashboard";
       } else if (roles.includes("admin")) {
-        redirectUrl = "/dashboard/admin";
+        redirectUrl = "/admin";
       } else if (roles.includes("teacher")) {
         redirectUrl = "/dashboard/teacher";
       } else if (roles.includes("parent")) {

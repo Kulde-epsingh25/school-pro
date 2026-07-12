@@ -28,7 +28,7 @@ const app = (0, express_1.default)();
 const port = process.env.PORT || 8000;
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: ["https://school-pro-mocha-beta.vercel.app", process.env.FRONTEND_URL || "http://localhost:3000"],
     credentials: true
 }));
 app.use(express_1.default.json({ limit: "10mb" }));

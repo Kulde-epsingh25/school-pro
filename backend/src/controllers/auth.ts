@@ -1,12 +1,76 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { db } from "../db";
 import bcrypt from "bcryptjs";
 import { generateTokens } from "../utils/jwt";
 import { loginSchema } from "../schemas/user";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
+export const onboardSchool = async (req: Request, res: Response) => {
+  const { schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
+  const finalDomain = domain && domain.trim() !== "" ? domain.trim() : undefined;
 
+  try {
+    const result = await db.$transaction(async (tx) => {
+      // 1. Create the tenant
+      const tenant = await tx.tenant.create({
+        data: {
+          name: schoolName,
+          domain: finalDomain,
+          isMaster: true,
+          subscription: {
+            create: {
+              plan: plan || "starter",
+              status: "ACTIVE",
+              billingCycle: "MONTHLY",
+              amount: 99
+            }
+          }
+        }
+      });
+
+      // 2. Create the Admin User with pending status
+      const adminUser = await tx.user.create({
+        data: {
+          email: adminEmail,
+          password: "PENDING_VERIFICATION", 
+          firstName: adminFirstName,
+          lastName: adminLastName,
+          isActive: false
+        }
+      });
+
+      // 3. Set as Tenant Super Admin
+      await tx.tenantSuperAdmin.create({
+        data: {
+          tenantId: tenant.id,
+          userId: adminUser.id
+        }
+      });
+
+      return { tenant, adminUser };
+    });
+
+    // 4. Generate the "Magic Link" token
+    const verificationToken = Buffer.from(`${result.adminUser.id}:${result.tenant.id}`).toString('base64');
+    const magicLink = `https://school-pro-mocha-beta.vercel.app/auth/verify?token=${verificationToken}`;
+
+    console.log("=========================================================");
+    console.log(`[MOCK EMAIL] To: ${adminEmail}`);
+    console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
+    console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
+    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+    console.log("=========================================================");
+
+    res.status(201).json({ 
+      message: "School onboarded successfully. Check terminal for Magic Link.",
+      tenantId: result.tenant.id
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to onboard school" });
+  }
+};
 
 export const setupPassword = async (req: Request, res: Response) => {
   const { token, password } = req.body;
@@ -21,7 +85,7 @@ export const setupPassword = async (req: Request, res: Response) => {
     }
 
     // 2. Find User
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: userId }
     });
 
@@ -33,7 +97,7 @@ export const setupPassword = async (req: Request, res: Response) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    await prisma.user.update({
+    await db.user.update({
       where: { id: userId },
       data: {
         password: hashedPassword,
@@ -56,7 +120,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = validated;
 
     // 1. Find User by email
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { email },
       include: {
         saasSuperAdmin: true,
