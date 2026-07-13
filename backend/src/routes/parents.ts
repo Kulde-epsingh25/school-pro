@@ -1,8 +1,9 @@
 import express from "express";
-import { getParents, createParent } from "../controllers/parents";
+import { getParents, createParent, getMyChildren } from "../controllers/parents";
 
 const router = express.Router();
 
+router.get("/me/children", getMyChildren);
 router.get("/", getParents);
 router.post("/", createParent);
 

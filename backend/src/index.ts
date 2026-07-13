@@ -26,6 +26,8 @@ import gradesRouter from "./routes/grades";
 import assignmentsRouter from "./routes/assignments";
 import announcementsRouter from "./routes/announcements";
 import reportsRouter from "./routes/reports";
+import dashboardRouter from "./routes/dashboard";
+import timetableRouter from "./routes/timetable";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -79,6 +81,8 @@ app.use("/grades", gradesRouter);
 app.use("/assignments", assignmentsRouter);
 app.use("/announcements", announcementsRouter);
 app.use("/reports", reportsRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/timetable", timetableRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

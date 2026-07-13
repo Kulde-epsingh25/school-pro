@@ -42,6 +42,7 @@ model Tenant {
   Payment              Payment[]
   SalaryPayment        SalaryPayment[]
   Expense              Expense[]
+  TimetablePeriod      TimetablePeriod[]
 }
 
 // ---------------------------------------------------------
@@ -184,6 +185,7 @@ model TeacherProfile {
   userId   String    @unique @db.ObjectId
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   subjects Subject[]
+  TimetablePeriod TimetablePeriod[]
 }
 
 model StaffProfile {
@@ -286,6 +288,7 @@ model Class {
   Attendance Attendance[]
   Exam       Exam[]
   Assignment Assignment[]
+  TimetablePeriod TimetablePeriod[]
 
   @@unique([name, tenantId])
 }
@@ -579,3 +582,24 @@ model Expense {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model TimetablePeriod {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  classId   String   @db.ObjectId
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  subject   String
+  teacherId String   @db.ObjectId
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [id])
+
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String   // e.g. "09:00"
+  endTime   String   // e.g. "09:45"
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

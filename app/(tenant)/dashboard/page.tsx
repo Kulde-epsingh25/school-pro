@@ -20,6 +20,7 @@ import { SalesChart } from "@/components/dashboard/sales-chart";
 import { StatCards, StatCardProps } from "@/components/dashboard/stat-cards";
 import { WelcomeBanner } from "@/components/dashboard/welcome-banner";
 import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
 
 const attendanceData = [
@@ -94,12 +95,48 @@ const recentAdmissions = [
 ];
 export default function DashboardPage() {
   const school = useSchoolStore((state) => state.school);
+  const user = useAuthStore((state) => state.user);
+  
   const [stats, setStats] = useState<StatCardProps[]>(defaultStats);
+  const [revenueData, setRevenueData] = useState(feeCollectionData);
+  const [recentData, setRecentData] = useState(recentAdmissions);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Force showing default stats
-    setStats(defaultStats);
-  }, []);
+    if (school?.id && user?.id) {
+      fetchDashboardData();
+    }
+  }, [school?.id, user?.id]);
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/dashboard/metrics?tenantId=${school?.id}`, {
+        headers: { "x-user-id": user?.id || "" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        
+        setStats([
+          { title: "Students", value: data.stats.totalStudents.toString(), icon: LayoutGrid, color: "text-blue-600", bgColor: "bg-blue-100" },
+          { title: "Teachers", value: data.stats.totalTeachers.toString(), icon: LayoutGrid, color: "text-teal-600", bgColor: "bg-teal-100" },
+          { title: "Parents", value: data.stats.totalParents.toString(), icon: LayoutGrid, color: "text-green-600", bgColor: "bg-green-100" },
+          { title: "Revenue", value: `₹${data.stats.totalRevenue.toLocaleString()}`, icon: LayoutGrid, color: "text-orange-600", bgColor: "bg-orange-100" },
+        ]);
+        
+        if (data.feeCollectionData) {
+          setRevenueData(data.feeCollectionData);
+        }
+        
+        if (data.recentAdmissions) {
+          setRecentData(data.recentAdmissions);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard metrics", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex-1 space-y-4">
@@ -107,9 +144,9 @@ export default function DashboardPage() {
       <StatCards cards={stats} />
       <div className="grid gap-4 md:grid-cols-2">
         <SalesChart data={attendanceData} />
-        <RevenueChart data={feeCollectionData} />
+        <RevenueChart data={revenueData} />
       </div>
-      <RecentDataTable data={recentAdmissions} />
+      <RecentDataTable data={recentData} />
     </div>
   );
 }

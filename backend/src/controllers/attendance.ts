@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient, AttendanceStatus } from "@prisma/client";
+import { sendAttendanceNotificationEmail } from "../utils/email";
 
 const prisma = new PrismaClient();
 
@@ -126,6 +127,45 @@ export const markAttendance = async (req: Request, res: Response) => {
       await Promise.all(ops);
       return { success: true, count: ops.length };
     });
+
+    // Handle notifications asynchronously
+    const targetDateString = targetDate.toISOString().split('T')[0];
+    const alertRecords = records.filter((r: any) => r.status === 'ABSENT' || r.status === 'LATE');
+    
+    if (alertRecords.length > 0) {
+      // Fire and forget
+      (async () => {
+        try {
+          const tenantInfo = await prisma.tenant.findUnique({ where: { id: tenantId } });
+          const studentIds = alertRecords.map((r: any) => r.studentId);
+          const students = await prisma.studentProfile.findMany({
+            where: { id: { in: studentIds } },
+            include: {
+              user: true,
+              parent: { include: { user: true } }
+            }
+          });
+          
+          const notifications = alertRecords.map((r: any) => {
+            const student = students.find((s) => s.id === r.studentId);
+            if (student?.parent?.user?.email) {
+              return sendAttendanceNotificationEmail(
+                student.parent.user.email,
+                `${student.user.firstName} ${student.user.lastName}`,
+                r.status,
+                targetDateString,
+                tenantInfo?.name || "School Pro"
+              );
+            }
+            return Promise.resolve();
+          });
+          
+          await Promise.allSettled(notifications);
+        } catch (e) {
+          console.error("Failed to process attendance notifications", e);
+        }
+      })();
+    }
 
     res.status(200).json(result);
   } catch (error: any) {

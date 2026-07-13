@@ -96,3 +96,103 @@ export const bulkSaveGrades = async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message || "Failed to save grades" });
   }
 };
+
+export const getStudentReportCard = async (req: Request, res: Response) => {
+  const { studentId } = req.params;
+  const { tenantId } = req.query;
+
+  if (!tenantId || typeof tenantId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID is required" });
+  }
+
+  try {
+    const student = await prisma.studentProfile.findUnique({
+      where: { id: studentId },
+      include: {
+        user: true,
+        class: true,
+        stream: true
+      }
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const grades = await prisma.studentGrade.findMany({
+      where: { studentId, tenantId },
+      include: {
+        exam: true
+      }
+    });
+
+    // Group by subject and calculate average
+    const subjectStats: Record<string, { totalScore: number; maxScore: number; exams: any[] }> = {};
+    
+    let totalScoreAll = 0;
+    let maxScoreAll = 0;
+
+    grades.forEach(g => {
+      const subject = g.exam.subject;
+      if (!subjectStats[subject]) {
+        subjectStats[subject] = { totalScore: 0, maxScore: 0, exams: [] };
+      }
+      subjectStats[subject].totalScore += g.score;
+      subjectStats[subject].maxScore += g.exam.maxScore;
+      subjectStats[subject].exams.push({
+        examName: g.exam.name,
+        date: g.exam.date,
+        score: g.score,
+        maxScore: g.exam.maxScore,
+        remarks: g.remarks
+      });
+
+      totalScoreAll += g.score;
+      maxScoreAll += g.exam.maxScore;
+    });
+
+    const getGradeLetter = (percentage: number) => {
+      if (percentage >= 90) return 'A+';
+      if (percentage >= 80) return 'A';
+      if (percentage >= 70) return 'B';
+      if (percentage >= 60) return 'C';
+      if (percentage >= 50) return 'D';
+      return 'F';
+    };
+
+    const subjects = Object.entries(subjectStats).map(([subject, stats]) => {
+      const percentage = stats.maxScore > 0 ? (stats.totalScore / stats.maxScore) * 100 : 0;
+      return {
+        subject,
+        totalScore: stats.totalScore,
+        maxScore: stats.maxScore,
+        percentage,
+        gradeLetter: getGradeLetter(percentage),
+        exams: stats.exams
+      };
+    });
+
+    const overallPercentage = maxScoreAll > 0 ? (totalScoreAll / maxScoreAll) * 100 : 0;
+    const overallGradeLetter = getGradeLetter(overallPercentage);
+
+    res.json({
+      student: {
+        id: student.id,
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        class: student.class?.name,
+        stream: student.stream?.name
+      },
+      summary: {
+        totalScore: totalScoreAll,
+        maxScore: maxScoreAll,
+        overallPercentage,
+        overallGradeLetter
+      },
+      subjects
+    });
+
+  } catch (error) {
+    console.error("Error generating report card:", error);
+    res.status(500).json({ error: "Failed to generate report card" });
+  }
+};

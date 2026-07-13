@@ -100,3 +100,91 @@ export const getAcademicReport = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to generate academic report" });
   }
 };
+
+export const getAttendanceReport = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
+  try {
+    const attendanceRecords = await prisma.attendance.findMany({
+      where: { tenantId },
+      include: {
+        class: true,
+        student: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    let presentCount = 0;
+    let absentCount = 0;
+    let lateCount = 0;
+    let excusedCount = 0;
+
+    const classStats: Record<string, { total: number; present: number }> = {};
+    const studentStats: Record<string, { name: string; class: string; total: number; present: number }> = {};
+
+    attendanceRecords.forEach(record => {
+      // Global counts
+      if (record.status === "PRESENT") presentCount++;
+      else if (record.status === "ABSENT") absentCount++;
+      else if (record.status === "LATE") lateCount++;
+      else if (record.status === "EXCUSED") excusedCount++;
+
+      // Class stats
+      const className = record.class.name;
+      if (!classStats[className]) classStats[className] = { total: 0, present: 0 };
+      classStats[className].total++;
+      if (record.status === "PRESENT" || record.status === "LATE") {
+        classStats[className].present++;
+      }
+
+      // Student stats
+      const studentId = record.studentId;
+      if (!studentStats[studentId]) {
+        studentStats[studentId] = {
+          name: `${record.student.user.firstName} ${record.student.user.lastName}`,
+          class: className,
+          total: 0,
+          present: 0
+        };
+      }
+      studentStats[studentId].total++;
+      if (record.status === "PRESENT" || record.status === "LATE") {
+        studentStats[studentId].present++;
+      }
+    });
+
+    const totalRecords = attendanceRecords.length;
+    const overallPercentage = totalRecords > 0 ? ((presentCount + lateCount) / totalRecords) * 100 : 0;
+
+    const classAverages = Object.entries(classStats).map(([name, stats]) => ({
+      class: name,
+      percentage: stats.total > 0 ? (stats.present / stats.total) * 100 : 0
+    }));
+
+    const criticalStudents = Object.values(studentStats)
+      .map(s => ({ ...s, percentage: s.total > 0 ? (s.present / s.total) * 100 : 0 }))
+      .filter(s => s.percentage < 75 && s.total >= 5) // Only flag if <75% and at least 5 days recorded
+      .sort((a, b) => a.percentage - b.percentage);
+
+    res.json({
+      summary: {
+        totalRecords,
+        presentCount,
+        absentCount,
+        lateCount,
+        excusedCount,
+        overallPercentage
+      },
+      classAverages,
+      criticalStudents: criticalStudents.slice(0, 50) // top 50 critical
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to generate attendance report" });
+  }
+};

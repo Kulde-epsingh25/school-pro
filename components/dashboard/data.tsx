@@ -53,6 +53,7 @@ export const getNavData = (roles: string[] = []) => {
                 { title: "Overview", url: "/dashboard" },
                 { title: "Analytics", url: "/dashboard/analytics" },
                 { title: "Reports", url: "/dashboard/reports" },
+                { title: "Attendance Reports", url: "/dashboard/reports/attendance" },
             ],
         });
         navMain.push({

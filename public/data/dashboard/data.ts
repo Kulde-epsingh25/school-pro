@@ -1,43 +1,26 @@
-const attendanceData = [
-  { name: "Sun", value: 0
-  },
-  { name: "Mon", value: 91
-  },
-  { name: "Tue", value: 87
-  },
-  { name: "Wed", value: 95
-  },
-  { name: "Thu", value: 89
-  },
-  { name: "Fri", value: 92
-  },
-  { name: "Sat", value: 0
-  },
+ const attendanceData = [
+  { name: "Sun", value: 0 },
+  { name: "Mon", value: 91 },
+  { name: "Tue", value: 87 },
+  { name: "Wed", value: 95 },
+  { name: "Thu", value: 89 },
+  { name: "Fri", value: 92 },
+  { name: "Sat", value: 0 },
 ];
  const statsCards = [
-  { title: "Total Students", value: "1,284", icon: Users
-  },
-  { title: "Total Revenue", value: "₹8,45,200", icon: DollarSign
-  },
-  { title: "Staff Members", value: "94", icon: ClipboardList
-  },
-  { title: "Active Classes", value: "38", icon: GraduationCap
-  },
+  { title: "Total Students", value: "1,284", icon: Users },
+  { title: "Total Revenue", value: "₹8,45,200", icon: DollarSign },
+  { title: "Staff Members", value: "94", icon: ClipboardList },
+  { title: "Active Classes", value: "38", icon: GraduationCap },
 ];
 
 export const feeCollectionData = [
-  { name: "Jan", value: 320000
-  },
-  { name: "Feb", value: 280000
-  },
-  { name: "Mar", value: 410000
-  },
-  { name: "Apr", value: 390000
-  },
-  { name: "May", value: 450000
-  },
-  { name: "Jun", value: 370000
-  },
+  { name: "Jan", value: 320000 },
+  { name: "Feb", value: 280000 },
+  { name: "Mar", value: 410000 },
+  { name: "Apr", value: 390000 },
+  { name: "May", value: 450000 },
+  { name: "Jun", value: 370000 },
 ];
 
 const recentAdmissions = [
@@ -112,12 +95,9 @@ const data = {
       icon: LayoutDashboard,
       isActive: true,
       items: [
-        { title: "Overview", url: "/dashboard"
-        },
-        { title: "Analytics", url: "/dashboard/analytics"
-        },
-        { title: "Reports", url: "/dashboard/reports"
-        },
+        { title: "Overview", url: "/dashboard" },
+        { title: "Analytics", url: "/dashboard/analytics" },
+        { title: "Reports", url: "/dashboard/reports" },
       ],
     },
     {
@@ -125,14 +105,10 @@ const data = {
       url: "/students",
       icon: Users,
       items: [
-        { title: "All Students", url: "/students"
-        },
-        { title: "Enrollment", url: "/students/enrollment"
-        },
-        { title: "Attendance", url: "/students/attendance"
-        },
-        { title: "Performance", url: "/students/performance"
-        },
+        { title: "All Students", url: "/students" },
+        { title: "Enrollment", url: "/students/enrollment" },
+        { title: "Attendance", url: "/students/attendance" },
+        { title: "Performance", url: "/students/performance" },
       ],
     },
     {
@@ -140,14 +116,10 @@ const data = {
       url: "/academics",
       icon: GraduationCap,
       items: [
-        { title: "Timetable", url: "/academics/timetable"
-        },
-        { title: "Examinations", url: "/academics/examinations"
-        },
-        { title: "Assignments", url: "/academics/assignments"
-        },
-        { title: "Report Cards", url: "/academics/report-cards"
-        },
+        { title: "Timetable", url: "/academics/timetable" },
+        { title: "Examinations", url: "/academics/examinations" },
+        { title: "Assignments", url: "/academics/assignments" },
+        { title: "Report Cards", url: "/academics/report-cards" },
       ],
     },
     {
@@ -155,14 +127,10 @@ const data = {
       url: "/staff",
       icon: ClipboardList,
       items: [
-        { title: "All Staff", url: "/staff"
-        },
-        { title: "Attendance", url: "/staff/attendance"
-        },
-        { title: "Payroll", url: "/staff/payroll"
-        },
-        { title: "Leave Management", url: "/staff/leave"
-        },
+        { title: "All Staff", url: "/staff" },
+        { title: "Attendance", url: "/staff/attendance" },
+        { title: "Payroll", url: "/staff/payroll" },
+        { title: "Leave Management", url: "/staff/leave" },
       ],
     },
     {
@@ -170,14 +138,10 @@ const data = {
       url: "/finance",
       icon: DollarSign,
       items: [
-        { title: "Fee Collection", url: "/finance/fees"
-        },
-        { title: "Invoices", url: "/finance/invoices"
-        },
-        { title: "Scholarships", url: "/finance/scholarships"
-        },
-        { title: "Expense Reports", url: "/finance/expenses"
-        },
+        { title: "Fee Collection", url: "/finance/fees" },
+        { title: "Invoices", url: "/finance/invoices" },
+        { title: "Scholarships", url: "/finance/scholarships" },
+        { title: "Expense Reports", url: "/finance/expenses" },
       ],
     },
     {
@@ -185,14 +149,10 @@ const data = {
       url: "/settings",
       icon: Settings2,
       items: [
-        { title: "School Profile", url: "/settings/profile"
-        },
-        { title: "User Management", url: "/settings/users"
-        },
-        { title: "System Settings", url: "/settings/system"
-        },
-        { title: "Backup & Security", url: "/settings/security"
-        },
+        { title: "School Profile", url: "/settings/profile" },
+        { title: "User Management", url: "/settings/users" },
+        { title: "System Settings", url: "/settings/system" },
+        { title: "Backup & Security", url: "/settings/security" },
       ],
     },
   ],

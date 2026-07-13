@@ -111,3 +111,40 @@ export const createParent = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create parent" });
   }
 };
+
+export const getMyChildren = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const userId = req.headers["x-user-id"] as string;
+
+  if (!tenantId || typeof tenantId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID is required" });
+  }
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const parentProfile = await prisma.parentProfile.findUnique({
+      where: { userId },
+      include: {
+        students: {
+          include: {
+            user: true,
+            class: true,
+            stream: true
+          }
+        }
+      }
+    });
+
+    if (!parentProfile) {
+      return res.status(404).json({ error: "Parent profile not found" });
+    }
+
+    res.json(parentProfile.students);
+  } catch (error) {
+    console.error("Error fetching children:", error);
+    res.status(500).json({ error: "Failed to fetch children" });
+  }
+};

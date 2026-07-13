@@ -185,3 +185,102 @@ export const gradeSubmissions = async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message || "Failed to save assignment grades" });
   }
 };
+
+export const getStudentAssignments = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const userId = req.headers["x-user-id"] as string;
+
+  if (!tenantId || typeof tenantId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID is required" });
+  }
+
+  if (!userId) {
+    return res.status(401).json({ error: "User ID is required" });
+  }
+
+  try {
+    // 1. Find the student profile to get classId
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!student || !student.classId) {
+      return res.status(404).json({ error: "Student profile or class not found" });
+    }
+
+    // 2. Fetch assignments for that class, including their specific submissions
+    const assignments = await prisma.assignment.findMany({
+      where: {
+        tenantId,
+        classId: student.classId
+      },
+      include: {
+        class: true,
+        submissions: {
+          where: { studentId: student.id }
+        }
+      },
+      orderBy: { dueDate: 'asc' }
+    });
+
+    res.json(assignments);
+  } catch (error) {
+    console.error("Error fetching student assignments:", error);
+    res.status(500).json({ error: "Failed to fetch student assignments" });
+  }
+};
+
+export const submitAssignment = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const { assignmentId } = req.params;
+  const { content } = req.body;
+  const userId = req.headers["x-user-id"] as string;
+
+  if (!tenantId || typeof tenantId !== 'string' || !assignmentId) {
+    return res.status(400).json({ error: "Tenant ID and Assignment ID are required" });
+  }
+
+  if (!userId) {
+    return res.status(401).json({ error: "User ID is required" });
+  }
+
+  try {
+    // 1. Find the student profile
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: "Student profile not found" });
+    }
+
+    // 2. Create or Update the submission
+    const submission = await prisma.assignmentSubmission.upsert({
+      where: {
+        assignmentId_studentId: {
+          assignmentId,
+          studentId: student.id
+        }
+      },
+      create: {
+        tenantId,
+        assignmentId,
+        studentId: student.id,
+        content,
+        status: 'SUBMITTED',
+        submittedAt: new Date()
+      },
+      update: {
+        content,
+        status: 'SUBMITTED',
+        submittedAt: new Date()
+      }
+    });
+
+    res.status(200).json(submission);
+  } catch (error) {
+    console.error("Error submitting assignment:", error);
+    res.status(500).json({ error: "Failed to submit assignment" });
+  }
+};
+
