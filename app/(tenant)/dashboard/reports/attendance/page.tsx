@@ -134,8 +134,8 @@ export default function AttendanceReportPage() {
                 <div className="flex items-center gap-3 w-2/3">
                   <div className="w-full bg-gray-100 rounded-full h-2">
                     <div 
-                      className={\`h-2 rounded-full \${c.percentage >= 90 ? 'bg-teal-500' : c.percentage >= 75 ? 'bg-yellow-400' : 'bg-red-500'}\`} 
-                      style={{ width: \`\${Math.min(c.percentage, 100)}%\` }}
+                      className={`h-2 rounded-full ${c.percentage >= 90 ? 'bg-teal-500' : c.percentage >= 75 ? 'bg-yellow-400' : 'bg-red-500'}`} 
+                      style={{ width: `${Math.min(c.percentage, 100)}%` }}
                     ></div>
                   </div>
                   <span className="text-sm font-bold text-gray-900 w-12 text-right">{c.percentage.toFixed(1)}%</span>
