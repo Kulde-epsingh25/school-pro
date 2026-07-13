@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs";
 import { generateTokens } from "../utils/jwt";
 import { loginSchema } from "../schemas/user";
 import { z } from "zod";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY || "fallback_key");
 
 export const onboardSchool = async (req: Request, res: Response) => {
   const { schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
@@ -54,15 +57,26 @@ export const onboardSchool = async (req: Request, res: Response) => {
     const verificationToken = Buffer.from(`${result.adminUser.id}:${result.tenant.id}`).toString('base64');
     const magicLink = `https://school-pro-mocha-beta.vercel.app/auth/verify?token=${verificationToken}`;
 
-    console.log("=========================================================");
-    console.log(`[MOCK EMAIL] To: ${adminEmail}`);
-    console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
-    console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
-    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
-    console.log("=========================================================");
+    // 5. Send Real Email (with fallback if API key is missing)
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: "School Management Pro <onboarding@resend.dev>",
+        to: [adminEmail],
+        subject: "Welcome to School Management Pro",
+        html: `<p>Welcome, ${adminFirstName}!</p><p>Please verify your account and set your password by clicking the link below:</p><p><a href="${magicLink}">${magicLink}</a></p>`,
+      });
+      console.log(`[RESEND EMAIL] Sent successfully to ${adminEmail}`);
+    } else {
+      console.log("=========================================================");
+      console.log(`[MOCK EMAIL - No RESEND_API_KEY] To: ${adminEmail}`);
+      console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
+      console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
+      console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+      console.log("=========================================================");
+    }
 
     res.status(201).json({ 
-      message: "School onboarded successfully. Check terminal for Magic Link.",
+      message: "School onboarded successfully. Check email for Magic Link.",
       tenantId: result.tenant.id
     });
 

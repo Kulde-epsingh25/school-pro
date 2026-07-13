@@ -1,0 +1,98 @@
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export const getGrades = async (req: Request, res: Response) => {
+  const { tenantId, examId } = req.query;
+
+  if (!tenantId || typeof tenantId !== 'string' || !examId || typeof examId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID and Exam ID are required" });
+  }
+
+  try {
+    const grades = await prisma.studentGrade.findMany({
+      where: {
+        tenantId,
+        examId
+      }
+    });
+
+    res.json(grades);
+  } catch (error) {
+    console.error("Error fetching grades:", error);
+    res.status(500).json({ error: "Failed to fetch grades" });
+  }
+};
+
+export const bulkSaveGrades = async (req: Request, res: Response) => {
+  const { tenantId, examId, records } = req.body;
+  const markedBy = req.headers["x-user-id"] as string;
+
+  if (!tenantId || !examId || !records || !Array.isArray(records)) {
+    return res.status(400).json({ error: "Tenant ID, Exam ID, and Records array are required" });
+  }
+
+  if (!markedBy) {
+    return res.status(401).json({ error: "User ID not found in headers" });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const existingGrades = await tx.studentGrade.findMany({
+        where: {
+          tenantId,
+          examId,
+          studentId: {
+            in: records.map((r: any) => r.studentId)
+          }
+        }
+      });
+
+      const existingMap = new Map(existingGrades.map(g => [g.studentId, g.id]));
+      
+      const ops = [];
+
+      for (const record of records) {
+        if (!record.studentId || record.score === undefined) continue;
+        
+        const existingId = existingMap.get(record.studentId);
+        
+        if (existingId) {
+          ops.push(
+            tx.studentGrade.update({
+              where: { id: existingId },
+              data: {
+                score: Number(record.score),
+                remarks: record.remarks,
+                markedBy,
+                markedAt: new Date()
+              }
+            })
+          );
+        } else {
+          ops.push(
+            tx.studentGrade.create({
+              data: {
+                tenantId,
+                examId,
+                studentId: record.studentId,
+                score: Number(record.score),
+                remarks: record.remarks,
+                markedBy
+              }
+            })
+          );
+        }
+      }
+
+      await Promise.all(ops);
+      return { success: true, count: ops.length };
+    });
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    console.error("Error saving grades:", error);
+    res.status(500).json({ error: error.message || "Failed to save grades" });
+  }
+};

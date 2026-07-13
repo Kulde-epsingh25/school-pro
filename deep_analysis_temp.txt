@@ -1,0 +1,1633 @@
+﻿<USER_REQUEST>
+# ðŸ« School Pro - Deep Analysis & Architecture Guide
+## Comprehensive Navigation & Role-Based System Implementation
+
+**Project**: School Pro (SaaS Multi-Tenant School Management System)  
+**Framework**: Next.js 16.2.9 (App Router) + TypeScript + Tailwind CSS  
+**Backend**: Express.js + Prisma + MongoDB  
+**Analysis Date**: July 13, 2026  
+
+---
+
+## ðŸ“‹ Table of Contents
+1. [Project Architecture Overview](#project-architecture-overview)
+2. [Current Implementation Status](#current-implementation-status)
+3. [Multi-Tier User Role System (Deep Dive)](#multi-tier-user-role-system-deep-dive)
+4. [Navigation Architecture by Role](#navigation-architecture-by-role)
+5. [Incomplete Features & Critical Gaps](#incomplete-features--critical-gaps)
+6. [Backend-Frontend Integration Issues](#backend-frontend-integration-issues)
+7. [Implementation Priorities & Roadmap](#implementation-priorities--roadmap)
+8. [Anti-Gravity Navigation Concept](#anti-gravity-navigation-concept)
+9. [Role-Specific Implementation Details](#role-specific-implementation-details)
+10. [Security & RBAC Best Practices](#security--rbac-best-practices)
+
+---
+
+## ðŸ—ï¸ Project Architecture Overview
+
+### System Levels (Three-Tier SaaS Architecture)
+
+```
+LEVEL 1: GLOBAL (SaaS Platform)
+â”œâ”€â”€ SaaS Super Admin
+â”‚   â””â”€â”€ Controls entire platform, all tenants
+â”‚   â””â”€â”€ Manages Tenant Creation, Platform Settings
+â”‚   â””â”€â”€ Views Cross-tenant Analytics
+â”‚
+LEVEL 2: TENANT (Individual School/Institution)
+â”œâ”€â”€ Tenant Super Admin (Master Account)
+â”‚   â””â”€â”€ Full control of school
+â”‚   â””â”€â”€ Manages all users within school
+â”‚   â””â”€â”€ Custom role creation
+â”‚   â””â”€â”€ Billing & Subscription
+â”œâ”€â”€ Custom Roles (Defined per Tenant)
+â”‚   â””â”€â”€ School Admin
+â”‚   â””â”€â”€ Department Head
+â”‚   â””â”€â”€ Finance Admin
+â”‚   â””â”€â”€ Academic Coordinator
+â”‚   â””â”€â”€ [User-Defined Custom Roles]
+â”œâ”€â”€ Standard Roles
+â”‚   â”œâ”€â”€ Teacher
+â”‚   â”œâ”€â”€ Student
+â”‚   â”œâ”€â”€ Parent
+â”‚   â”œâ”€â”€ Support Staff (Maintenance, Transport, Security)
+â”‚
+LEVEL 3: USER (Individual Account)
+â”œâ”€â”€ Profile Management
+â”œâ”€â”€ Role-Specific Dashboards
+â””â”€â”€ Permission-Based Features
+```
+
+### Database Models (Prisma Schema Analysis)
+
+**Core Multi-Tenancy Models:**
+- `Tenant` - Represents each school/institution
+- `User` - Global user account
+- `SaaSSuperAdmin` - Platform-level super admin
+- `TenantSuperAdmin` - School-level master admin
+- `TenantRole` - Custom roles per tenant
+- `TenantPermission` - Actions and Subjects with Scope
+- `TenantUserRole` - User-to-role assignment with expiration
+- `TenantRolePermission` - Role-to-permission mapping
+
+**Key Feature:**
+- **Tenant Isolation** via `tenantId` field on all domain models
+- **RBAC with Scopes**: ALL, DEPARTMENT, OWN_ONLY
+- **Audit Trail**: Full `TenantAuditLog` with actor tracking
+- **Role Versioning**: `RoleChangeAudit` tracks permission changes
+
+---
+
+## âœ… Current Implementation Status
+
+### âœ… COMPLETED & FUNCTIONAL
+
+#### Frontend Structure
+- [x] Route-based folder structure with layout groups: `(auth)`, `(frontend)`, `(saas)`, `(tenant)`, `(portal)`
+- [x] UI Components library (shadcn/ui-based) - 14+ components
+- [x] Form components with validation (React Hook Form + Zod)
+- [x] Sidebar navigation components for different roles
+- [x] Dashboard skeleton/layouts
+- [x] Global styling with Tailwind CSS v4
+- [x] Auth state management (Zustand stores)
+
+#### Backend Infrastructure
+- [x] Express API server with TypeScript
+- [x] Prisma ORM with MongoDB
+- [x] Comprehensive data schema (multi-tenant)
+- [x] JWT authentication flow
+- [x] Helmet security middleware
+- [x] CORS configuration
+- [x] Rate limiting setup
+- [x] Role-based controllers with RBAC middleware
+- [x] Zod schema validation
+- [x] Tenant isolation middleware
+
+#### Implemented Routes & Pages
+- [x] Frontend pages: Hero, Pricing, Features, Contact
+- [x] Auth pages: Login, Signup, Onboarding
+- [x] SaaS Admin: Dashboard, Users, Tenants, Audit, Settings
+- [x] Tenant Admin: Users, Roles, Audit, Contacts, Settings
+- [x] Tenant Dashboard: Finance (Fees, Payments), Academics (Classes, Terms, Departments, Subjects), Users (Teachers, Parents, Students)
+- [x] User management pages with tables and pagination
+- [x] Forms for creating/editing users, roles, departments, classes
+
+#### Sidebar Configurations
+- [x] Admin sidebar (25+ menu items)
+- [x] Teacher sidebar (9+ menu items)
+- [x] Student sidebar (12+ menu items)
+- [x] Maintenance worker sidebar
+- [x] Transport staff sidebar
+- [x] Security staff sidebar
+
+---
+
+### âŒ INCOMPLETE / NOT STARTED
+
+#### Critical Backend Issues
+- âŒ Email verification service (only mock links in console)
+- âŒ Password reset flow
+- âŒ Email notifications for role changes
+- âŒ Proper error handling in API (many endpoints missing validation)
+- âŒ API response standardization
+- âŒ Webhook support for integrations
+- âŒ File upload handling (images, documents, reports)
+- âŒ Real-time socket.io implementation for notifications
+- âŒ Comprehensive logging system
+
+#### Frontend Integration Issues
+- âŒ **Mock authentication persists** in login.tsx (hardcoded "super@admin.com")
+- âŒ Frontend not fully connected to live API
+- âŒ Role redirects hardcoded, not dynamic
+- âŒ No persistent session management from backend
+- âŒ Missing API error boundary and retry logic
+- âŒ No loading states or skeleton screens in data tables
+- âŒ Form submissions don't actually post to backend
+
+#### Feature Gaps (High Priority)
+- âŒ Attendance management system
+- âŒ Gradebook with marking/evaluation
+- âŒ Assignment submission and grading
+- âŒ SMS/Email bulk communication
+- âŒ Analytics dashboards (charts, reports)
+- âŒ Transport management (routes, vehicle tracking)
+- âŒ Inventory management system
+- âŒ Leave/HR management
+- âŒ Library management system
+- âŒ Clubs & events management
+- âŒ Parent portal (read-only for student data)
+- âŒ Mobile app or responsive optimizations
+- âŒ Report generation (PDF exports)
+
+#### Feature Gaps (Medium Priority)
+- âŒ Advanced filtering and search across all tables
+- âŒ Bulk operations (import/export students, teachers)
+- âŒ Custom dashboard widgets
+- âŒ Theme customization per tenant
+- âŒ API documentation/Swagger
+- âŒ Test coverage (unit & integration tests)
+- âŒ Performance optimization (caching, pagination improvements)
+
+#### Feature Gaps (Nice-to-Have)
+- âŒ Gamification (badges, points)
+- âŒ AI-powered insights and recommendations
+- âŒ Advanced scheduling algorithms
+- âŒ Integration with Google Classroom, Canvas LMS
+- âŒ Two-factor authentication (2FA)
+- âŒ Multi-language support (i18n)
+- âŒ Dark mode toggle
+
+---
+
+## ðŸ” Multi-Tier User Role System (Deep Dive)
+
+### Two-Tier Super Admin Architecture
+
+The system implements a **hierarchy of super admins**:
+
+#### 1. **SaaS Super Admin** (Global Level)
+```
+Model: SaaSSuperAdmin
+â”œâ”€â”€ Has Global Access to: All Tenants, All Users
+â”œâ”€â”€ Responsibilities:
+â”‚   â”œâ”€â”€ Create new tenants (schools)
+â”‚   â”œâ”€â”€ Monitor tenant health/usage
+â”‚   â”œâ”€â”€ Manage platform-wide settings
+â”‚   â”œâ”€â”€ View cross-tenant analytics
+â”‚   â”œâ”€â”€ Handle billing/subscriptions
+â”‚   â””â”€â”€ Support & troubleshooting
+â”œâ”€â”€ Database Access: All records
+â””â”€â”€ Routes: /saas-admin/*
+```
+
+#### 2. **Tenant Super Admin** (School Level)
+```
+Model: TenantSuperAdmin
+â”œâ”€â”€ Has Access to: Their tenant only (tenant-scoped)
+â”œâ”€â”€ Responsibilities:
+â”‚   â”œâ”€â”€ Full control of school
+â”‚   â”œâ”€â”€ Create/manage users
+â”‚   â”œâ”€â”€ Create custom roles
+â”‚   â”œâ”€â”€ Manage departments, classes, subjects
+â”‚   â”œâ”€â”€ Financial management
+â”‚   â”œâ”€â”€ Audit logs
+â”‚   â””â”€â”€ Settings & security
+â”œâ”€â”€ Database Access: Records where tenantId = their tenant
+â””â”€â”€ Routes: /admin/* or /(tenant)/admin/*
+```
+
+#### 3. **Custom Tenant Roles** (School-Defined)
+```
+Model: TenantRole (per tenant)
+â”œâ”€â”€ Examples:
+â”‚   â”œâ”€â”€ FINANCE_ADMIN - Manage fees, payments, payroll
+â”‚   â”œâ”€â”€ ACADEMIC_COORDINATOR - Classes, subjects, exams
+â”‚   â”œâ”€â”€ DEPARTMENT_HEAD - Department staff & courses
+â”‚   â”œâ”€â”€ HOSTEL_WARDEN - Hostel management
+â”‚   â””â”€â”€ [Unlimited Custom Roles]
+â”œâ”€â”€ Permission Model: (Action, Subject, Scope)
+â”‚   â”œâ”€â”€ Action: CREATE, READ, UPDATE, DELETE, APPROVE
+â”‚   â”œâ”€â”€ Subject: STUDENTS, FEES, TEACHERS, REPORTS, DEPARTMENTS
+â”‚   â””â”€â”€ Scope: ALL, DEPARTMENT, OWN_ONLY
+â””â”€â”€ Audit: All role changes tracked in RoleChangeAudit
+```
+
+### Permission Model (Action Ã— Subject Ã— Scope)
+
+```
+Example Permissions for FINANCE_ADMIN:
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Action   â”‚ Subject  â”‚ Scope  â”‚ Purpose â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ CREATE   â”‚ FEES     â”‚ ALL    â”‚ Create fees for any class
+â”‚ READ     â”‚ FEES     â”‚ ALL    â”‚ View all fees
+â”‚ UPDATE   â”‚ FEES     â”‚ ALL    â”‚ Edit any fees
+â”‚ CREATE   â”‚ PAYMENTS â”‚ ALL    â”‚ Generate payment links
+â”‚ READ     â”‚ REPORTS  â”‚ ALL    â”‚ View financial reports
+â”‚ APPROVE  â”‚ PAYMENTS â”‚ ALL    â”‚ Approve payments
+â”‚ READ     â”‚ STUDENTS â”‚ ALL    â”‚ View student data
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+Example: DEPARTMENT_HEAD (Limited Scope)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Action   â”‚ Subject      â”‚ Scope      â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ READ     â”‚ TEACHERS     â”‚ DEPARTMENT â”‚ Only their department
+â”‚ CREATE   â”‚ ASSIGNMENTS  â”‚ DEPARTMENT â”‚ Only for their dept
+â”‚ READ     â”‚ STUDENTS     â”‚ DEPARTMENT â”‚ Only enrolled in their dept
+â”‚ UPDATE   â”‚ ATTENDANCE   â”‚ DEPARTMENT â”‚ Only their classes
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+### Role Assignment & Expiration
+
+```
+Model: TenantUserRole
+â”œâ”€â”€ Fields:
+â”‚   â”œâ”€â”€ tenantId - Which school
+â”‚   â”œâ”€â”€ userId - The user
+â”‚   â”œâ”€â”€ roleId - Role assigned
+â”‚   â”œâ”€â”€ expiresAt - Optional expiration (NULL = permanent)
+â”‚   â”œâ”€â”€ assignedAt - When assigned
+â”‚   â”œâ”€â”€ assignedBy - Who assigned it
+â”‚   â””â”€â”€ updatedAt - Last modification
+â”œâ”€â”€ Examples:
+â”‚   â”œâ”€â”€ Teacher gets role: Permanent
+â”‚   â”œâ”€â”€ Intern gets role: expires after semester
+â”‚   â”œâ”€â”€ Guest lecturer: expires after course
+â”‚   â””â”€â”€ Consultant: expires after project
+â””â”€â”€ Enforcement: Check expiresAt on each API call
+```
+
+---
+
+## ðŸ§­ Navigation Architecture by Role
+
+This section details exactly what each role sees and can do.
+
+### 1. ðŸŒ SaaS Super Admin Navigation
+
+**Access Level**: Global Platform  
+**Route Prefix**: `/saas-admin`  
+**Pages Implemented**: âœ… 8/8
+
+```
+/saas-admin (Dashboard Overview)
+â”œâ”€ GET /saas-admin
+â”‚  â”œâ”€ Overview dashboard
+â”‚  â”œâ”€ Platform metrics
+â”‚  â””â”€ Quick stats (total tenants, users, revenue)
+â”‚
+â”œâ”€ /saas-admin/users (Manage Platform Users)
+â”‚  â”œâ”€ GET - List all users across tenants
+â”‚  â”œâ”€ POST - Create new SaaS admin
+â”‚  â”œâ”€ PUT /:id - Edit user
+â”‚  â””â”€ DELETE /:id - Remove user (soft delete)
+â”‚
+â”œâ”€ /saas-admin/tenants (Manage Schools/Institutions)
+â”‚  â”œâ”€ GET - List all tenants
+â”‚  â”‚  â””â”€ Pagination, search, filters
+â”‚  â”œâ”€ POST /new - Create new tenant
+â”‚  â”‚  â””â”€ Form: Name, Domain, Master Super Admin Email
+â”‚  â”œâ”€ PUT /:id - Edit tenant
+â”‚  â”‚  â””â”€ Update settings, enable/disable
+â”‚  â”œâ”€ GET /:id - View tenant details
+â”‚  â”‚  â””â”€ Users, stats, subscription
+â”‚  â””â”€ DELETE /:id - Archive tenant
+â”‚
+â”œâ”€ /saas-admin/audit (Platform Audit Logs)
+â”‚  â”œâ”€ GET - View all system actions
+â”‚  â”œâ”€ Filters:
+â”‚  â”‚  â”œâ”€ By tenant
+â”‚  â”‚  â”œâ”€ By user
+â”‚  â”‚  â”œâ”€ By action type
+â”‚  â”‚  â””â”€ Date range
+â”‚  â””â”€ Export to CSV/PDF
+â”‚
+â”œâ”€ /saas-admin/settings (Platform Settings)
+â”‚  â”œâ”€ Email configuration
+â”‚  â”œâ”€ SMS gateway settings
+â”‚  â”œâ”€ Payment processor keys
+â”‚  â”œâ”€ Rate limiting rules
+â”‚  â”œâ”€ Feature flags
+â”‚  â””â”€ System maintenance mode
+â”‚
+â””â”€ /saas-admin/account (Profile & Security)
+   â”œâ”€ Change password
+   â”œâ”€ Enable 2FA
+   â”œâ”€ API key management
+   â””â”€ Login history
+```
+
+**Permissions Model for SaaS Admin:**
+```
+ALL permissions = "*:*" (everything)
+Can read/write/delete any data in the system
+Can create new tenants and super admins
+Can modify any user's role
+Can view all audit logs
+```
+
+**Database Operations:**
+```
+- No tenantId filtering (sees everything)
+- Direct access to all models
+- Can create records for any tenant
+- Can read across all tenants
+```
+
+---
+
+### 2. ðŸ‘¨ðŸ’¼ Tenant Super Admin Navigation
+
+**Access Level**: Single School/Tenant  
+**Route Prefix**: `/(tenant)/admin` or `/admin`  
+**Pages Implemented**: âœ… 7/8
+
+```
+/(tenant)/admin (Main Dashboard)
+â”œâ”€ GET /admin
+â”‚  â”œâ”€ School overview
+â”‚  â”œâ”€ Student count
+â”‚  â”œâ”€ Teacher count
+â”‚  â”œâ”€ Revenue metrics
+â”‚  â”œâ”€ Pending approvals
+â”‚  â””â”€ Recent activities
+â”‚
+â”œâ”€ /(tenant)/admin/users (User Management Hub)
+â”‚  â”œâ”€ /admin/users
+â”‚  â”‚  â”œâ”€ GET - List all users in school
+â”‚  â”‚  â”œâ”€ Filters:
+â”‚  â”‚  â”‚  â”œâ”€ By role
+â”‚  â”‚  â”‚  â”œâ”€ By status (active/inactive)
+â”‚  â”‚  â”‚  â””â”€ By department
+â”‚  â”‚  â””â”€ Bulk actions:
+â”‚  â”‚     â”œâ”€ Enable/disable multiple users
+â”‚  â”‚     â”œâ”€ Export to CSV
+â”‚  â”‚     â””â”€ Send bulk email
+â”‚  â”‚
+â”‚  â”œâ”€ /admin/users/:id
+â”‚  â”‚  â”œâ”€ View user profile
+â”‚  â”‚  â”œâ”€ Edit user details
+â”‚  â”‚  â”œâ”€ Change user role
+â”‚  â”‚  â”œâ”€ Reset password
+â”‚  â”‚  â”œâ”€ View user's audit trail
+â”‚  â”‚  â””â”€ Deactivate account
+â”‚  â”‚
+â”‚  â”œâ”€ /admin/users/students (Not Implemented âŒ)
+â”‚  â”‚  â”œâ”€ List all students
+â”‚  â”‚  â”œâ”€ Create new student
+â”‚  â”‚  â”œâ”€ Bulk import students
+â”‚  â”‚  â”œâ”€ View attendance
+â”‚  â”‚  â””â”€ View grades
+â”‚  â”‚
+â”‚  â”œâ”€ /admin/users/teachers (Not Implemented âŒ)
+â”‚  â”‚  â”œâ”€ List all teachers
+â”‚  â”‚  â”œâ”€ Create new teacher
+â”‚  â”‚  â”œâ”€ Assign classes/subjects
+â”‚  â”‚  â””â”€ View teaching load
+â”‚  â”‚
+â”‚  â””â”€ /admin/users/parents (Not Implemented âŒ)
+â”‚     â”œâ”€ List all parents
+â”‚     â”œâ”€ Link to students
+â”‚     â””â”€ Communication settings
+â”‚
+â”œâ”€ /(tenant)/admin/roles (Custom Role Management)
+â”‚  â”œâ”€ GET - List all roles in school
+â”‚  â”‚  â”œâ”€ Built-in roles (read-only)
+â”‚  â”‚  â””â”€ Custom roles (editable)
+â”‚  â”œâ”€ POST - Create new role
+â”‚  â”‚  â””â”€ Form: Name, Permissions selector
+â”‚  â”œâ”€ PUT /:id - Edit role permissions
+â”‚  â”‚  â””â”€ Permission matrix UI
+â”‚  â””â”€ DELETE /:id - Delete custom role (with safety checks)
+â”‚
+â”œâ”€ /(tenant)/admin/audit (Audit & Compliance)
+â”‚  â”œâ”€ GET - Tenant audit logs
+â”‚  â”œâ”€ Action filters:
+â”‚  â”‚  â”œâ”€ User created/modified
+â”‚  â”‚  â”œâ”€ Role assigned/changed
+â”‚  â”‚  â”œâ”€ Data accessed
+â”‚  â”‚  â””â”€ System settings changed
+â”‚  â”œâ”€ Date range filtering
+â”‚  â””â”€ Export capabilities
+â”‚
+â”œâ”€ /(tenant)/admin/contacts (Contacts Directory)
+â”‚  â”œâ”€ GET - All school contacts
+â”‚  â”œâ”€ Categories:
+â”‚  â”‚  â”œâ”€ Emergency contacts
+â”‚  â”‚  â”œâ”€ Staff contacts
+â”‚  â”‚  â””â”€ Vendor contacts
+â”‚  â””â”€ Bulk messaging
+â”‚
+â”œâ”€ /(tenant)/admin/settings (School Settings)
+â”‚  â”œâ”€ /admin/settings
+â”‚  â”‚  â”œâ”€ School info (name, logo, address)
+â”‚  â”‚  â”œâ”€ Academic settings (terms, holidays)
+â”‚  â”‚  â”œâ”€ Email/SMS templates
+â”‚  â”‚  â””â”€ Payment settings
+â”‚  â”‚
+â”‚  â””â”€ /admin/settings/security
+â”‚     â”œâ”€ IP whitelisting
+â”‚     â”œâ”€ Session management
+â”‚     â”œâ”€ API key generation
+â”‚     â””â”€ Login attempt monitoring
+â”‚
+â””â”€ /(tenant)/dashboard (Full School Management)
+   â””â”€ [See Dashboard Super Admin section below]
+```
+
+**Permissions Model for Tenant Super Admin:**
+```
+Role: TENANT_SUPER_ADMIN (special flag)
+â”œâ”€â”€ Custom Permissions: ALL:ALL (within their tenant)
+â”œâ”€â”€ Can:
+â”‚   â”œâ”€ Create/edit/delete any user in school
+â”‚   â”œâ”€ Create/modify roles
+â”‚   â”œâ”€ See all data
+â”‚   â”œâ”€ Generate reports
+â”‚   â”œâ”€ Manage subscriptions
+â”‚   â””â”€ Reset any user's password
+â””â”€â”€ Cannot:
+    â”œâ”€ See other schools' data
+    â”œâ”€ Create SaaS-level resources
+    â””â”€ Modify platform settings
+```
+
+**Key Middleware Check:**
+```typescript
+// Tenant isolation ensures:
+function requireTenantSuperAdmin(req, res, next) {
+  if (!req.user.tenantSuperAdmin) {
+    return res.status(403).json({ error: "Not super admin" });
+  }
+  // Only allow access to their own tenant
+  req.query.tenantId = req.user.tenantSuperAdmin.tenantId;
+  next();
+}
+```
+
+---
+
+### 3. ðŸ‘¨ðŸ« Teacher Navigation
+
+**Access Level**: Teaching Staff Member  
+**Route Prefix**: `/teacher`  
+**Status**: Not Implemented âŒ
+
+```
+/teacher (Dashboard)
+â”œâ”€ GET /teacher
+â”‚  â”œâ”€ Today's schedule
+â”‚  â”œâ”€ Classes to teach
+â”‚  â”œâ”€ Pending assignments to grade
+â”‚  â”œâ”€ Student messages
+â”‚  â””â”€ Leave balance
+â”‚
+â”œâ”€ /teacher/classes (My Classes)
+â”‚  â”œâ”€ GET - List my assigned classes
+â”‚  â”œâ”€ /teacher/classes/:id
+â”‚  â”‚  â”œâ”€ Class roster (students)
+â”‚  â”‚  â”œâ”€ Attendance tracking
+â”‚  â”‚  â”œâ”€ Grades/marks entry
+â”‚  â”‚  â””â”€ Lesson plans
+â”‚  â”‚
+â”‚  â””â”€ /teacher/classes/:id/attendance
+â”‚     â”œâ”€ Mark attendance
+â”‚     â”œâ”€ View attendance reports
+â”‚     â””â”€ Generate attendance certificates
+â”‚
+â”œâ”€ /teacher/assignments
+â”‚  â”œâ”€ Create new assignment
+â”‚  â”œâ”€ View submissions
+â”‚  â”œâ”€ Grade submissions
+â”‚  â”œâ”€ Provide feedback
+â”‚  â””â”€ Set due dates
+â”‚
+â”œâ”€ /teacher/resources
+â”‚  â”œâ”€ Upload study materials
+â”‚  â”œâ”€ Manage syllabus
+â”‚  â”œâ”€ Share documents
+â”‚  â””â”€ Create lesson plans
+â”‚
+â”œâ”€ /teacher/grades
+â”‚  â”œâ”€ Enter marks
+â”‚  â”œâ”€ Calculate results
+â”‚  â”œâ”€ Generate report cards
+â”‚  â””â”€ Export grades
+â”‚
+â”œâ”€ /teacher/communication
+â”‚  â”œâ”€ Message students
+â”‚  â”œâ”€ Message parents
+â”‚  â”œâ”€ Broadcast announcements
+â”‚  â””â”€ Class chat
+â”‚
+â”œâ”€ /teacher/leave
+â”‚  â”œâ”€ Apply for leave
+â”‚  â”œâ”€ View leave balance
+â”‚  â””â”€ Leave history
+â”‚
+â””â”€ /teacher/timetable
+   â””â”€ View assigned class times
+```
+
+**Permissions:**
+```
+READ: Own classes, own students, own assignments
+CREATE/UPDATE: Attendance, grades, assignments, resources
+CANNOT: Edit other teachers' data, create users, manage settings
+```
+
+---
+
+### 4. ðŸ‘¨ðŸŽ“ Student Navigation
+
+**Access Level**: Individual Student  
+**Route Prefix**: `/student`  
+**Status**: Partially Implemented âœ… (50%)
+
+```
+/student (Dashboard)
+â”œâ”€ GET /student
+â”‚  â”œâ”€ My timetable
+â”‚  â”œâ”€ My classes
+â”‚  â”œâ”€ Upcoming assignments
+â”‚  â”œâ”€ My grades (latest)
+â”‚  â”œâ”€ Attendance record
+â”‚  â””â”€ Fee status
+â”‚
+â”œâ”€ /student/academics
+â”‚  â”œâ”€ /student/academics/assignments
+â”‚  â”‚  â”œâ”€ View assignments
+â”‚  â”‚  â”œâ”€ Submit solutions
+â”‚  â”‚  â”œâ”€ View feedback
+â”‚  â”‚  â””â”€ Download materials
+â”‚  â”‚
+â”‚  â”œâ”€ /student/academics/reports
+â”‚  â”‚  â”œâ”€ View report card
+â”‚  â”‚  â”œâ”€ Download certificates
+â”‚  â”‚  â””â”€ View grades
+â”‚  â”‚
+â”‚  â””â”€ /student/academics/attendance
+â”‚     â”œâ”€ View attendance percentage
+â”‚     â””â”€ Attendance breakdown by subject
+â”‚
+â”œâ”€ /student/profile
+â”‚  â”œâ”€ Edit profile info
+â”‚  â”œâ”€ Upload photo
+â”‚  â”œâ”€ Emergency contacts
+â”‚  â””â”€ Preferences
+â”‚
+â”œâ”€ /student/library
+â”‚  â”œâ”€ View e-resources
+â”‚  â”œâ”€ Request books
+â”‚  â”œâ”€ My borrowed books
+â”‚  â””â”€ Clubs directory
+â”‚
+â”œâ”€ /student/finance
+â”‚  â”œâ”€ /student/finance/fees
+â”‚  â”‚  â”œâ”€ View fees due
+â”‚  â”‚  â”œâ”€ Payment history
+â”‚  â”‚  â””â”€ Generate receipt
+â”‚  â”‚
+â”‚  â””â”€ /student/finance/receipts
+â”‚     â””â”€ Download receipts
+â”‚
+â”œâ”€ /student/messages
+â”‚  â”œâ”€ Message teachers
+â”‚  â”œâ”€ Message classmates
+â”‚  â””â”€ Announcements
+â”‚
+â””â”€ /student/helpdesk
+   â”œâ”€ Raise support ticket
+   â””â”€ Track ticket status
+```
+
+**Permissions:**
+```
+READ: Own data only (grades, attendance, assignments, fees)
+CREATE: Assignments submission, messages, support tickets
+UPDATE: Own profile
+CANNOT: Edit any other student's data, access admin features
+```
+
+---
+
+### 5. ðŸ‘ª Parent Navigation
+
+**Access Level**: Guardian/Parent  
+**Route Prefix**: `/parent`  
+**Status**: Not Implemented âŒ
+
+```
+/parent (Dashboard)
+â”œâ”€ GET /parent
+â”‚  â”œâ”€ Children's overview
+â”‚  â”œâ”€ Pending fee payments
+â”‚  â”œâ”€ Recent grades
+â”‚  â”œâ”€ Announcements
+â”‚  â””â”€ Communication from school
+â”‚
+â”œâ”€ /parent/children
+â”‚  â”œâ”€ List my children
+â”‚  â”œâ”€ /parent/children/:id
+â”‚  â”‚  â”œâ”€ Student profile
+â”‚  â”‚  â”œâ”€ Attendance record
+â”‚  â”‚  â”œâ”€ Grades & results
+â”‚  â”‚  â”œâ”€ Assignments
+â”‚  â”‚  â””â”€ Teacher comments
+â”‚  â”‚
+â”‚  â””â”€ Bulk actions
+â”‚     â”œâ”€ Request leave for child
+â”‚     â””â”€ Update emergency contacts
+â”‚
+â”œâ”€ /parent/finance
+â”‚  â”œâ”€ View fees for all children
+â”‚  â”œâ”€ Make online payments
+â”‚  â”œâ”€ Download invoices
+â”‚  â””â”€ Payment history
+â”‚
+â”œâ”€ /parent/communication
+â”‚  â”œâ”€ Messages from teachers
+â”‚  â”œâ”€ Announcements
+â”‚  â”œâ”€ Events calendar
+â”‚  â””â”€ School news
+â”‚
+â”œâ”€ /parent/leave
+â”‚  â”œâ”€ Request leave for child
+â”‚  â”œâ”€ View requests status
+â”‚  â””â”€ Approval history
+â”‚
+â””â”€ /parent/profile
+   â”œâ”€ Edit contact info
+   â”œâ”€ Manage preferences
+   â””â”€ Notification settings
+```
+
+**Permissions:**
+```
+READ: Own children's data (grades, attendance, assignments)
+CREATE: Payment requests, support tickets, leave requests
+CANNOT: View other children's data, teacher grades, admin features
+```
+
+---
+
+### 6. ðŸ§¹ Support Staff Navigation (Maintenance, Transport, Security)
+
+#### 6a. Maintenance Worker
+```
+/maintenance (Dashboard)
+â”œâ”€ Today's assigned tasks
+â”œâ”€ /maintenance/tasks
+â”‚  â”œâ”€ View task schedule
+â”‚  â”œâ”€ Log task completion
+â”‚  â””â”€ Report issues
+â”œâ”€ /maintenance/supplies
+â”‚  â”œâ”€ Request supplies
+â”‚  â””â”€ Track orders
+â””â”€ /maintenance/assets
+   â””â”€ View facility inventory
+```
+
+#### 6b. Transport Driver/Coordinator
+```
+/transport (Dashboard)
+â”œâ”€ My assigned route
+â”œâ”€ /transport/trips
+â”‚  â”œâ”€ Today's manifest
+â”‚  â”œâ”€ Student pickups/dropoffs
+â”‚  â””â”€ Vehicle logs
+â”œâ”€ /transport/tracking (Real-time location)
+â””â”€ /transport/incidents
+   â””â”€ Report issues/accidents
+```
+
+#### 6c. Security Personnel
+```
+/security (Dashboard)
+â”œâ”€ Live desk/monitoring
+â”œâ”€ /security/visitors
+â”‚  â”œâ”€ Log visitor entry
+â”‚  â”œâ”€ Active visitor passes
+â”‚  â””â”€ Entry/exit logs
+â”œâ”€ /security/incidents
+â”‚  â””â”€ Report security incident
+â””â”€ /security/alerts
+   â”œâ”€ SOS alerts
+   â””â”€ Emergency response
+```
+
+**Status**: Not Implemented âŒ
+
+---
+
+### 7. ðŸŽ“ Admin (Dashboard Super Admin)
+
+This is the **main admin dashboard** for school management.
+
+**Route Prefix**: `/(tenant)/dashboard`  
+**Status**: Partially Implemented âœ… (60%)
+
+```
+/(tenant)/dashboard (Admin Hub)
+â”œâ”€ GET /dashboard
+â”‚  â”œâ”€ Overview stats
+â”‚  â”œâ”€ Quick actions
+â”‚  â”œâ”€ Recent activities
+â”‚  â””â”€ Key metrics
+â”‚
+â”œâ”€ /(tenant)/dashboard/users (User Management)
+â”‚  â”œâ”€ GET /dashboard/users
+â”‚  â”‚  â”œâ”€ List all users
+â”‚  â”‚  â”œâ”€ Filter by role
+â”‚  â”‚  â”œâ”€ Search
+â”‚  â”‚  â””â”€ Bulk actions
+â”‚  â”‚
+â”‚  â”œâ”€ /dashboard/users/students
+â”‚  â”‚  â”œâ”€ LIST - All students âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New student âŒ (Form exists, no API)
+â”‚  â”‚  â”œâ”€ IMPORT - Bulk import âŒ
+â”‚  â”‚  â”œâ”€ EXPORT - CSV export âŒ
+â”‚  â”‚  â””â”€ [id] - Student details âŒ
+â”‚  â”‚
+â”‚  â”œâ”€ /dashboard/users/teachers
+â”‚  â”‚  â”œâ”€ LIST - All teachers âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New teacher âœ… (Partial)
+â”‚  â”‚  â””â”€ ASSIGN - Class/Subject assignment âŒ
+â”‚  â”‚
+â”‚  â””â”€ /dashboard/users/parents
+â”‚     â”œâ”€ LIST - All parents âœ…
+â”‚     â”œâ”€ CREATE - New parent âœ… (Partial)
+â”‚     â””â”€ LINK - Link to students âŒ
+â”‚
+â”œâ”€ /(tenant)/dashboard/academics
+â”‚  â”œâ”€ /dashboard/academics/classes
+â”‚  â”‚  â”œâ”€ LIST - All classes âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New class âŒ (Form, no API)
+â”‚  â”‚  â”œâ”€ EDIT - Update class âŒ
+â”‚  â”‚  â””â”€ STREAMS - Class sections âŒ
+â”‚  â”‚
+â”‚  â”œâ”€ /dashboard/academics/subjects
+â”‚  â”‚  â”œâ”€ LIST - All subjects âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New subject âŒ
+â”‚  â”‚  â””â”€ ASSIGN - Assign to teachers âŒ
+â”‚  â”‚
+â”‚  â”œâ”€ /dashboard/academics/departments
+â”‚  â”‚  â”œâ”€ LIST - All departments âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New department âŒ
+â”‚  â”‚  â””â”€ MANAGE - Manage structure âŒ
+â”‚  â”‚
+â”‚  â””â”€ /dashboard/academics/terms
+â”‚     â”œâ”€ LIST - All terms âœ…
+â”‚     â”œâ”€ CREATE - New term âŒ
+â”‚     â”œâ”€ SET ACTIVE - Mark as active âŒ
+â”‚     â””â”€ HOLIDAYS - Holiday calendar âŒ
+â”‚
+â”œâ”€ /(tenant)/dashboard/finance
+â”‚  â”œâ”€ /dashboard/finance/fees
+â”‚  â”‚  â”œâ”€ LIST - All fees âœ…
+â”‚  â”‚  â”œâ”€ CREATE - New fee âŒ (Form, no API)
+â”‚  â”‚  â”œâ”€ STUDENT VIEW - See student's fees âŒ
+â”‚  â”‚  â””â”€ REPORTS - Fee reports âŒ
+â”‚  â”‚
+â”‚  â””â”€ /dashboard/finance/payments
+â”‚     â”œâ”€ LIST - All payments âœ…
+â”‚     â”œâ”€ FILTER - By status âœ…
+â”‚     â”œâ”€ APPROVE - Approve payments âŒ
+â”‚     â”œâ”€ REFUND - Process refund âŒ
+â”‚     â””â”€ RECONCILE - Bank reconciliation âŒ
+â”‚
+â”œâ”€ /(tenant)/dashboard/academics/attendance (Not Implemented âŒ)
+â”‚  â”œâ”€ Mark attendance
+â”‚  â”œâ”€ View reports
+â”‚  â””â”€ Generate certificates
+â”‚
+â”œâ”€ /(tenant)/dashboard/academics/gradebook (Not Implemented âŒ)
+â”‚  â”œâ”€ Enter marks
+â”‚  â”œâ”€ Calculate GPA
+â”‚  â””â”€ Generate report cards
+â”‚
+â”œâ”€ /(tenant)/dashboard/assignments (Not Implemented âŒ)
+â”‚  â”œâ”€ Create assignment
+â”‚  â”œâ”€ View submissions
+â”‚  â””â”€ Grade
+â”‚
+â””â”€ /(tenant)/dashboard/communications (Not Implemented âŒ)
+   â”œâ”€ Send announcements
+   â”œâ”€ SMS/Email to users
+   â””â”€ Broadcast messages
+```
+
+**Status Summary:**
+- **List Pages**: 80% implemented (tables, pagination)
+- **Create Pages**: 40% implemented (forms exist, API missing)
+- **Edit Pages**: 10% implemented (very limited)
+- **Advanced Features**: 0% implemented (reports, analytics, bulk operations)
+
+---
+
+## ðŸš¨ Incomplete Features & Critical Gaps
+
+### TIER 1: CRITICAL (Blocks Production)
+
+#### 1. Authentication System is Completely Mocked âŒ
+**File**: `components/frontend/login.tsx`  
+**Problem**:
+```typescript
+// Current Implementation (BROKEN)
+const handleLogin = async () => {
+  if (values.email === "super@admin.com") { // HARDCODED!
+    router.push("/admin");
+    localStorage.setItem("userRole", "admin");
+  }
+  // No actual API call!
+};
+```
+
+**Why It's Critical**:
+- Zero real authentication
+- Anyone can access admin by typing right email
+- No actual user verification
+- No JWT token generation
+- No session management
+- Security nightmare
+
+**What Needs to Do**:
+```typescript
+// Correct Implementation
+const handleLogin = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: values.email,
+        password: values.password
+      })
+    });
+    
+    if (!response.ok) throw new Error("Invalid credentials");
+    
+    const { token, user } = await response.json();
+    
+    // Store token
+    localStorage.setItem("auth_token", token);
+    localStorage.setItem("user_role", user.role); // From DB, not guessed!
+    
+    // Redirect based on database role
+    router.push(getRoleBasedPath(user.role));
+  } catch (error) {
+    toast.error("Login failed: " + error.message);
+  }
+};
+```
+
+#### 2. Email Verification Not Implemented âŒ
+**Problem**: When users are created, system sets `isActive: true` immediately and prints mock link to console.
+
+```
+Current behavior:
+POST /api/auth/register
+â”œâ”€ Create user with isActive = true (BAD!)
+â”œâ”€ Log "Mock email sent" to console (NOT REAL!)
+â””â”€ No email actually sent
+
+Expected behavior:
+POST /api/auth/register
+â”œâ”€ Create user with isActive = false
+â”œâ”€ Send real email via Resend/SendGrid
+â”œâ”€ Email contains secure verification link
+â”œâ”€ User must click link to activate
+â””â”€ Only then can they login
+```
+
+**Solution Needed**:
+- Integrate Resend (easy) or SendGrid (powerful)
+- Email templates for verification, password reset
+- Secure token generation for email links
+- Expiration on verification tokens (e.g., 24 hours)
+- Resend verification flow for expired links
+
+#### 3. No Dynamic Role-Based Access Control âŒ
+**Problem**: Role checks are hardcoded; database roles ignored.
+
+```typescript
+// Current (WRONG)
+if (localStorage.getItem("userRole") === "admin") { // Local storage! ðŸ˜±
+  showAdminFeatures();
+}
+
+// Correct (Database-driven)
+const user = await fetch("/api/users/me").then(r => r.json());
+if (user.role === "SUPER_ADMIN" && user.tenantId === currentTenant) {
+  showAdminFeatures();
+}
+```
+
+**What to Fix**:
+- Fetch user + roles from backend on app load
+- Check permissions from database, not local storage
+- Validate permissions on every API call (backend)
+- Implement role expiration checks (`TenantUserRole.expiresAt`)
+- Handle permission scope (ALL, DEPARTMENT, OWN_ONLY)
+
+#### 4. API Routes Don't Match Frontend Forms âŒ
+**Examples of Disconnected Forms**:
+- Create Class form exists, no POST /api/classes endpoint
+- Create Fee form exists, no POST /api/fees endpoint
+- Create Subject form exists, no POST /api/subjects endpoint
+- Create Teacher form exists, incomplete API
+
+**What Needs to Happen**:
+- Audit every page with a form
+- Ensure matching API endpoint exists
+- Test end-to-end: Form â†’ API â†’ Database â†’ Confirmation
+- Add proper error handling and validation
+
+---
+
+### TIER 2: HIGH PRIORITY (Incomplete Features)
+
+#### 5. Attendance System Not Implemented âŒ
+- No attendance marking interface
+- No attendance reports
+- Database model exists (StudentProfile has no attendance link)
+- Need new model: `Attendance` with fields:
+  ```
+  - id
+  - studentId
+  - classId
+  - date
+  - status (PRESENT, ABSENT, LATE)
+  - markedBy (teacher ID)
+  - markedAt
+  ```
+
+#### 6. Gradebook Not Implemented âŒ
+- No marks entry interface
+- No grade calculation
+- No report cards
+- Need models:
+  ```
+  - Exam (name, date, class)
+  - GradeConfig (grading scale, GPA calculation)
+  - StudentGrade (studentId, examId, score, grade)
+  - ReportCard (generated document)
+  ```
+
+#### 7. Assignment System Not Implemented âŒ
+- No assignment creation
+- No submission tracking
+- No grading interface
+- Need models:
+  ```
+  - Assignment (title, description, dueDate, subject)
+  - AssignmentSubmission (studentId, file, submittedAt, score)
+  ```
+
+#### 8. Communication System Not Implemented âŒ
+- SMS/Email bulk sending not connected
+- No templates system
+- No notification queue
+- No real-time updates
+- Need:
+  ```
+  - MessageTemplate (name, body, placeholders)
+  - Message (to, from, template, status)
+  - MessageQueue (for background processing)
+  - WebSocket support for real-time
+  ```
+
+#### 9. Analytics Dashboard Missing âŒ
+- No charts or visualizations
+- No cross-tenant analytics (SaaS level)
+- No school-specific reports
+- Sidebar has analytics links but pages empty
+
+#### 10. File Upload System Missing âŒ
+- No profile photo upload
+- No document upload (resources, assignment files)
+- No report PDF generation
+- Need:
+  ```
+  - AWS S3 or Cloudinary integration
+  - File model with metadata
+  - Virus scanning on upload
+  - Signed URLs for downloads
+  ```
+
+---
+
+### TIER 3: MEDIUM PRIORITY (Quality & Performance)
+
+- âŒ Pagination not implemented (all records shown)
+- âŒ Search/filter on tables (UI exists, not functional)
+- âŒ Bulk actions (import students, export data)
+- âŒ Form validation error messages (confusing)
+- âŒ Loading skeletons while fetching
+- âŒ Error boundaries for API failures
+- âŒ Retry logic for failed requests
+- âŒ Caching strategy (reduce API calls)
+- âŒ Rate limiting on frontend
+- âŒ API documentation/Swagger
+
+---
+
+## ðŸ”Œ Backend-Frontend Integration Issues
+
+### Issue 1: API Response Format Inconsistent âŒ
+
+**Controller sends this:**
+```typescript
+res.status(200).json({
+  success: true,
+  data: users
+});
+```
+
+**Frontend expects this:**
+```typescript
+const response = await fetch("/api/users");
+const data = response.json(); // Works by accident
+```
+
+**Should Standardize:**
+```typescript
+// All responses follow this format:
+{
+  success: boolean,
+  data: T | null,
+  error: string | null,
+  meta: {
+    page: number,
+    pageSize: number,
+    total: number,
+    pages: number
+  }
+}
+```
+
+### Issue 2: Error Handling Missing âŒ
+
+**Controllers don't validate input:**
+```typescript
+// Current (BROKEN)
+app.post("/users", (req, res) => {
+  const user = prisma.user.create({
+    data: req.body // UNVALIDATED!
+  });
+});
+
+// Should be:
+app.post("/users", (req, res) => {
+  try {
+    const validated = CreateUserSchema.parse(req.body);
+    const user = await prisma.user.create({ data: validated });
+    res.json({ success: true, data: user });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Validation failed",
+        details: error.errors
+      });
+    }
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+```
+
+### Issue 3: Tenant Isolation Not Enforced in Frontend âŒ
+
+**Frontend sends requests without tenant:**
+```typescript
+// Current (BROKEN)
+fetch("/api/users") // Which tenant?
+```
+
+**Should include tenant context:**
+```typescript
+// Middleware adds tenant automatically
+fetch("/api/users") // Backend middleware extracts from JWT
+
+// Or explicitly:
+fetch(`/api/users?tenantId=${currentTenantId}`)
+
+// Backend enforces:
+app.get("/api/users", requireAuth, requireTenant, (req, res) => {
+  // req.tenantId is always set
+  // req.query.tenantId is validated against req.tenantId
+});
+```
+
+### Issue 4: JWT Token Management Non-Existent âŒ
+
+**Frontend:**
+```typescript
+// Current
+localStorage.setItem("userRole", "admin"); // Plain text!
+
+// Should be:
+localStorage.setItem("auth_token", jwtToken); // Secure
+
+// And always include:
+fetch("/api/users", {
+  headers: {
+    "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+  }
+});
+```
+
+**Backend:**
+```typescript
+// Should verify token on every request:
+function authenticateToken(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "No token" });
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    req.tenantId = decoded.tenantId;
+    req.roles = decoded.roles;
+    next();
+  } catch (err) {
+    res.status(403).json({ error: "Invalid token" });
+  }
+}
+```
+
+---
+
+## ðŸŽ¯ Implementation Priorities & Roadmap
+
+### Phase 1: Fix Core Authentication (URGENT - 1 Week)
+
+```
+Priority 1.1: Remove Mock Authentication
+â”œâ”€ Delete hardcoded checks in login.tsx
+â”œâ”€ Implement real API call to /api/auth/login
+â”œâ”€ Store JWT token securely
+â”œâ”€ Add token refresh logic
+â””â”€ Test with real backend
+
+Priority 1.2: Implement Email Verification
+â”œâ”€ Integrate Resend or SendGrid
+â”œâ”€ Create email templates
+â”œâ”€ Generate secure verification tokens
+â”œâ”€ Implement verification link handler
+â””â”€ Test end-to-end
+
+Priority 1.3: Dynamic Role Redirects
+â”œâ”€ Fetch user role from database on login
+â”œâ”€ Create role-based path resolver
+â”œâ”€ Implement middleware for route protection
+â”œâ”€ Redirect to correct dashboard per role
+â””â”€ Add fallback for unknown roles
+
+Priority 1.4: Connect All Forms to APIs
+â”œâ”€ Audit every POST/PUT form
+â”œâ”€ Ensure matching API endpoints
+â”œâ”€ Add proper error handling
+â”œâ”€ Add success notifications
+â””â”€ Test each form end-to-end
+```
+
+### Phase 2: Implement Core Features (2 Weeks)
+
+```
+Priority 2.1: Attendance System
+â”œâ”€ Create Attendance model in Prisma
+â”œâ”€ Build attendance marking UI
+â”œâ”€ Attendance reports & analytics
+â””â”€ Automatic notifications
+
+Priority 2.2: Gradebook & Marks
+â”œâ”€ Create Exam & StudentGrade models
+â”œâ”€ Mark entry interface (teacher)
+â”œâ”€ Grade calculation logic
+â”œâ”€ Report card generation
+â””â”€ Parent viewing
+
+Priority 2.3: Assignment Management
+â”œâ”€ Create Assignment model
+â”œâ”€ Assignment creation (teacher)
+â”œâ”€ File upload for submissions
+â”œâ”€ Grading interface
+â””â”€ Notifications on due date
+
+Priority 2.4: Communication System
+â”œâ”€ Create Message, MessageTemplate models
+â”œâ”€ Email template system
+â”œâ”€ Bulk SMS/Email UI
+â”œâ”€ Message queue for processing
+â””â”€ Read receipts & tracking
+```
+
+### Phase 3: Enhance Features (2 Weeks)
+
+```
+Priority 3.1: Analytics & Reports
+â”œâ”€ Dashboard charts (Chart.js/Recharts)
+â”œâ”€ Student performance analytics
+â”œâ”€ Attendance reports
+â”œâ”€ Finance reports
+â””â”€ Export to PDF/Excel
+
+Priority 3.2: Advanced Admin Features
+â”œâ”€ Bulk import (CSV/Excel)
+â”œâ”€ Bulk operations (enable/disable users)
+â”œâ”€ Advanced search & filters
+â”œâ”€ Permission management UI
+â””â”€ Custom role creation wizard
+
+Priority 3.3: File Management
+â”œâ”€ Document upload system
+â”œâ”€ Profile photo upload
+â”œâ”€ Resource library
+â”œâ”€ Report PDF generation
+â””â”€ Secure file downloads
+
+Priority 3.4: Notifications & Real-Time
+â”œâ”€ Email notifications
+â”œâ”€ SMS notifications
+â”œâ”€ In-app notification center
+â”œâ”€ WebSocket for real-time updates
+â””â”€ Notification preferences
+```
+
+### Phase 4: Polish & Optimize (1 Week)
+
+```
+Priority 4.1: UI/UX Improvements
+â”œâ”€ Add loading skeletons
+â”œâ”€ Better error messages
+â”œâ”€ Pagination on tables
+â”œâ”€ Form validation feedback
+â””â”€ Responsive design
+
+Priority 4.2: Performance
+â”œâ”€ Implement caching
+â”œâ”€ Optimize API queries
+â”œâ”€ Lazy load components
+â”œâ”€ Compress images
+â””â”€ Monitor performance
+
+Priority 4.3: Testing & QA
+â”œâ”€ Unit tests for utils
+â”œâ”€ Integration tests for APIs
+â”œâ”€ E2E tests for critical flows
+â”œâ”€ User acceptance testing
+â””â”€ Bug fix final sweep
+
+Priority 4.4: Documentation
+â”œâ”€ API documentation (Swagger)
+â”œâ”€ User guide for each role
+â”œâ”€ Admin setup guide
+â”œâ”€ Developer onboarding
+â””â”€ Deployment guide
+```
+
+---
+
+## ðŸŒŒ Anti-Gravity Navigation Concept
+
+### Understanding Anti-Gravity
+
+The term "anti-gravity" in navigation suggests navigation that defies normal hierarchical flow. In a SaaS multi-tenant system, this means:
+
+```
+Traditional Hierarchy (Linear):
+User â†’ Role â†’ Department â†’ Permissions
+       â†“
+       Locked into single path
+       Cannot move laterally
+
+Anti-Gravity (Fluid):
+    â”Œâ”€â†’ Can access multiple roles
+    â”‚
+User â”€â†’ Multi-role assignment (Teacher + Department Head)
+    â”‚
+    â””â”€â†’ Context-aware permissions (Different in each class)
+```
+
+### Implementation Strategy
+
+#### 1. **Multi-Role Assignment**
+
+A single user can hold multiple roles simultaneously:
+
+```typescript
+// User is both Teacher AND Department Head
+const userRoles = [
+  { roleId: "teacher_id", tenantId: "school_1", expiresAt: null },
+  { roleId: "dept_head_id", tenantId: "school_1", expiresAt: "2025-12-31" }
+];
+
+// They see both navigations:
+// As Teacher: Classes, Attendance, Grades
+// As Dept Head: Teachers, Budget, Reports
+
+// Role Switching UI:
+<RoleSwitcher roles={userRoles} />
+// "Currently viewing as: Department Head [Switch to Teacher â†’]"
+```
+
+#### 2. **Context-Switching Navigation**
+
+Navigation changes based on context (which class, which department):
+
+```typescript
+// Teacher viewing Class A:
+/teacher/classes/classA/students
+/teacher/classes/classA/attendance
+/teacher/classes/classA/grades
+
+// Same teacher viewing Class B:
+/teacher/classes/classB/students
+/teacher/classes/classB/attendance
+/teacher/classes/classB/grades
+
+// The sidebar dynamically updates for each class
+```
+
+#### 3. **Scope-Based Navigation**
+
+Permissions change based on scope:
+
+```typescript
+// Same user, different permissions:
+
+As FINANCE_ADMIN (Scope: ALL):
+â”œâ”€ Can view all fees
+â”œâ”€ Can view all payments
+â””â”€ Can approve all transactions
+
+As DEPARTMENT_HEAD (Scope: DEPARTMENT):
+â”œâ”€ Can view department fees only
+â”œâ”€ Can view department payments only
+â””â”€ Cannot approve (no approval permission)
+
+// Navigation reflects this:
+if (permission.scope === "ALL") {
+  sidebarItems.push("All Fees");
+} else if (permission.scope === "DEPARTMENT") {
+  sidebarItems.push(`${department.name} Fees`);
+}
+```
+
+#### 4. **Temporal Role Expiration**
+
+Roles can be temporary:
+
+```typescript
+const tempRole = {
+  roleId: "interim_head_id",
+  tenantId: "school_1",
+  expiresAt: "2025-06-30" // Role ends after this date
+};
+
+// Middleware checks expiration:
+function checkRoleExpiration(req, res, next) {
+  const roles = req.user.tenantRoles;
+  const activeRoles = roles.filter(r => !r.expiresAt || new Date(r.expiresAt) > new Date());
+  
+  if (activeRoles.length === 0) {
+    return res.status(403).json({ error: "No active roles" });
+  }
+  
+  req.activeRoles = activeRoles;
+  next();
+}
+```
+
+#### 5. **Cross-Tenant Navigation (Super Admin)**
+
+SaaS super admin can impersonate tenants:
+
+```typescript
+// SaaS Admin sees:
+/saas-admin/dashboard (Platform view)
+/saas-admin/tenants/[id]/impersonate (View as that tenant admin)
+
+// When impersonating:
+/impersonate/tenant_123/admin/dashboard
+// This temporarily sets tenantId for all requests
+
+// Backend enforces:
+if (req.user.saasSuperAdmin && req.query.impersonateTenantId) {
+  req.tenantId = req.query.impersonateTenantId; // Allow cross-tenant viewing
+}
+```
+
+#### 6. **Dynamic Sidebar Generation**
+
+Instead of static sidebars, generate based on actual permissions:
+
+```typescript
+// WRONG: Hardcoded sidebar
+const adminSidebar = [
+  { title: "Users", url: "/admin/users" },
+  { title: "Finances", url: "/admin/finances" },
+  // ... etc
+];
+
+// RIGHT: Permission-based sidebar
+async function generateSidebar(userId, tenantId) {
+  const roles = await getActiveRoles(userId, tenantId);
+  const permissions = await getPermissionsForRoles(roles);
+  
+  const items = [];
+  
+  if (permissions.some(p => p.subject === "USERS")) {
+    items.push({ title: "Users", url: "/admin/users" });
+  }
+  if (permissions.some(p => p.subject === "FINANCE")) {
+    items.push({ title: "Finances", url: "/admin/finances" });
+  }
+  
+  return items;
+}
+```
+
+#### 7. **Permission-Aware Component Rendering**
+
+```typescript
+// Components check permissions before rendering:
+export function AdminPanel({ userId, tenantId }) {
+  const [permissions, setPermissions] = useState([]);
+  
+  useEffect(() => {
+    fetch(`/api/users/me/permissions?tenantId=${tenantId}`)
+      .then(r => r.json())
+      .then(p => setPermissions(p));
+  }, [userId, tenantId]);
+  
+  const can = (action, subject, scope) => {
+    return permissions.some(p => 
+      p.action === action && 
+      p.subject === subject && 
+      (p.scope === "ALL" || p.scope === scope)
+    );
+  };
+  
+  return (
+    <div>
+      {can("READ", "USERS", "ALL") && <UsersList />}
+      {can("UPDATE", "ROLES", "ALL") && <RoleManager />}
+      {can("CREATE", "ANNOUNCEMENTS", "ALL") && <AnnouncementForm />}
+    </div>
+  );
+}
+```
+
+### Anti-Gravity Navigation Benefits
+
+1. **Flexibility**: Same person can do multiple jobs
+2. **Scalability**: Add roles without breaking UI
+3. **Audit Trail**: Know exactly what each user can do
+4. **Temporal Roles**: Support internships, consultants, temp staff
+5. **Zero Hardcoding**: Sidebar/permissions are always dynamic
+6. **Compliance**: Easier to prove who had access to what
+
+### Implementation Checklist
+
+```
+[] Implement multi-role support in frontend
+[] Create role switcher component
+[] Add role expiration checking
+[] Dynamic sidebar generation function
+[] Permission-aware component wrapper
+[] Context API for current role/permissions
+[] Update routing to respect permissions
+[] Add impersonate mode for SaaS admin
+[] Test all role transitions
+[] Add permission caching layer
+[] Create admin UI for role assignment
+[] Build role expiration notifications
+```
+
+---
+
+## ðŸ‘¥ Role-Specific Implementation Details
+
+### SaaS Admin Deep Implementation
+
+**File**: `app/(saas)/saas-admin/page.tsx`
+
+```typescript
+"use client";
+
+import { useEffect, useState } from "react";
+import { LayoutDashboard, Users, Building } from "lucide-react";
+import { Card } from "@/components/ui/card";
+
+export default function SaasAdminDashboard() {
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch("/api/saas-admin/metrics", {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+          }
+        });
+        
+        if (!response.ok) throw new Error("Failed to fetch metrics");
+        
+        const data = await response.json();
+        setMetrics(data);
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMetrics();
+  }, []);
+  
+  if (loading) return <div>Loading...</div>;
+  
+  return (
+    <div className="space-y-6 p-6">
+      <h1 className="text-3xl font-bold">Platform Dashboard</h1>
+      
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Tenants</p>
+              <p className="text-2xl font-bold">{metrics.totalTenants}</p>
+            </div>
+            <Building className="w-8 h-8 text-blue-500" />
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Active Users</p>
+              <p className="text-2xl font-bold">{metrics.activeUsers}</p>
+            </div>
+            <Users className="w-8 h-8 text-green-500" />
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Monthly Revenue</p>
+              <p className="text-2xl font-bold">${metrics.monthlyRevenue}</p>
+            </div>
+            <LayoutDashboard className="w-8 h-8 text-purple-500" />
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+```
+
+**Backend Controller**: `backend/src/controllers/saas.ts`
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import { Request, Response } from "express";
+
+const prisma = new PrismaClient();
+
+export async function getSaasMetrics(req: Request, res: Response) {
+  try {
+    // Only SaaS super admin can access
+    if (!req.user.saasSuperAdmin) {
+      return res.status(403).json({ error: 
+<truncated 76269 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.

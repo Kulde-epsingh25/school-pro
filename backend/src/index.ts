@@ -19,6 +19,13 @@ import securityRouter from "./routes/security";
 import classesRouter from "./routes/classes";
 import studentsRouter from "./routes/students";
 import parentsRouter from "./routes/parents";
+import teachersRouter from "./routes/teachers";
+import attendanceRouter from "./routes/attendance";
+import examsRouter from "./routes/exams";
+import gradesRouter from "./routes/grades";
+import assignmentsRouter from "./routes/assignments";
+import announcementsRouter from "./routes/announcements";
+import reportsRouter from "./routes/reports";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -65,6 +72,13 @@ app.use("/finance", financeRouter);
 app.use("/classes", classesRouter);
 app.use("/students", studentsRouter);
 app.use("/parents", parentsRouter);
+app.use("/teachers", teachersRouter);
+app.use("/attendance", attendanceRouter);
+app.use("/exams", examsRouter);
+app.use("/grades", gradesRouter);
+app.use("/assignments", assignmentsRouter);
+app.use("/announcements", announcementsRouter);
+app.use("/reports", reportsRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -27,12 +27,21 @@ model Tenant {
   tenantSuperAdmin  TenantSuperAdmin?
 
   // Audits
-  tenantAuditLogs  TenantAuditLog[]
-  roleChangeAudits RoleChangeAudit[]
-  departments      Department[]
-  classes          Class[]
-  terms            Term[]
-  subscription     Subscription?
+  tenantAuditLogs      TenantAuditLog[]
+  roleChangeAudits     RoleChangeAudit[]
+  departments          Department[]
+  classes              Class[]
+  terms                Term[]
+  subscription         Subscription?
+  Attendance           Attendance[]
+  Exam                 Exam[]
+  StudentGrade         StudentGrade[]
+  Assignment           Assignment[]
+  AssignmentSubmission AssignmentSubmission[]
+  Announcement         Announcement[]
+  Payment              Payment[]
+  SalaryPayment        SalaryPayment[]
+  Expense              Expense[]
 }
 
 // ---------------------------------------------------------
@@ -67,6 +76,7 @@ model User {
   studentProfile StudentProfile?
   parentProfile  ParentProfile?
   staffProfile   StaffProfile?
+  SalaryPayment  SalaryPayment[]
 }
 
 // Global Level - Only for SaaS super admin
@@ -213,7 +223,10 @@ model StudentProfile {
   streamId String? @db.ObjectId
   stream   Stream? @relation(fields: [streamId], references: [id])
 
-  payments Payment[]
+  payments             Payment[]
+  Attendance           Attendance[]
+  StudentGrade         StudentGrade[]
+  AssignmentSubmission AssignmentSubmission[]
 }
 
 // ---------------------------------------------------------
@@ -261,27 +274,31 @@ model Term {
 }
 
 model Class {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  tenantId  String           @db.ObjectId
-  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  streams   Stream[]
-  students  StudentProfile[]
-  fees      Fee[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  tenantId   String           @db.ObjectId
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  streams    Stream[]
+  students   StudentProfile[]
+  fees       Fee[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  Attendance Attendance[]
+  Exam       Exam[]
+  Assignment Assignment[]
 
   @@unique([name, tenantId])
 }
 
 model Stream {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  classId   String           @db.ObjectId
-  class     Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
-  students  StudentProfile[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  classId    String           @db.ObjectId
+  class      Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students   StudentProfile[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  Attendance Attendance[]
 
   @@unique([name, classId])
 }
@@ -314,6 +331,8 @@ model FeeItem {
 
 model Payment {
   id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String         @db.ObjectId
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   studentId   String         @db.ObjectId
   student     StudentProfile @relation(fields: [studentId], references: [id])
   amount      Float
@@ -386,4 +405,177 @@ model SystemSettings {
   updatedBy   String?  @db.ObjectId
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model Attendance {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  classId String @db.ObjectId
+  class   Class  @relation(fields: [classId], references: [id])
+
+  streamId String? @db.ObjectId
+  stream   Stream? @relation(fields: [streamId], references: [id])
+
+  date    DateTime         @default(now())
+  status  AttendanceStatus
+  remarks String?
+
+  markedBy String   @db.ObjectId
+  markedAt DateTime @default(now())
+
+  @@unique([studentId, date])
+}
+
+model Exam {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name String
+  date DateTime
+
+  classId String @db.ObjectId
+  class   Class  @relation(fields: [classId], references: [id])
+
+  subject  String
+  maxScore Float
+
+  grades StudentGrade[]
+
+  createdBy String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentGrade {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  examId String @db.ObjectId
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  score   Float
+  remarks String?
+
+  markedBy String   @db.ObjectId
+  markedAt DateTime @default(now())
+
+  @@unique([examId, studentId])
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+}
+
+model Assignment {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  dueDate     DateTime
+
+  classId String @db.ObjectId
+  class   Class  @relation(fields: [classId], references: [id])
+
+  subject  String
+  maxScore Float
+
+  submissions AssignmentSubmission[]
+
+  createdBy String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AssignmentSubmission {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  assignmentId String     @db.ObjectId
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  status   SubmissionStatus @default(PENDING)
+  content  String? // URL or text
+  score    Float?
+  feedback String?
+
+  submittedAt DateTime?
+  gradedBy    String?   @db.ObjectId
+  gradedAt    DateTime?
+
+  @@unique([assignmentId, studentId])
+}
+
+enum AnnouncementRole {
+  ALL
+  TEACHER
+  STUDENT
+  PARENT
+  ADMIN
+}
+
+model Announcement {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title      String
+  content    String
+  targetRole AnnouncementRole @default(ALL)
+
+  createdBy  String  @db.ObjectId
+  authorName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalaryPayment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  month     Int
+  year      Int
+  status    String // PAID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title     String
+  amount    Float
+  category  String
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
