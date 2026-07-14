@@ -5,7 +5,7 @@ import { createUserSchema } from "../schemas/user";
 import { z } from "zod";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 const prisma = new PrismaClient();
 
