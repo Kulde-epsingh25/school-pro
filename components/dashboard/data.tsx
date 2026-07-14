@@ -38,7 +38,7 @@ export const getNavData = (roles: string[] = []) => {
                 { title: "Roles & Permissions", url: "/admin/roles" },
                 { title: "Users", url: "/admin/users" },
                 { title: "Audit Logs", url: "/admin/audit" },
-                { title: "Organization Settings", url: "/admin/settings" },
+                { title: "Organization Settings", url: "/admin/settings/security" },
             ],
         });
     }
@@ -51,9 +51,9 @@ export const getNavData = (roles: string[] = []) => {
             isActive: true,
             items: [
                 { title: "Overview", url: "/dashboard" },
-                { title: "Analytics", url: "/dashboard/analytics" },
-                { title: "Reports", url: "/dashboard/reports" },
+                { title: "Reports", url: "/dashboard/reports/academic" },
                 { title: "Attendance Reports", url: "/dashboard/reports/attendance" },
+                { title: "Financial Reports", url: "/dashboard/reports/financial" },
             ],
         });
         navMain.push({
@@ -62,9 +62,6 @@ export const getNavData = (roles: string[] = []) => {
             icon: Users,
             items: [
                 { title: "Student Directory", url: "/dashboard/students" },
-                { title: "Fee Management", url: "/dashboard/students/fees" },
-                { title: "Attendance", url: "/dashboard/students/attendance" },
-                { title: "Student ID ", url: "/dashboard/students/id" },
             ],
         });
         navMain.push({
@@ -77,7 +74,7 @@ export const getNavData = (roles: string[] = []) => {
                 { title: "Subjects", url: "/dashboard/academics/subjects" },
                 { title: "Terms", url: "/dashboard/academics/terms" },
                 { title: "Timetable", url: "/dashboard/academics/timetable" },
-                { title: "Examinations", url: "/dashboard/academics/examinations" },
+                { title: "Examinations", url: "/dashboard/academics/exams" },
                 { title: "Assignments", url: "/dashboard/academics/assignments" },
                 { title: "Report Cards", url: "/dashboard/academics/report-cards" },
             ],
@@ -87,34 +84,28 @@ export const getNavData = (roles: string[] = []) => {
     if (isAdmin) {
         navMain.push({
             title: "Staff",
-            url: "/dashboard/staff",
+            url: "/dashboard/teacher",
             icon: ClipboardList,
             items: [
-                { title: "All Staff", url: "/dashboard/staff" },
-                { title: "Attendance", url: "/dashboard/staff/attendance" },
-                { title: "Payroll", url: "/dashboard/staff/payroll" },
-                { title: "Leave Management", url: "/dashboard/staff/leave" },
+                { title: "All Staff", url: "/dashboard/teacher" },
             ],
         });
         navMain.push({
             title: "Finance",
-            url: "/finance",
+            url: "/dashboard/finance",
             icon: DollarSign,
             items: [
-                { title: "Fee Collection", url: "/finance/fees" },
-                { title: "Invoices", url: "/finance/invoices" },
-                { title: "Scholarships", url: "/finance/scholarships" },
-                { title: "Expense Reports", url: "/finance/expenses" },
+                { title: "Fee Collection", url: "/dashboard/finance/fees" },
+                { title: "Expenses", url: "/dashboard/finance/expenses" },
+                { title: "Payroll", url: "/dashboard/finance/payroll" },
             ],
         });
         navMain.push({
             title: "Settings",
-            url: "/settings",
+            url: "/admin/settings/security",
             icon: Settings2,
             items: [
-                { title: "School Profile", url: "/settings/profile" },
-                { title: "System Settings", url: "/settings/system" },
-                { title: "Backup & Security", url: "/settings/security" },
+                { title: "Backup & Security", url: "/admin/settings/security" },
             ],
         });
     }

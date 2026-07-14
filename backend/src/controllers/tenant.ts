@@ -83,7 +83,7 @@ export async function createTenant(req: Request, res: Response) {
     });
 
     // Seed default permissions OUTSIDE the transaction to bypass MongoDB transaction limits
-    const defaultSubjects = ["USERS", "ROLES", "FEES", "CLASSES", "STUDENTS", "SETTINGS", "REPORTS", "DEPARTMENTS", "SUBJECTS"];
+    const defaultSubjects = ["USERS", "ROLES", "FEES", "CLASSES", "STUDENTS", "SETTINGS", "REPORTS", "DEPARTMENTS", "SUBJECTS", "AUDIT"];
     const defaultActions = ["CREATE", "READ", "UPDATE", "DELETE"];
     const defaultScopes = ["ALL", "DEPARTMENT", "OWN_ONLY"];
     
