@@ -287,13 +287,10 @@ export default function OnboardingWizard() {
                 </p>
                 <div className="mt-6 bg-gray-50 border border-gray-100 rounded-lg p-4">
                   <p className="text-sm text-gray-600 font-semibold">
-                    An automated invitation has been dispatched to:<br/>
+                    An invitation has been dispatched to:<br/>
                     <span className="text-blue-600 font-bold">{formData.adminEmail}</span>
                   </p>
                 </div>
-                <p className="mt-4 text-xs text-gray-400 italic font-medium">
-                  (Developer Note: Check your terminal console for the simulated Magic Link!)
-                </p>
               </div>
             )}
 

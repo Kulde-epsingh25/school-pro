@@ -3,6 +3,9 @@ import { PrismaClient, TenantRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { createUserSchema } from "../schemas/user";
 import { z } from "zod";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const prisma = new PrismaClient();
 
@@ -54,11 +57,27 @@ export const createUser = async (req: Request, res: Response) => {
     const magicLink = `https://school-pro-mocha-beta.vercel.app/auth/verify?token=${verificationToken}`;
 
     console.log("=========================================================");
-    console.log(`[MOCK EMAIL] To: ${email}`);
-    console.log(`[MOCK EMAIL] Subject: Invitation to join School Management Pro`);
-    console.log(`[MOCK EMAIL] Body: You have been invited by the Super Admin to join the system. Please verify your account and set your password:`);
-    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+    console.log(`[MAGIC LINK - DEV ACCESS] To: ${email}`);
+    console.log(`[MAGIC LINK] Link: ${magicLink}`);
     console.log("=========================================================");
+
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: "School Management Pro <noreply@schoolpro.app>", // Update with verified domain if applicable
+        to: email,
+        subject: "Invitation to join School Management Pro",
+        html: `
+          <h1>Welcome to School Management Pro</h1>
+          <p>Hi ${firstName},</p>
+          <p>You have been invited by the Super Admin to join the system.</p>
+          <p>Please click the link below to verify your account and set up your secure password:</p>
+          <a href="${magicLink}" style="display:inline-block;padding:10px 20px;background:#2563EB;color:white;text-decoration:none;border-radius:5px;">Set My Password</a>
+        `,
+      });
+      console.log(`[EMAIL SENT] Invitation email sent to ${email} via Resend.`);
+    } else {
+      console.log(`[MOCK EMAIL] Invitation email simulated for ${email}.`);
+    }
 
     res.status(201).json({ 
       message: "User created and invitation sent successfully",

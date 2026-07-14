@@ -15,6 +15,7 @@ model Tenant {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String // e.g. "College of Engineering", "Main University"
   domain    String?  @unique // e.g. "engineering.university.edu"
+  logo      String?
   isMaster  Boolean  @default(false) // True for University Headquarters Super Admin
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

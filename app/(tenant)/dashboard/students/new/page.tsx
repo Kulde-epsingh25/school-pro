@@ -75,7 +75,7 @@ export default function NewStudentPage() {
       rollNo: generateRollNumber(),
       regNo: generateRegistrationNumber("BU", prev.studentType as "PS" | "SS", new Date().getFullYear(), mockSeq)
     }));
-  }, []);
+  }, [school?.id, user?.id]);
 
   const fetchData = async () => {
     try {

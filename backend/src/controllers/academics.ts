@@ -5,9 +5,12 @@ const prisma = new PrismaClient();
 const DUMMY_TENANT_ID = "00000000-0000-0000-0000-000000000000"; // For compiling
 
 export const getTerms = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
   try {
     const terms = await prisma.term.findMany({
-      where: { tenantId: DUMMY_TENANT_ID },
+      where: { tenantId },
       orderBy: { year: "desc" }
     });
     res.json(terms);
@@ -18,18 +21,14 @@ export const getTerms = async (req: Request, res: Response) => {
 };
 
 export const createTerm = async (req: Request, res: Response) => {
-  const { name, year, startDate, endDate, isActive } = req.body;
-  try {
-    // Basic tenant provision for dummy
-    const tenant = await prisma.tenant.upsert({
-      where: { id: DUMMY_TENANT_ID },
-      update: {},
-      create: { id: DUMMY_TENANT_ID, name: "Default College" }
-    });
+  const { name, year, startDate, endDate, isActive, tenantId } = req.body;
+  
+  if (!tenantId) return res.status(400).json({ error: "Tenant ID required" });
 
+  try {
     if (isActive) {
       await prisma.term.updateMany({
-        where: { tenantId: DUMMY_TENANT_ID },
+        where: { tenantId },
         data: { isActive: false }
       });
     }
@@ -41,7 +40,7 @@ export const createTerm = async (req: Request, res: Response) => {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         isActive,
-        tenantId: tenant.id
+        tenantId
       }
     });
     res.json(term);
@@ -52,9 +51,12 @@ export const createTerm = async (req: Request, res: Response) => {
 };
 
 export const getDepartments = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
   try {
     const depts = await prisma.department.findMany({
-      where: { tenantId: DUMMY_TENANT_ID },
+      where: { tenantId },
       include: { subjects: true }
     });
     res.json(depts);
@@ -65,9 +67,12 @@ export const getDepartments = async (req: Request, res: Response) => {
 };
 
 export const createDepartment = async (req: Request, res: Response) => {
+  const { name, tenantId } = req.body;
+  if (!tenantId) return res.status(400).json({ error: "Tenant ID required" });
+
   try {
     const dept = await prisma.department.create({
-      data: { name: req.body.name, tenantId: DUMMY_TENANT_ID }
+      data: { name, tenantId }
     });
     res.json(dept);
   } catch (error) {

@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { db } from "../db";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function getTenants(req: Request, res: Response) {
   try {
@@ -22,7 +25,7 @@ export async function getTenants(req: Request, res: Response) {
 
 export async function createTenant(req: Request, res: Response) {
   try {
-    const { name, schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
+    const { name, schoolName, domain, adminFirstName, adminLastName, adminEmail, plan, logoBase64 } = req.body;
     const finalName = name || schoolName;
     const finalDomain = domain && domain.trim() !== "" ? domain.trim() : undefined;
 
@@ -32,6 +35,7 @@ export async function createTenant(req: Request, res: Response) {
         data: {
           name: finalName,
           domain: finalDomain,
+          logo: logoBase64,
           subscription: {
             create: {
               plan: plan || "starter",
@@ -50,7 +54,7 @@ export async function createTenant(req: Request, res: Response) {
           password: "TempPassword123!", // In real app, send welcome email to set password
           firstName: adminFirstName,
           lastName: adminLastName,
-          isActive: true
+          isActive: false // User must verify email and set password to activate
         }
       });
 
@@ -170,12 +174,28 @@ export async function createTenant(req: Request, res: Response) {
     const baseUrl = req.headers.origin || "https://school-pro-mocha-beta.vercel.app";
     const magicLink = `${baseUrl}/auth/verify?token=${verificationToken}`;
 
-    console.log("=========================================================");
-    console.log(`[MOCK EMAIL] To: ${adminEmail}`);
-    console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
-    console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
-    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
-    console.log("=========================================================");
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: "School Management Pro <noreply@schoolpro.app>", // Update with verified domain if applicable
+        to: adminEmail,
+        subject: "Welcome to School Management Pro - Verify Your Account",
+        html: `
+          <h1>Welcome to School Management Pro</h1>
+          <p>Hi ${adminFirstName},</p>
+          <p>Your institution <strong>${finalName}</strong> has been successfully provisioned.</p>
+          <p>Please click the link below to verify your account and set up your secure password:</p>
+          <a href="${magicLink}" style="display:inline-block;padding:10px 20px;background:#2563EB;color:white;text-decoration:none;border-radius:5px;">Set My Password</a>
+        `,
+      });
+      console.log(`[EMAIL SENT] Verification email sent to ${adminEmail} via Resend.`);
+    } else {
+      console.log("=========================================================");
+      console.log(`[MOCK EMAIL] To: ${adminEmail}`);
+      console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
+      console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
+      console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+      console.log("=========================================================");
+    }
 
     res.status(201).json(tenantResult.tenant);
   } catch (error) {

@@ -4,14 +4,14 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 export const sendVerificationEmail = async (email: string, magicLink: string, schoolName: string) => {
+  console.log("=========================================================");
+  console.log(`[MAGIC LINK - DEV ACCESS] To: ${email}`);
+  console.log(`[MAGIC LINK] Link: ${magicLink}`);
+  console.log("=========================================================");
+
   if (!process.env.RESEND_API_KEY) {
-    console.log("=========================================================");
-    console.log(`[MOCK EMAIL - No RESEND_API_KEY] To: ${email}`);
-    console.log(`[MOCK EMAIL] Subject: Welcome to School Pro - Verify your ${schoolName} account`);
-    console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
-    console.log(`[MOCK EMAIL] Link: ${magicLink}`);
-    console.log("=========================================================");
     return { success: true, mock: true };
+
   }
 
   try {
