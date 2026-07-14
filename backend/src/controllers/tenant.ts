@@ -86,14 +86,11 @@ export async function createTenant(req: Request, res: Response) {
         }
       }
 
-      await tx.tenantPermission.createMany({
-        data: permissionsToCreate
-      });
-
-      // Fetch the created permissions to link them
-      const createdPermissions = await tx.tenantPermission.findMany({
-        where: { tenantId: tenant.id }
-      });
+      const createdPermissions = await Promise.all(
+        permissionsToCreate.map(p => tx.tenantPermission.create({
+          data: p
+        }))
+      );
 
       // 5. Create default roles
       const defaultRoles = [

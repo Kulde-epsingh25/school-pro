@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Plus, Edit, Trash2, Users, BookOpen, DollarSign, Calendar, User, ChevronRight, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
@@ -19,7 +20,28 @@ const mockDepartments = [
 ];
 
 export default function DepartmentsPage() {
+  const [departments, setDepartments] = useState(mockDepartments);
   const [activeDept, setActiveDept] = useState(mockDepartments[0]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", hod: "" });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newDept = {
+      id: Date.now().toString(),
+      name: formData.name,
+      hod: formData.hod || "Not assigned",
+      created: "Just now",
+      hodSince: formData.hod ? new Date().getFullYear().toString() : "Not assigned",
+      teachers: 0,
+      subjects: 0,
+      budget: 0,
+      fy: "FY 2023-2024"
+    };
+    setDepartments([...departments, newDept]);
+    setIsModalOpen(false);
+    setFormData({ name: "", hod: "" });
+  };
 
   return (
         <div className="flex-1 flex bg-white min-h-[calc(100vh-64px)] -m-6 rounded-lg overflow-hidden border shadow-sm">
@@ -31,12 +53,34 @@ export default function DepartmentsPage() {
                 <Building className="w-5 h-5 text-gray-500" />
                 Departments
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900">
-                <Plus className="w-4 h-4" />
-              </Button>
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" type="button">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader className="border-b pb-4 mb-4">
+                    <DialogTitle className="text-xl font-bold">Add New Department</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSave} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Department Name</label>
+                      <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Science" className="h-11 border-blue-400 focus-visible:ring-blue-400" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">Head of Department (HOD)</label>
+                      <Input value={formData.hod} onChange={e => setFormData({ ...formData, hod: e.target.value })} placeholder="e.g. Dr. Albert Einstein" className="h-11 border-blue-400 focus-visible:ring-blue-400" />
+                    </div>
+                    <Button type="submit" className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8 h-11 mt-2 w-full">
+                      <Plus className="w-4 h-4 mr-2" /> Add Department
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="flex-1 overflow-y-auto py-2">
-              {mockDepartments.map(dept => (
+              {departments.map(dept => (
                 <div 
                   key={dept.id} 
                   onClick={() => setActiveDept(dept)}
