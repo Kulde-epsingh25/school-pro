@@ -51,7 +51,8 @@ export const getNavData = (roles: string[] = []) => {
             isActive: true,
             items: [
                 { title: "Overview", url: "/dashboard" },
-                { title: "Reports", url: "/dashboard/reports/academic" },
+                { title: "Analytics", url: "/dashboard/analytics" },
+                { title: "Academic Reports", url: "/dashboard/reports/academic" },
                 { title: "Attendance Reports", url: "/dashboard/reports/attendance" },
                 { title: "Financial Reports", url: "/dashboard/reports/financial" },
             ],

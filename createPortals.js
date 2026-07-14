@@ -1,11 +1,37 @@
-"use client";
+const fs = require('fs');
+const path = require('path');
+
+const pagesToCreate = [
+  { url: '/portal/student', title: 'Student Dashboard' },
+  { url: '/portal/student/attendance', title: 'My Attendance' },
+  { url: '/portal/student/report-cards', title: 'My Report Cards' },
+  { url: '/portal/student/fees', title: 'My Fees' },
+  { url: '/portal/parent', title: 'Parent Dashboard' },
+  { url: '/portal/parent/attendance', title: 'Children Attendance' },
+  { url: '/portal/parent/report-cards', title: 'Children Report Cards' },
+  { url: '/portal/parent/fees', title: 'Fee Payments' },
+];
+
+const tenantAppDir = path.join(__dirname, 'app', '(tenant)');
+
+for (const { url, title } of pagesToCreate) {
+  const pagePath = path.join(tenantAppDir, url, 'page.tsx');
+  const dir = path.dirname(pagePath);
+  
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const componentName = title.replace(/\s+/g, '');
+  
+  const content = `"use client";
 import React, { useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api-client";
 
-export default function ChildrenReportCardsPage() {
+export default function ${componentName}Page() {
   const user = useAuthStore(state => state.user);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -38,10 +64,10 @@ export default function ChildrenReportCardsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Children Report Cards" />
+      <PageHeader title="${title}" />
       <Card>
         <CardHeader>
-          <CardTitle>Children Report Cards</CardTitle>
+          <CardTitle>${title}</CardTitle>
           <CardDescription>View your personalized information and records.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,4 +90,9 @@ export default function ChildrenReportCardsPage() {
       </Card>
     </div>
   );
+}
+`;
+
+  fs.writeFileSync(pagePath, content);
+  console.log(`Created ${pagePath}`);
 }

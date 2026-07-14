@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api-client";
 
-export default function ChildrenReportCardsPage() {
+export default function ChildrenAttendancePage() {
   const user = useAuthStore(state => state.user);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -38,10 +38,10 @@ export default function ChildrenReportCardsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Children Report Cards" />
+      <PageHeader title="Children Attendance" />
       <Card>
         <CardHeader>
-          <CardTitle>Children Report Cards</CardTitle>
+          <CardTitle>Children Attendance</CardTitle>
           <CardDescription>View your personalized information and records.</CardDescription>
         </CardHeader>
         <CardContent>
