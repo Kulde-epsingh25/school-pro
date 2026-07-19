@@ -28,6 +28,13 @@ import announcementsRouter from "./routes/announcements";
 import reportsRouter from "./routes/reports";
 import dashboardRouter from "./routes/dashboard";
 import timetableRouter from "./routes/timetable";
+import communicationRouter from "./routes/communication";
+import documentsRouter from "./routes/documents";
+import leavesRouter from "./routes/leaves";
+import feesRouter from "./routes/fees";
+import libraryRouter from "./routes/library";
+import transportRouter from "./routes/transport";
+import hostelRouter from "./routes/hostel";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -83,6 +90,13 @@ app.use("/announcements", announcementsRouter);
 app.use("/reports", reportsRouter);
 app.use("/dashboard", dashboardRouter);
 app.use("/timetable", timetableRouter);
+app.use("/communication", communicationRouter);
+app.use("/documents", documentsRouter);
+app.use("/leaves", leavesRouter);
+app.use("/fees", feesRouter);
+app.use("/library", libraryRouter);
+app.use("/transport", transportRouter);
+app.use("/hostel", hostelRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

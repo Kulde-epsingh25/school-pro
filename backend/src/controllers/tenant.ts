@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "../db";
 import { Resend } from "resend";
+import { seedDefaultPermissions } from "../utils/tenantProvisioning";
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
@@ -83,81 +84,7 @@ export async function createTenant(req: Request, res: Response) {
     });
 
     // Seed default permissions OUTSIDE the transaction to bypass MongoDB transaction limits
-    const defaultSubjects = ["USERS", "ROLES", "FEES", "CLASSES", "STUDENTS", "SETTINGS", "REPORTS", "DEPARTMENTS", "SUBJECTS", "AUDIT"];
-    const defaultActions = ["CREATE", "READ", "UPDATE", "DELETE"];
-    const defaultScopes = ["ALL", "DEPARTMENT", "OWN_ONLY"];
-    
-    const permissionsToCreate = [];
-    for (const subject of defaultSubjects) {
-      for (const action of defaultActions) {
-        for (const scope of defaultScopes) {
-          permissionsToCreate.push({
-            tenantId: tenantResult.tenant.id,
-            action,
-            subject,
-            scope,
-            description: `Can ${action.toLowerCase()} ${subject.toLowerCase()} (${scope.toLowerCase()})`
-          });
-        }
-      }
-    }
-
-    const createdPermissions = await Promise.all(
-      permissionsToCreate.map(p => db.tenantPermission.create({ data: p }))
-    );
-
-    // Seed default roles OUTSIDE the transaction
-    const defaultRoles = [
-      { name: "SUPER_ADMIN", displayName: "Super Administrator", desc: "Full administrative access" },
-      { name: "DEPARTMENT_ADMIN", displayName: "Department Head", desc: "Department level access" },
-      { name: "FINANCE_ADMIN", displayName: "Finance Officer", desc: "Financial management access" },
-      { name: "ACADEMIC_ADMIN", displayName: "Academic Coordinator", desc: "Academic management access" }
-    ];
-
-    let superAdminRole;
-    
-    for (const roleData of defaultRoles) {
-      const role = await db.tenantRole.create({
-        data: {
-          tenantId: tenantResult.tenant.id,
-          name: roleData.name,
-          displayName: roleData.displayName,
-          description: roleData.desc,
-          createdBy: tenantResult.adminUser.id
-        }
-      });
-
-      if (roleData.name === "SUPER_ADMIN") {
-        superAdminRole = role;
-        const rolePerms = createdPermissions.map(p => ({
-          roleId: role.id,
-          permissionId: p.id
-        }));
-        await db.tenantRolePermission.createMany({ data: rolePerms });
-      } else if (roleData.name === "FINANCE_ADMIN") {
-        const financePerms = createdPermissions
-          .filter(p => ["FEES", "REPORTS", "STUDENTS"].includes(p.subject))
-          .map(p => ({ roleId: role.id, permissionId: p.id }));
-        await db.tenantRolePermission.createMany({ data: financePerms });
-      } else if (roleData.name === "ACADEMIC_ADMIN") {
-        const academicPerms = createdPermissions
-          .filter(p => ["CLASSES", "SUBJECTS", "STUDENTS", "REPORTS", "DEPARTMENTS"].includes(p.subject))
-          .map(p => ({ roleId: role.id, permissionId: p.id }));
-        await db.tenantRolePermission.createMany({ data: academicPerms });
-      }
-    }
-
-    // Link User to SUPER_ADMIN TenantRole
-    if (superAdminRole) {
-      await db.tenantUserRole.create({
-        data: {
-          userId: tenantResult.adminUser.id,
-          tenantId: tenantResult.tenant.id,
-          roleId: superAdminRole.id,
-          assignedBy: tenantResult.adminUser.id
-        }
-      });
-    }
+    await seedDefaultPermissions(tenantResult.tenant.id, tenantResult.adminUser.id);
 
     // 7. Generate the "Magic Link" token (mocking email sending)
     const verificationToken = Buffer.from(`${tenantResult.adminUser.id}:${tenantResult.tenant.id}`).toString('base64');

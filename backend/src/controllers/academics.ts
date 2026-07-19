@@ -81,6 +81,60 @@ export const createDepartment = async (req: Request, res: Response) => {
   }
 };
 
+export const getDepartment = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const { id } = req.params;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
+  try {
+    const dept = await prisma.department.findFirst({
+      where: { id, tenantId },
+      include: { subjects: true }
+    });
+    if (!dept) return res.status(404).json({ error: "Department not found" });
+    res.json(dept);
+  } catch (error) {
+    console.error('[API Error in academics.ts]', error);
+    res.status(500).json({ error: "Failed" });
+  }
+};
+
+export const updateDepartment = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const { id } = req.params;
+  const { name } = req.body;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
+  try {
+    const dept = await prisma.department.updateMany({
+      where: { id, tenantId },
+      data: { name }
+    });
+    if (dept.count === 0) return res.status(404).json({ error: "Department not found" });
+    res.json({ message: "Department updated successfully" });
+  } catch (error) {
+    console.error('[API Error in academics.ts]', error);
+    res.status(500).json({ error: "Failed" });
+  }
+};
+
+export const deleteDepartment = async (req: Request, res: Response) => {
+  const { tenantId } = req.query;
+  const { id } = req.params;
+  if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
+
+  try {
+    const dept = await prisma.department.deleteMany({
+      where: { id, tenantId }
+    });
+    if (dept.count === 0) return res.status(404).json({ error: "Department not found" });
+    res.json({ message: "Department deleted successfully" });
+  } catch (error) {
+    console.error('[API Error in academics.ts]', error);
+    res.status(500).json({ error: "Failed" });
+  }
+};
+
 export const getSubjects = async (req: Request, res: Response) => {
   try {
     const subjects = await prisma.subject.findMany({

@@ -169,7 +169,52 @@ export const markAttendance = async (req: Request, res: Response) => {
 
     res.status(200).json(result);
   } catch (error: any) {
-    console.error("Error marking attendance:", error);
     res.status(500).json({ error: error.message || "Failed to mark attendance" });
+  }
+};
+
+export const importBiometric = async (req: Request, res: Response) => {
+  const { tenantId, data } = req.body;
+  const markedBy = req.headers["x-user-id"] as string;
+
+  if (!tenantId || !data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Tenant ID and data array required" });
+  }
+
+  try {
+    // Process biometric data to extract attendance records
+    // Assuming data is an array of { studentId, date, status }
+    const ops = data.map((record: any) => {
+      const targetDate = new Date(record.date);
+      targetDate.setHours(0, 0, 0, 0);
+
+      return prisma.attendance.upsert({
+        where: {
+          studentId_date: {
+            studentId: record.studentId,
+            date: targetDate
+          }
+        },
+        update: {
+          status: record.status as AttendanceStatus,
+          markedBy,
+          markedAt: new Date()
+        },
+        create: {
+          tenantId,
+          classId: record.classId, // Mock class ID for import
+          studentId: record.studentId,
+          date: targetDate,
+          status: record.status as AttendanceStatus,
+          markedBy
+        }
+      });
+    });
+
+    await prisma.$transaction(ops);
+    res.json({ success: true, count: ops.length });
+  } catch (error) {
+    console.error("Biometric import error:", error);
+    res.status(500).json({ error: "Failed to import biometric data" });
   }
 };

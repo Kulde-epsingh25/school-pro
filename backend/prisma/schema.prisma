@@ -28,22 +28,38 @@ model Tenant {
   tenantSuperAdmin  TenantSuperAdmin?
 
   // Audits
-  tenantAuditLogs      TenantAuditLog[]
-  roleChangeAudits     RoleChangeAudit[]
-  departments          Department[]
-  classes              Class[]
-  terms                Term[]
-  subscription         Subscription?
-  Attendance           Attendance[]
-  Exam                 Exam[]
-  StudentGrade         StudentGrade[]
-  Assignment           Assignment[]
-  AssignmentSubmission AssignmentSubmission[]
-  Announcement         Announcement[]
-  Payment              Payment[]
-  SalaryPayment        SalaryPayment[]
-  Expense              Expense[]
-  TimetablePeriod      TimetablePeriod[]
+  tenantAuditLogs        TenantAuditLog[]
+  roleChangeAudits       RoleChangeAudit[]
+  departments            Department[]
+  classes                Class[]
+  terms                  Term[]
+  subscription           Subscription?
+  Attendance             Attendance[]
+  Exam                   Exam[]
+  StudentGrade           StudentGrade[]
+  Assignment             Assignment[]
+  AssignmentSubmission   AssignmentSubmission[]
+  Announcement           Announcement[]
+  Payment                Payment[]
+  SalaryPayment          SalaryPayment[]
+  Expense                Expense[]
+  TimetablePeriod        TimetablePeriod[]
+  Conversation           Conversation[]
+  Message                Message[]
+  Notification           Notification[]
+  NotificationPreference NotificationPreference[]
+  DocumentTemplate       DocumentTemplate[]
+  GeneratedDocument      GeneratedDocument[]
+  LeaveApplication       LeaveApplication[]
+  StudentFee             StudentFee[]
+  Book                   Book[]
+  BookIssue              BookIssue[]
+  Vehicle                Vehicle[]
+  Route                  Route[]
+  TransportAllocation    TransportAllocation[]
+  Hostel                 Hostel[]
+  HostelAllocation       HostelAllocation[]
+  VisitorPass            VisitorPass[]
 }
 
 // ---------------------------------------------------------
@@ -74,11 +90,17 @@ model User {
   tenantAuditLogs TenantAuditLog[]
 
   // Profile Relations
-  teacherProfile TeacherProfile?
-  studentProfile StudentProfile?
-  parentProfile  ParentProfile?
-  staffProfile   StaffProfile?
-  SalaryPayment  SalaryPayment[]
+  teacherProfile         TeacherProfile?
+  studentProfile         StudentProfile?
+  parentProfile          ParentProfile?
+  staffProfile           StaffProfile?
+  SalaryPayment          SalaryPayment[]
+  Message                Message[]
+  Notification           Notification[]
+  NotificationPreference NotificationPreference[]
+  LeaveApplication       LeaveApplication[]
+  LeaveApproval          LeaveApproval[]
+  BookIssue              BookIssue[]
 }
 
 // Global Level - Only for SaaS super admin
@@ -182,10 +204,10 @@ model TenantUserRole {
 // ---------------------------------------------------------
 
 model TeacherProfile {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String    @unique @db.ObjectId
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subjects Subject[]
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String            @unique @db.ObjectId
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects        Subject[]
   TimetablePeriod TimetablePeriod[]
 }
 
@@ -230,6 +252,11 @@ model StudentProfile {
   Attendance           Attendance[]
   StudentGrade         StudentGrade[]
   AssignmentSubmission AssignmentSubmission[]
+  GeneratedDocument    GeneratedDocument[]
+  StudentFee           StudentFee[]
+  TransportAllocation  TransportAllocation[]
+  HostelAllocation     HostelAllocation[]
+  VisitorPass          VisitorPass[]
 }
 
 // ---------------------------------------------------------
@@ -277,18 +304,18 @@ model Term {
 }
 
 model Class {
-  id         String           @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  tenantId   String           @db.ObjectId
-  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  streams    Stream[]
-  students   StudentProfile[]
-  fees       Fee[]
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  Attendance Attendance[]
-  Exam       Exam[]
-  Assignment Assignment[]
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  tenantId        String            @db.ObjectId
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  streams         Stream[]
+  students        StudentProfile[]
+  fees            Fee[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Attendance      Attendance[]
+  Exam            Exam[]
+  Assignment      Assignment[]
   TimetablePeriod TimetablePeriod[]
 
   @@unique([name, tenantId])
@@ -409,6 +436,124 @@ model SystemSettings {
   updatedBy   String?  @db.ObjectId
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
+}
+
+// ---------------------------------------------------------
+// FEE MANAGEMENT
+// ---------------------------------------------------------
+
+enum FeeType {
+  TUITION
+  TRANSPORT
+  MEAL
+  LAB
+  LATE_FEE
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+  BANK_TRANSFER
+}
+
+model StudentFee {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  type    FeeType
+  title   String
+  amount  Float
+  dueDate DateTime
+
+  isPaid Boolean @default(false)
+
+  payments    FeePayment[]
+  scholarship Scholarship?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FeePayment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  feeId String     @db.ObjectId
+  fee   StudentFee @relation(fields: [feeId], references: [id], onDelete: Cascade)
+
+  amount    Float
+  date      DateTime      @default(now())
+  method    PaymentMethod
+  reference String? // transaction ID or receipt number
+
+  recordedBy String @db.ObjectId
+
+  createdAt DateTime @default(now())
+}
+
+model Scholarship {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  feeId String     @unique @db.ObjectId
+  fee   StudentFee @relation(fields: [feeId], references: [id], onDelete: Cascade)
+
+  amount Float // Fixed amount or could be percentage
+  reason String
+
+  approvedBy String   @db.ObjectId
+  createdAt  DateTime @default(now())
+}
+
+// ---------------------------------------------------------
+// LIBRARY MANAGEMENT
+// ---------------------------------------------------------
+
+model Book {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title    String
+  author   String
+  isbn     String?
+  category String?
+
+  totalCopies     Int @default(1)
+  availableCopies Int @default(1)
+
+  issues BookIssue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BookIssue {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  bookId String @db.ObjectId
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId // Student or staff who borrowed it
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  issueDate  DateTime  @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+
+  fineAmount Float   @default(0)
+  isReturned Boolean @default(false)
+
+  issuedBy String @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum AttendanceStatus {
@@ -585,22 +730,330 @@ model Expense {
 }
 
 model TimetablePeriod {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId  String   @db.ObjectId
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
-  classId   String   @db.ObjectId
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  classId String @db.ObjectId
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   subject   String
-  teacherId String   @db.ObjectId
+  teacherId String         @db.ObjectId
   teacher   TeacherProfile @relation(fields: [teacherId], references: [id])
 
-  dayOfWeek Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  startTime String   // e.g. "09:00"
-  endTime   String   // e.g. "09:45"
-  
+  dayOfWeek Int // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String // e.g. "09:00"
+  endTime   String // e.g. "09:45"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Conversation {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title String?
+
+  participants String[] @db.ObjectId
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String @db.ObjectId
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  content String
+
+  readBy String[] @db.ObjectId
+
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  SYSTEM
+  FEE_DUE
+  ATTENDANCE
+  ACADEMIC
+  MESSAGE
+}
+
+model Notification {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType @default(SYSTEM)
+  title   String
+  message String
+  link    String?
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model NotificationPreference {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emailEnabled Boolean @default(true)
+  pushEnabled  Boolean @default(true)
+  smsEnabled   Boolean @default(false)
+
+  @@unique([tenantId, userId])
+}
+
+// ---------------------------------------------------------
+// DOCUMENT GENERATION
+// ---------------------------------------------------------
+
+enum DocumentType {
+  CERTIFICATE
+  REPORT_CARD
+  ADMIT_CARD
+  OTHER
+}
+
+model DocumentTemplate {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name    String
+  type    DocumentType @default(OTHER)
+  content String // HTML content with placeholders like {{studentName}}
+
+  createdBy String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GeneratedDocument {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  documentUrl String // Path or URL to the generated PDF
+
+  studentId String?         @db.ObjectId // Optional, linked to student
+  student   StudentProfile? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  createdBy String   @db.ObjectId
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------
+// LEAVE MANAGEMENT
+// ---------------------------------------------------------
+
+enum LeaveType {
+  SICK
+  CASUAL
+  UNPAID
+  EARNED
+  SPECIAL
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model LeaveApplication {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId // User applying for leave
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type   LeaveType
+  status LeaveStatus @default(PENDING)
+
+  startDate DateTime
+  endDate   DateTime
+  reason    String
+
+  approvals LeaveApproval[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeaveApproval {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  leaveId String           @db.ObjectId
+  leave   LeaveApplication @relation(fields: [leaveId], references: [id], onDelete: Cascade)
+
+  approverId String @db.ObjectId
+  approver   User   @relation(fields: [approverId], references: [id], onDelete: Cascade)
+
+  status   LeaveStatus
+  comments String?
+
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------
+// TRANSPORT MANAGEMENT
+// ---------------------------------------------------------
+
+model Vehicle {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  registrationNo String
+  capacity       Int
+  driverName     String
+  driverPhone    String?
+
+  routes Route[]
+
+  createdAt DateTime @default(now())
+}
+
+model Route {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name String
+
+  vehicleId String  @db.ObjectId
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  stops       RouteStop[]
+  allocations TransportAllocation[]
+
+  createdAt DateTime @default(now())
+}
+
+model RouteStop {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  routeId String @db.ObjectId
+  route   Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  stopName   String
+  pickupTime String
+  dropTime   String
+  feeAmount  Float  @default(0) // Optional integration with fees later
+
+  allocations TransportAllocation[]
+
+  orderIndex Int @default(0)
+}
+
+model TransportAllocation {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  routeId String @db.ObjectId
+  route   Route  @relation(fields: [routeId], references: [id])
+
+  stopId String    @db.ObjectId
+  stop   RouteStop @relation(fields: [stopId], references: [id])
+
+  assignedBy String   @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, tenantId])
+}
+
+// ---------------------------------------------------------
+// HOSTEL MANAGEMENT
+// ---------------------------------------------------------
+
+model Hostel {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  type        String // e.g. "Boys", "Girls", "Co-ed"
+  wardenName  String
+  wardenPhone String?
+
+  rooms Room[]
+
+  createdAt DateTime @default(now())
+}
+
+model Room {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  hostelId String @db.ObjectId
+  hostel   Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  roomNo           String
+  capacity         Int
+  currentOccupancy Int    @default(0)
+  feePerMonth      Float  @default(0)
+
+  allocations HostelAllocation[]
+}
+
+model HostelAllocation {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  roomId String @db.ObjectId
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  assignedBy String   @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, tenantId])
+}
+
+model VisitorPass {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  studentId String         @db.ObjectId
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  visitorName String
+  relation    String
+  reason      String
+
+  checkInTime  DateTime  @default(now())
+  checkOutTime DateTime?
+  status       String    @default("ACTIVE") // ACTIVE, COMPLETED
+
+  issuedBy  String   @db.ObjectId
+  createdAt DateTime @default(now())
+}

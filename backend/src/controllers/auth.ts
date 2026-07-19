@@ -5,6 +5,8 @@ import { generateTokens } from "../utils/jwt";
 import { loginSchema } from "../schemas/user";
 import { z } from "zod";
 import { sendVerificationEmail } from "../utils/email";
+import { seedDefaultPermissions } from "../utils/tenantProvisioning";
+
 export const onboardSchool = async (req: Request, res: Response) => {
   const { schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
   const finalDomain = domain && domain.trim() !== "" ? domain.trim() : undefined;
@@ -49,6 +51,9 @@ export const onboardSchool = async (req: Request, res: Response) => {
 
       return { tenant, adminUser };
     });
+
+    // Seed permissions for the new school
+    await seedDefaultPermissions(result.tenant.id, result.adminUser.id);
 
     // 4. Generate the "Magic Link" token
     const verificationToken = Buffer.from(`${result.adminUser.id}:${result.tenant.id}`).toString('base64');

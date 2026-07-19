@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser, getUsers, getUser, updateUser, updateUserRoles, removeUserFromTenant, getMyTenants } from "../controllers/users";
+import { createUser, getUsers, getUser, updateUser, updateUserRoles, removeUserFromTenant, getMyTenants, getUsersByRole } from "../controllers/users";
 import { tenantIsolation } from "../middleware/tenantIsolation";
 import { requirePermission } from "../middleware/rbac";
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/me/tenants", tenantIsolation, getMyTenants);
 router.get("/", tenantIsolation, requirePermission("VIEW", "USERS"), getUsers);
+router.get("/by-role", tenantIsolation, requirePermission("VIEW", "USERS"), getUsersByRole);
 router.post("/", tenantIsolation, requirePermission("MANAGE", "USERS"), createUser);
 
 router.get("/:id", tenantIsolation, requirePermission("VIEW", "USERS"), getUser);

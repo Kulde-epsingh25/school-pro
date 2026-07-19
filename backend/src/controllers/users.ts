@@ -328,3 +328,34 @@ export const getMyTenants = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch user tenants" });
   }
 };
+
+export const getUsersByRole = async (req: Request, res: Response) => {
+  const { tenantId, roleName } = req.query;
+
+  if (!tenantId || typeof tenantId !== 'string') {
+    return res.status(400).json({ error: "Tenant ID is required" });
+  }
+
+  if (!roleName || typeof roleName !== 'string') {
+    return res.status(400).json({ error: "Role name is required" });
+  }
+
+  try {
+    const users = await prisma.tenantUserRole.findMany({
+      where: { 
+        tenantId,
+        role: { name: roleName.toUpperCase() }
+      },
+      include: {
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true, phone: true }
+        }
+      }
+    });
+
+    res.status(200).json(users.map(u => u.user));
+  } catch (error) {
+    console.error('[API Error in getUsersByRole]', error);
+    res.status(500).json({ error: "Failed to fetch users by role" });
+  }
+};

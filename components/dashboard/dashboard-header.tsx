@@ -20,6 +20,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useSchoolStore } from "@/store/schoolStore";
 import { apiClient } from "@/lib/api-client";
+import { NotificationCenter } from "@/components/communication/NotificationCenter";
 
 export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -92,6 +93,7 @@ export function DashboardHeader() {
         </DropdownMenu>
       )}
 
+      <NotificationCenter />
       <Button variant="outline" size="icon">
         <span className="sr-only">Toggle theme</span>
         <Sun className="h-5 w-5" />
