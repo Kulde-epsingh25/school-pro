@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 
 export default function NewTenantPage() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);

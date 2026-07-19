@@ -16,6 +16,7 @@ interface Setting {
 
 export default function SystemSettingsPage() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,7 +33,7 @@ export default function SystemSettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/system`, { headers: { "x-user-id": user?.id || "" } });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/system`, { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) {
           const data: Setting[] = await res.json();
           

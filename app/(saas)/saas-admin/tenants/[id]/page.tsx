@@ -37,6 +37,7 @@ interface TenantDetail {
 
 export default function TenantDetailsPage() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const params = useParams();
   const router = useRouter();
   const tenantId = params.id as string;

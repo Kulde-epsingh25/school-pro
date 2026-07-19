@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { db } from "../db";
 import { Resend } from "resend";
 import { seedDefaultPermissions } from "../utils/tenantProvisioning";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
@@ -87,7 +89,11 @@ export async function createTenant(req: Request, res: Response) {
     await seedDefaultPermissions(tenantResult.tenant.id, tenantResult.adminUser.id);
 
     // 7. Generate the "Magic Link" token (mocking email sending)
-    const verificationToken = Buffer.from(`${tenantResult.adminUser.id}:${tenantResult.tenant.id}`).toString('base64');
+    const verificationToken = jwt.sign(
+      { userId: tenantResult.adminUser.id, tenantId: tenantResult.tenant.id },
+      env.JWT_SECRET,
+      { expiresIn: "24h" } // Magic link expires in 24 hours
+    );
     
     // Use the actual request origin or a fallback
     const baseUrl = req.headers.origin || "https://school-pro-mocha-beta.vercel.app";

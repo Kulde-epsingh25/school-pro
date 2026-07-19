@@ -6,6 +6,8 @@ import { loginSchema } from "../schemas/user";
 import { z } from "zod";
 import { sendVerificationEmail } from "../utils/email";
 import { seedDefaultPermissions } from "../utils/tenantProvisioning";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
 
 export const onboardSchool = async (req: Request, res: Response) => {
   const { schoolName, domain, adminFirstName, adminLastName, adminEmail, plan } = req.body;
@@ -56,7 +58,11 @@ export const onboardSchool = async (req: Request, res: Response) => {
     await seedDefaultPermissions(result.tenant.id, result.adminUser.id);
 
     // 4. Generate the "Magic Link" token
-    const verificationToken = Buffer.from(`${result.adminUser.id}:${result.tenant.id}`).toString('base64');
+    const verificationToken = jwt.sign(
+      { userId: result.adminUser.id, tenantId: result.tenant.id },
+      env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
     const magicLink = `https://school-pro-mocha-beta.vercel.app/auth/verify?token=${verificationToken}`;
 
     // 5. Send Real Email (with fallback if API key is missing)
@@ -77,12 +83,12 @@ export const setupPassword = async (req: Request, res: Response) => {
   const { token, password } = req.body;
 
   try {
-    // 1. Decode Token
-    const decoded = Buffer.from(token, 'base64').toString('utf-8');
-    const [userId, tenantId] = decoded.split(':');
+    // 1. Decode and Verify Token
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string, tenantId: string };
+    const { userId, tenantId } = decoded;
 
     if (!userId || !tenantId) {
-      return res.status(400).json({ error: "Invalid token" });
+      return res.status(400).json({ error: "Invalid token structure" });
     }
 
     // 2. Find User
@@ -117,8 +123,7 @@ export const setupPassword = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const validated = loginSchema.parse(req.body);
-    const { email, password } = validated;
+    const { email, password } = req.body;
 
     // 1. Find User by email
     const user = await db.user.findUnique({
@@ -198,9 +203,6 @@ export const login = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Validation failed", details: (error as any).errors });
-    }
     console.error('[API Error in auth.ts]', error);
     res.status(500).json({ error: "Failed to login" });
   }

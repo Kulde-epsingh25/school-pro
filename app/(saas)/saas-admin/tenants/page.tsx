@@ -24,13 +24,14 @@ interface Tenant {
 
 export default function TenantsPage() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchTenants() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`, { headers: { "x-user-id": user?.id || "" } });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/tenants`, { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) {
           const data = await res.json();
           setTenants(data);

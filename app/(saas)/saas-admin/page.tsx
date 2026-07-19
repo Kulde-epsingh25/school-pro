@@ -29,13 +29,14 @@ interface AnalyticsData {
 
 export default function SuperAdminDashboard() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/analytics`, { headers: { "x-user-id": user?.id || "" } });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/analytics`, { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) {
           const json = await res.json();
           setData(json);

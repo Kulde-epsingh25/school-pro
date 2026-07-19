@@ -19,13 +19,14 @@ interface PlatformUser {
 
 export default function UsersPage() {
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/platform-users`, { headers: { "x-user-id": user?.id || "" } });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/platform-users`, { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) {
           const data = await res.json();
           setUsers(data);
