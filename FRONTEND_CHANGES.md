@@ -938,4 +938,351 @@ At the end, report:
 5. Browser flows verified.
 6. Any remaining blockers with exact file names and error messages.
 
-Do not claim completion if a build, lint check, or primary browser flow is failing.、】【assistant to=functions.Read from=commentary  (json񎟿_一本道 代  codeപ്പെടുത്ത♀♀♀ json 
+Do not claim completion if a build, lint check, or primary browser flow is failing.
+
+---
+
+# Agent Prompt: Refetch and Improve the Deployed School Pro Project
+
+Copy this prompt into your coding agent.
+
+## Context
+
+The latest deployed frontend is:
+
+```text
+https://school-pro-mocha-beta.vercel.app/
+```
+
+I re-fetched and inspected the deployed homepage in a browser. It currently loads successfully and includes the School Pro header, hero, CTA buttons, dashboard preview, feature cards, pricing, and footer. However, the deployed page needs an evidence-based review before further redesign or production claims.
+
+Observed risks:
+
+- The page says `Trusted by 500+ production companies`, which may be inaccurate for a school-management product.
+- The trust section contains generic placeholder logo text such as `ipsum`, `Logoipsum`, and `logo`.
+- The page claims features such as GPS tracking, payroll, SMS, online payments, and advanced reporting; verify each claim against the backend before displaying it as available.
+- The dashboard preview image is marketing artwork and must not be treated as proof that dashboard modules work.
+- Multiple frontend files directly call the deployed backend URL instead of using one API client.
+- Multiple pages send `x-user-id`; verify whether the deployed backend actually accepts that authentication mechanism.
+- The deployed frontend and backend must be tested together.
+
+Do not trust previous audits or assumptions. Treat the current deployment, current Git branch, and current backend routes as the source of truth.
+
+## Objective
+
+Make School Pro reliable, honest, accessible, and production-ready across the public marketing pages and authenticated application.
+
+Do not redesign the whole project before completing an audit. Work in small, reviewable changes and preserve working authentication, route structure, database contracts, and existing shadcn components.
+
+## Phase 1: Refetch and audit
+
+Inspect the current repository first:
+
+```bash
+git status --short --branch
+git log -10 --oneline --decorate
+git remote -v
+cat package.json
+cat next.config.ts
+```
+
+Open the deployed frontend:
+
+```bash
+agent-browser open --color-scheme dark "https://school-pro-mocha-beta.vercel.app/" && agent-browser wait --load networkidle && agent-browser wait 2500 && agent-browser snapshot && agent-browser screenshot /tmp/agent-browser/school-pro-home.png
+```
+
+Check these routes where accessible:
+
+```text
+/
+/pricing
+/how-it-works
+/onboarding
+/auth/login
+/auth/verify
+```
+
+For each route, record:
+
+| Route | Loads | CTA works | Console/network errors | Incorrect content | Screenshot |
+|---|---|---|---|---|---|
+
+Inspect the route source and all parent layouts before editing.
+
+## Phase 2: Verify public claims
+
+Search for claims:
+
+```bash
+grep -RInE "500\+|production companies|GPS|payroll|SMS|online payments|real-time|automated|trusted|secure" app components lib backend
+```
+
+For each claim, verify:
+
+1. A frontend implementation exists.
+2. A backend route exists.
+3. A database model or persistence path exists.
+4. Loading, error, and empty states exist.
+5. The primary user flow has been tested.
+
+Rules:
+
+- Verified feature: describe it precisely.
+- Planned feature: label it `Coming soon` or remove it.
+- Placeholder claim: replace it with truthful copy.
+- Never invent customers, logos, adoption numbers, testimonials, certifications, or integrations.
+
+Suggested truthful replacement:
+
+```tsx
+<p>One workspace for administrators, teachers, students, and families</p>
+```
+
+Remove generic logos unless they represent real customers with permission.
+
+## Phase 3: Standardize API configuration
+
+Inspect:
+
+```text
+lib/api-client.ts
+components/frontend/login.tsx
+components/frontend/forms/contact-us-form.tsx
+app/onboarding/page.tsx
+app/auth/verify/page.tsx
+app/(tenant)/**
+app/(portal)/**
+```
+
+Search:
+
+```bash
+grep -RInE "school-pro-api-6mxq-5qzq.onrender.com|NEXT_PUBLIC_API_URL|x-user-id|Authorization|fetch\(" app components lib
+```
+
+Required outcome:
+
+- Authenticated data requests use the shared API client where practical.
+- New code never hardcodes the backend URL.
+- API origin comes from `NEXT_PUBLIC_API_URL` or the project’s existing config.
+- Use the backend’s real auth mechanism consistently.
+- Include credentials/cookies where required.
+- Build tenant queries with `URLSearchParams`.
+- Preserve existing query parameters.
+- Parse nested backend errors into readable UI text.
+
+Suggested URL construction:
+
+```ts
+const url = new URL(endpoint, apiBaseUrl);
+
+if (tenantId) {
+  url.searchParams.set("tenantId", tenantId);
+}
+
+const response = await fetch(url, {
+  ...options,
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    ...options.headers,
+  },
+});
+```
+
+Suggested error parser:
+
+```ts
+type ApiErrorBody = {
+  error?: string | { message?: string; code?: string };
+  message?: string;
+  code?: string;
+};
+
+function getApiErrorMessage(body: ApiErrorBody | null): string {
+  if (!body) return "Something went wrong. Please try again.";
+  if (typeof body.error === "string") return body.error;
+  if (body.error?.message) return body.error.message;
+  if (body.message) return body.message;
+  return "Something went wrong. Please try again.";
+}
+```
+
+## Phase 4: Verify authentication and onboarding
+
+Using a safe test account only, verify:
+
+1. Invalid login shows a readable error.
+2. Valid login redirects to the correct role dashboard.
+3. Refresh preserves the session.
+4. Logout clears the session.
+5. Onboarding validates before submission.
+6. Onboarding reaches the deployed backend.
+7. Verification/password setup does not call localhost or a stale URL.
+8. Tenant switching preserves the selected school and does not require a full browser reload.
+
+Never print passwords, tokens, or private environment-variable values. If a flow fails, record the route, HTTP status, browser error, and source file.
+
+## Phase 5: Improve the public homepage
+
+Inspect the actual components used by:
+
+```text
+app/page.tsx
+components/frontend/**
+```
+
+Header requirements:
+
+- Keep School Pro branding.
+- Use `next/link` for internal navigation.
+- Make the Features menu keyboard accessible.
+- Ensure Login and Try Now navigate to real routes.
+- Add mobile navigation if desktop navigation disappears on small screens.
+- Add accessible labels to icon-only controls.
+
+Suggested hero copy, only if it matches verified modules:
+
+```tsx
+<h1>Run your school with less admin work</h1>
+<p>
+  School Pro brings students, staff, attendance, fees, communication, and daily operations into one clear workspace.
+</p>
+```
+
+Suggested real CTAs:
+
+```tsx
+<Link href="/onboarding">Get started</Link>
+<Link href="#features">Explore features</Link>
+```
+
+Feature cards must contain only verified modules. Each card needs a specific title, concise description, meaningful image alt text, and either a real route or a clear non-interactive status.
+
+## Phase 6: Improve the authenticated dashboard
+
+Inspect:
+
+```text
+app/(tenant)/dashboard/page.tsx
+components/dashboard/dashboard-header.tsx
+components/dashboard/dashboard-sidebar.tsx
+```
+
+Required changes:
+
+- Remove fake metrics and sample records.
+- Load real data through the shared API client.
+- Add `Skeleton` while loading.
+- Add `Alert` with retry on failure.
+- Add `Empty` when data is empty.
+- Replace `Search products...` with `Search students, classes, fees...`.
+- Remove dead buttons and fake upgrade prompts.
+- Use `Link` for internal navigation.
+- Do not call `window.location.reload()` for tenant changes.
+- Verify the sidebar at 375px width.
+
+Suggested loading state:
+
+```tsx
+<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Loading dashboard">
+  {Array.from({ length: 4 }).map((_, index) => (
+    <Skeleton key={index} className="h-28 rounded-xl" />
+  ))}
+</div>
+```
+
+Suggested error state:
+
+```tsx
+<Alert variant="destructive" role="alert">
+  <AlertCircle data-icon="inline-start" />
+  <AlertTitle>Dashboard unavailable</AlertTitle>
+  <AlertDescription className="flex flex-wrap items-center gap-3">
+    <span>{errorMessage}</span>
+    <Button type="button" variant="outline" size="sm" onClick={retry}>
+      Try again
+    </Button>
+  </AlertDescription>
+</Alert>
+```
+
+## Phase 7: Responsive and visual verification
+
+Capture both deployed and local screenshots:
+
+```bash
+agent-browser set viewport 1216 680
+agent-browser screenshot /tmp/agent-browser/school-pro-desktop.png
+agent-browser set viewport 375 667
+agent-browser screenshot /tmp/agent-browser/school-pro-mobile.png
+```
+
+Check header overflow, hero wrapping, CTA stacking, feature cards, pricing overflow, footer navigation, sidebar behavior, touch targets, contrast, and focus states.
+
+Use the existing semantic token system:
+
+```tsx
+className="bg-background text-foreground"
+className="bg-primary text-primary-foreground"
+className="text-muted-foreground"
+className="border-border"
+```
+
+Do not introduce new raw colors such as `bg-blue-600`, `text-black`, or `bg-white` in new code.
+
+## Phase 8: Quality checks
+
+Run:
+
+```bash
+npm run lint
+npm run build
+cd backend && npm run build
+```
+
+Search again:
+
+```bash
+grep -RInE "TODO|FIXME|coming soon|placeholder|mock|dummy|hardcoded|window.location.reload|Search products" app components lib
+```
+
+Review every match and classify it as intentional, test-only, generated, or a real production issue. Fix every real issue.
+
+## Definition of done
+
+Do not report completion until:
+
+- Fake trust logos and unsupported customer claims are removed.
+- Public feature copy matches verified capabilities.
+- Login, onboarding, and verification use the correct deployed backend.
+- Authenticated requests use consistent credentials and tenant handling.
+- Dashboard data is real or shows an honest loading/error/empty state.
+- Desktop and mobile screenshots have no broken layout.
+- Internal navigation works without dead buttons.
+- Frontend lint and build pass.
+- Backend compatibility is preserved.
+- Remaining limitations are documented with exact file names.
+
+## Final report format
+
+Return exactly:
+
+```md
+## Files changed
+
+## Deployed routes checked
+
+## Claims removed or corrected
+
+## API/authentication fixes
+
+## UI/UX improvements
+
+## Commands and browser checks
+
+## Remaining blockers
+```
+
+Never claim that a feature works merely because its card or marketing copy renders. A feature is complete only after its user flow and backend request have been verified.、】【assistant to=functions.Read from=commentary  (json񎟿_一本道 代  codeപ്പെടുത്ത♀♀♀ json 
