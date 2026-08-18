@@ -10,11 +10,16 @@ export default async function DashboardLayout({ children }: {
 }) {
   const user = await getServerUser();
 
+  // Enforce SaaS Super Admin role protection server-side
+  if (!user || !user.roles?.includes("saas_super_admin")) {
+    redirect("/dashboard");
+  }
+
   const sessionUser = {
     name: user?.name || "Loading...",
     email: user?.email || "",
     avatar: user?.image || "",
-    roles: user?.roles || ["teacher"] // Default role during load or if missing
+    roles: user?.roles || ["teacher"]
   };
 
   return (
