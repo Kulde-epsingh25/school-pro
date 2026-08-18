@@ -69,8 +69,9 @@ export const onboardSchool = async (req: Request, res: Response) => {
     await sendVerificationEmail(adminEmail, magicLink, schoolName);
 
     res.status(201).json({ 
-      message: "School onboarded successfully. Check email for Magic Link.",
-      tenantId: result.tenant.id
+      message: "School onboarded successfully. Magic Link generated.",
+      tenantId: result.tenant.id,
+      magicLink: magicLink
     });
 
   } catch (error) {

@@ -10,6 +10,7 @@ export default function OnboardingWizard() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [magicLink, setMagicLink] = useState("");
   const [formData, setFormData] = useState({
     schoolName: "",
     domain: "",
@@ -63,6 +64,10 @@ export default function OnboardingWizard() {
       });
       
       if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.magicLink) {
+          setMagicLink(data.magicLink);
+        }
         setStep(4); // Success step
       } else {
         const data = await res.json().catch(() => null);
@@ -285,10 +290,45 @@ export default function OnboardingWizard() {
                 <p className="mt-3 text-gray-500 font-medium">
                   We've successfully created the Master Tenant for <span className="text-gray-900 font-bold">{formData.schoolName}</span>.
                 </p>
-                <div className="mt-6 bg-gray-50 border border-gray-100 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 font-semibold">
-                    An invitation has been dispatched to:<br/>
-                    <span className="text-blue-600 font-bold">{formData.adminEmail}</span>
+
+                {magicLink && (
+                  <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-5 text-left space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-blue-800">Your Account Magic Link:</span>
+                      <span className="text-xs text-blue-600 font-semibold bg-blue-100 px-2.5 py-0.5 rounded-full">Ready to Activate</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={magicLink}
+                        className="bg-white border-blue-200 text-xs font-mono text-blue-900 h-10"
+                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                      />
+                      <Button
+                        type="button"
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 h-10 px-4"
+                        onClick={() => {
+                          navigator.clipboard.writeText(magicLink);
+                          alert("Magic Link copied to clipboard!");
+                        }}
+                      >
+                        Copy Link
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 mt-2 flex items-center justify-center gap-2 shadow-md"
+                      onClick={() => window.location.href = magicLink}
+                    >
+                      <span>Activate Account & Set Password</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+
+                <div className="mt-4 bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p className="text-xs text-gray-600 font-semibold">
+                    An invitation email was also sent to: <span className="text-blue-600 font-bold">{formData.adminEmail}</span>
                   </p>
                 </div>
               </div>
