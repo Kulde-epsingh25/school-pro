@@ -31,19 +31,19 @@ export function DashboardHeader() {
   const { school, setSchool } = useSchoolStore();
 
   React.useEffect(() => {
-    // Only fetch tenants if we are in the tenant route
-    if (pathname?.includes("/admin") || pathname?.includes("/teacher") || pathname?.includes("/student")) {
+    // Only fetch tenants if we are in tenant-scoped route and user is logged in
+    if (user?.id && (pathname?.includes("/admin") || pathname?.includes("/teacher") || pathname?.includes("/student") || pathname?.includes("/dashboard"))) {
       apiClient.get<any[]>("/users/me/tenants").then(res => {
-        if (res.ok && res.data) {
+        if (res.ok && res.data && res.data.length > 0) {
           setTenants(res.data);
-          // If no school is set but we have tenants, set the first one
-          if (!school && res.data.length > 0) {
+          // If no school is set in Zustand, set the current one safely without reloading
+          if (!useSchoolStore.getState().school) {
             setSchool(res.data[0]);
           }
         }
       });
     }
-  }, [pathname]);
+  }, [pathname, user?.id]);
 
   const handleLogout = async () => {
     await logOut();

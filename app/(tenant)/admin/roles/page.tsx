@@ -68,14 +68,38 @@ export default function RolesPage() {
     }
   };
 
+  const DEFAULT_SYSTEM_PERMISSIONS = [
+    { id: "perm-users-create-all", subject: "USERS", action: "CREATE", scope: "ALL" },
+    { id: "perm-users-read-all", subject: "USERS", action: "READ", scope: "ALL" },
+    { id: "perm-users-update-all", subject: "USERS", action: "UPDATE", scope: "ALL" },
+    { id: "perm-users-delete-all", subject: "USERS", action: "DELETE", scope: "ALL" },
+    { id: "perm-roles-create-all", subject: "ROLES", action: "CREATE", scope: "ALL" },
+    { id: "perm-roles-read-all", subject: "ROLES", action: "READ", scope: "ALL" },
+    { id: "perm-roles-update-all", subject: "ROLES", action: "UPDATE", scope: "ALL" },
+    { id: "perm-roles-delete-all", subject: "ROLES", action: "DELETE", scope: "ALL" },
+    { id: "perm-students-create-all", subject: "STUDENTS", action: "CREATE", scope: "ALL" },
+    { id: "perm-students-read-all", subject: "STUDENTS", action: "READ", scope: "ALL" },
+    { id: "perm-students-update-all", subject: "STUDENTS", action: "UPDATE", scope: "ALL" },
+    { id: "perm-students-delete-all", subject: "STUDENTS", action: "DELETE", scope: "ALL" },
+    { id: "perm-classes-create-all", subject: "CLASSES", action: "CREATE", scope: "ALL" },
+    { id: "perm-classes-read-all", subject: "CLASSES", action: "READ", scope: "ALL" },
+    { id: "perm-fees-read-all", subject: "FEES", action: "READ", scope: "ALL" },
+    { id: "perm-fees-update-all", subject: "FEES", action: "UPDATE", scope: "ALL" },
+    { id: "perm-reports-read-all", subject: "REPORTS", action: "READ", scope: "ALL" }
+  ];
+
   const fetchPermissions = async () => {
     try {
       const res = await apiClient.get<any[]>(`/roles/permissions`);
-      if (res.ok && res.data) {
+      if (res.ok && res.data && res.data.length > 0) {
         setPermissions(res.data);
+      } else {
+        // Provide standard system permissions so super admin can create custom roles seamlessly
+        setPermissions(DEFAULT_SYSTEM_PERMISSIONS);
       }
     } catch (error) {
       console.error("Failed to fetch permissions:", error);
+      setPermissions(DEFAULT_SYSTEM_PERMISSIONS);
     }
   };
 

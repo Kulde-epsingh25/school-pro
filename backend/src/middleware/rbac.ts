@@ -14,18 +14,21 @@ export const requirePermission = (action: string, subject: string) => {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // SaaS Super Admins can bypass everything
-      if (user.saasSuperAdmin) {
+      // SaaS Super Admins can bypass all RBAC restrictions
+      if (user.saasSuperAdmin || (user.roles && (user.roles.includes("saas_super_admin") || user.roles.includes("SAAS_SUPER_ADMIN")))) {
+        return next();
+      }
+
+      // Tenant Super Admins bypass permissions for their specific tenant
+      if (
+        (user.tenantSuperAdmin && (!requestedTenantId || user.tenantSuperAdmin.tenantId === requestedTenantId)) ||
+        (user.roles && (user.roles.includes("super_admin") || user.roles.includes("SUPER_ADMIN")))
+      ) {
         return next();
       }
 
       if (!requestedTenantId) {
         return res.status(400).json({ error: "tenantId is required for permission check" });
-      }
-
-      // Tenant Super Admins bypass permissions for their specific tenant
-      if (user.tenantSuperAdmin && user.tenantSuperAdmin.tenantId === requestedTenantId) {
-        return next();
       }
 
       // Otherwise, we must check if any of the user's roles within this tenant have the exact permission
