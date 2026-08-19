@@ -107,6 +107,12 @@ export default function SiteHeader() {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
+                  <NavigationMenuLink render={<Link href="/portal" />} className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    Portals Hub
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
                   <NavigationMenuLink render={<Link href="/how-it-works" />} className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
                     How it works?
                   </NavigationMenuLink>
@@ -115,12 +121,12 @@ export default function SiteHeader() {
             </NavigationMenu>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" render={<Link href="/login" />} nativeButton={false}>
+          <div className="hidden md:flex items-center space-x-3">
+            <Button variant="ghost" className="font-semibold text-sm" render={<Link href="/login" />} nativeButton={false}>
               Log in
             </Button>
-            <Button render={<Link href="/onboarding" />} nativeButton={false}>
-              Try Now
+            <Button className="font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 shadow-sm" render={<Link href="/onboarding" />} nativeButton={false}>
+              Setup School
             </Button>
           </div>
 
