@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getExams = async (req: Request, res: Response) => {
   const { tenantId, classId } = req.query;
@@ -33,7 +31,7 @@ export const getExams = async (req: Request, res: Response) => {
 
 export const createExam = async (req: Request, res: Response) => {
   const { tenantId, name, date, classId, subject, maxScore } = req.body;
-  const createdBy = req.headers["x-user-id"] as string;
+  const createdBy = ((req as any).user?.id || "");
 
   if (!tenantId || !name || !date || !classId || !subject || maxScore === undefined) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -82,3 +80,5 @@ export const getExamById = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch exam" });
   }
 };
+
+

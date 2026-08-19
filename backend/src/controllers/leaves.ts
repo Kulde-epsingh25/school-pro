@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, LeaveStatus } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";`nimport { LeaveStatus } from "@prisma/client";
 
 export const getLeaveBalance = async (req: Request, res: Response) => {
   const { tenantId, userId } = req.query;
@@ -60,7 +58,7 @@ export const applyLeave = async (req: Request, res: Response) => {
 export const approveLeave = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { tenantId, status, comments } = req.body;
-  const approverId = req.headers["x-user-id"] as string;
+  const approverId = ((req as any).user?.id || "");
 
   if (!id || !tenantId || !status || !approverId) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -111,3 +109,5 @@ export const getLeaveApplications = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch leave applications" });
   }
 };
+
+

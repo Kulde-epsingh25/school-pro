@@ -128,3 +128,4 @@ export async function createTenant(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to create tenant" });
   }
 }
+

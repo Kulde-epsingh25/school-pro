@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient, AttendanceStatus } from "@prisma/client";
+import { db as prisma } from "../db";
+import { AttendanceStatus } from "@prisma/client";
 import { sendAttendanceNotificationEmail } from "../utils/email";
 
-const prisma = new PrismaClient();
 
 export const getAttendance = async (req: Request, res: Response) => {
   const { tenantId, classId, streamId, date } = req.query;
@@ -51,7 +51,7 @@ export const getAttendance = async (req: Request, res: Response) => {
 
 export const markAttendance = async (req: Request, res: Response) => {
   const { tenantId, classId, streamId, date, records } = req.body;
-  const markedBy = req.headers["x-user-id"] as string;
+  const markedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !classId || !date || !records || !Array.isArray(records)) {
     return res.status(400).json({ error: "Tenant ID, Class ID, Date, and Records array are required" });
@@ -175,7 +175,7 @@ export const markAttendance = async (req: Request, res: Response) => {
 
 export const importBiometric = async (req: Request, res: Response) => {
   const { tenantId, data } = req.body;
-  const markedBy = req.headers["x-user-id"] as string;
+  const markedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !data || !Array.isArray(data)) {
     return res.status(400).json({ error: "Tenant ID and data array required" });
@@ -218,3 +218,4 @@ export const importBiometric = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to import biometric data" });
   }
 };
+

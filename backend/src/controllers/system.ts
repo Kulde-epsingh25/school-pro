@@ -55,3 +55,4 @@ export async function updateSettings(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to update system settings" });
   }
 }
+

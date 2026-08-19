@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { getServerSchool, getServerUser } from "@/actions/auth";
+import { getServerSchool, getServerUser, getAccessToken } from "@/actions/auth";
 import { SessionHydrator } from "@/components/auth/session-hydrator";
 
 export default async function DashboardLayout({ children }: {
@@ -11,6 +11,7 @@ export default async function DashboardLayout({ children }: {
 }) {
   const user = await getServerUser();
   const school = await getServerSchool();
+  const token = await getAccessToken();
 
   const sessionUser = {
     name: user?.name || "Loading...",
@@ -21,7 +22,7 @@ export default async function DashboardLayout({ children }: {
 
   return (
     <SidebarProvider>
-      <SessionHydrator user={user} school={school} />
+      <SessionHydrator user={user} school={school} token={token} />
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Sidebar */}
         <DashboardSidebar 

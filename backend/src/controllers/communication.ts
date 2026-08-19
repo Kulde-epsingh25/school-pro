@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, NotificationType } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";`nimport { NotificationType } from "@prisma/client";
 
 // -----------------------------------------
 // MESSAGING & CONVERSATIONS
@@ -209,3 +207,5 @@ export const updatePreferences = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to update preferences" });
   }
 };
+
+

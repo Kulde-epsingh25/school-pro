@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 const DUMMY_TENANT_ID = "00000000-0000-0000-0000-000000000000"; // For compiling
 
 export const getTerms = async (req: Request, res: Response) => {
@@ -162,3 +160,5 @@ export const createSubject = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed" });
   }
 };
+
+

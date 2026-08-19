@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getFinancialReport = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
@@ -188,3 +186,5 @@ export const getAttendanceReport = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to generate attendance report" });
   }
 };
+
+

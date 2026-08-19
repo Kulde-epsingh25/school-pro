@@ -19,10 +19,18 @@ type SessionSchool = {
   name: string | null;
 } | null;
 
-export function SessionHydrator({ user, school }: { user: SessionUser; school: SessionSchool }) {
+export function SessionHydrator({
+  user,
+  school,
+  token,
+}: {
+  user: SessionUser;
+  school: SessionSchool;
+  token?: string | null;
+}) {
   useEffect(() => {
     if (user) {
-      useAuthStore.getState().setAuth(user, "");
+      useAuthStore.getState().setAuth(user, token || "");
     } else {
       useAuthStore.getState().clearAuth();
     }
@@ -36,7 +44,7 @@ export function SessionHydrator({ user, school }: { user: SessionUser; school: S
     } else {
       useSchoolStore.getState().clearSchool();
     }
-  }, [user, school]);
+  }, [user, school, token]);
 
   return null;
-}
+}

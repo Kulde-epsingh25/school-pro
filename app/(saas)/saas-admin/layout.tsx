@@ -3,12 +3,14 @@ import { redirect } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { getServerUser } from "@/actions/auth";
+import { getServerUser, getAccessToken } from "@/actions/auth";
+import { SessionHydrator } from "@/components/auth/session-hydrator";
 
-export default async function DashboardLayout({ children }: {
+export default async function SaasAdminLayout({ children }: {
   children: ReactNode;
 }) {
   const user = await getServerUser();
+  const token = await getAccessToken();
 
   // Enforce SaaS Super Admin role protection server-side
   if (!user || !user.roles?.includes("saas_super_admin")) {
@@ -16,17 +18,18 @@ export default async function DashboardLayout({ children }: {
   }
 
   const sessionUser = {
-    name: user?.name || "Loading...",
+    name: user?.name || "Platform SuperAdmin",
     email: user?.email || "",
     avatar: user?.image || "",
-    roles: user?.roles || ["teacher"]
+    roles: user?.roles || ["saas_super_admin"]
   };
 
   return (
     <SidebarProvider>
+      <SessionHydrator user={user} school={null} token={token} />
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Sidebar */}
-        <DashboardSidebar 
+        <DashboardSidebar
           user={sessionUser}
           roles={sessionUser.roles}
         />

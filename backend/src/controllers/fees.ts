@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, PaymentMethod } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";`nimport { PaymentMethod } from "@prisma/client";
 
 export const getMyFees = async (req: Request, res: Response) => {
   const { tenantId, studentId } = req.query;
@@ -58,7 +56,7 @@ export const getOutstandingFees = async (req: Request, res: Response) => {
 export const recordPayment = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
   const { feeId, amount, method, reference } = req.body;
-  const recordedBy = req.headers["x-user-id"] as string;
+  const recordedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !feeId || !amount || !method) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -112,7 +110,7 @@ export const applyScholarship = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
   const { id } = req.params;
   const { amount, reason } = req.body;
-  const approvedBy = req.headers["x-user-id"] as string;
+  const approvedBy = ((req as any).user?.id || "");
 
   try {
     const scholarship = await prisma.scholarship.create({
@@ -146,3 +144,5 @@ export const applyScholarship = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to apply scholarship" });
   }
 };
+
+

@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getGrades = async (req: Request, res: Response) => {
   const { tenantId, examId } = req.query;
@@ -27,7 +25,7 @@ export const getGrades = async (req: Request, res: Response) => {
 
 export const bulkSaveGrades = async (req: Request, res: Response) => {
   const { tenantId, examId, records } = req.body;
-  const markedBy = req.headers["x-user-id"] as string;
+  const markedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !examId || !records || !Array.isArray(records)) {
     return res.status(400).json({ error: "Tenant ID, Exam ID, and Records array are required" });
@@ -196,3 +194,5 @@ export const getStudentReportCard = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to generate report card" });
   }
 };
+
+

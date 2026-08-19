@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { db as prisma } from "../db";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
 
 export const getTeachers = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
@@ -36,7 +35,7 @@ export const getTeachers = async (req: Request, res: Response) => {
 
 export const createTeacher = async (req: Request, res: Response) => {
   const { tenantId, firstName, lastName, email, phone, gender, dob, employeeId, joiningDate, designation, department, subjects, classes } = req.body;
-  const assignedBy = req.headers["x-user-id"] as string;
+  const assignedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !firstName || !lastName || !email) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -98,3 +97,4 @@ export const createTeacher = async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message || "Failed to create teacher" });
   }
 };
+

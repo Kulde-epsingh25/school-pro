@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getBooks = async (req: Request, res: Response) => {
   const { tenantId, search } = req.query;
@@ -64,7 +62,7 @@ export const addBook = async (req: Request, res: Response) => {
 export const issueBook = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
   const { bookId, userId } = req.body;
-  const issuedBy = req.headers["x-user-id"] as string;
+  const issuedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !bookId || !userId) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -206,3 +204,5 @@ export const getActiveIssues = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch active issues" });
   }
 };
+
+

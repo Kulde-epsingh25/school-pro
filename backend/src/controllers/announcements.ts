@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, AnnouncementRole } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";`nimport { AnnouncementRole } from "@prisma/client";
 
 export const getAnnouncements = async (req: Request, res: Response) => {
   const { tenantId, role } = req.query;
@@ -37,7 +35,7 @@ export const getAnnouncements = async (req: Request, res: Response) => {
 
 export const createAnnouncement = async (req: Request, res: Response) => {
   const { tenantId, title, content, targetRole, authorName } = req.body;
-  const createdBy = req.headers["x-user-id"] as string;
+  const createdBy = ((req as any).user?.id || "");
 
   if (!tenantId || !title || !content) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -67,3 +65,5 @@ export const createAnnouncement = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create announcement" });
   }
 };
+
+

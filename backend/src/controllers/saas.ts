@@ -1,7 +1,83 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { db as prisma } from "../db";
+import { generateTokens } from "../utils/jwt";
+import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+
+export const impersonateUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const adminUser = (req as any).user;
+
+    // Find the target user with all their details
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        saasSuperAdmin: true,
+        tenantSuperAdmin: { include: { tenant: true } },
+        tenantRoles: { include: { role: true, tenant: true } }
+      }
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!targetUser.isActive) {
+      return res.status(403).json({ error: "Cannot impersonate an inactive user" });
+    }
+
+    // Determine target user roles and school
+    let roles: string[] = [];
+    let schoolId: string | undefined;
+    let schoolName: string | undefined;
+
+    if (targetUser.saasSuperAdmin) roles.push("saas_super_admin");
+    if (targetUser.tenantSuperAdmin) {
+      roles.push("super_admin");
+      schoolId = targetUser.tenantSuperAdmin.tenantId;
+      schoolName = targetUser.tenantSuperAdmin.tenant?.name;
+    }
+    if (targetUser.tenantRoles.length > 0) {
+      roles.push(...targetUser.tenantRoles.map((r: any) => r.role.name.toLowerCase()));
+      if (!schoolId) {
+        schoolId = targetUser.tenantRoles[0].tenantId;
+        schoolName = targetUser.tenantRoles[0].tenant?.name;
+      }
+    }
+    roles = [...new Set(roles)];
+
+    // Generate short-lived impersonation token (30 min)
+    const { accessToken } = generateTokens(targetUser.id, schoolId);
+
+    // Create a critical audit log for this impersonation
+    await prisma.tenantAuditLog.create({
+      data: {
+        action: "IMPERSONATE",
+        resourceType: "USER",
+        actorId: adminUser.id,
+        status: "SUCCESS",
+        changes: `SaaS Admin (${adminUser.email}) impersonated user ${targetUser.email}`
+      }
+    });
+
+    res.json({
+      message: `Impersonation token issued for ${targetUser.email}`,
+      user: {
+        id: targetUser.id,
+        email: targetUser.email,
+        name: `${targetUser.firstName} ${targetUser.lastName}`,
+        roles,
+        schoolId,
+        schoolName
+      },
+      accessToken
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to impersonate user" });
+  }
+};
 
 export const getPlatformStats = async (req: Request, res: Response) => {
   try {
@@ -153,19 +229,41 @@ export const getAccountDetails = async (req: Request, res: Response) => {
 export const updatePassword = async (req: Request, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    // In a real app, verify current password and hash new password using bcrypt
-    // For now, since password hashing isn't implemented (from Audit Report)
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Both currentPassword and newPassword are required" });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters" });
+    }
+
     const user = await prisma.user.findUnique({ where: { id: (req as any).user.id } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    if (user.password !== currentPassword) {
+
+    // Use bcrypt to verify the current password
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
       return res.status(400).json({ error: "Incorrect current password" });
     }
 
+    // Hash the new password before storing
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: newPassword }
+      data: { password: hashedPassword }
+    });
+
+    // Audit log
+    await prisma.tenantAuditLog.create({
+      data: {
+        action: "UPDATE",
+        resourceType: "USER",
+        actorId: user.id,
+        status: "SUCCESS",
+        changes: "SaaS Admin password changed"
+      }
     });
 
     res.json({ message: "Password updated successfully" });
@@ -174,6 +272,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to update password" });
   }
 };
+
 
 export const shareAccount = async (req: Request, res: Response) => {
   try {
@@ -228,3 +327,4 @@ export const revokeShare = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to revoke share" });
   }
 };
+

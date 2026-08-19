@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getFees = async (req: Request, res: Response) => {
   const { tenantId, classId } = req.query;
@@ -40,7 +38,7 @@ export const getFees = async (req: Request, res: Response) => {
 
 export const createFee = async (req: Request, res: Response) => {
   const { tenantId, classId, termId, items } = req.body;
-  const createdBy = req.headers["x-user-id"] as string;
+  const createdBy = ((req as any).user?.id || "");
 
   if (!tenantId || !classId || !termId || !items || !Array.isArray(items)) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -97,7 +95,7 @@ export const getPayments = async (req: Request, res: Response) => {
 
 export const createPayment = async (req: Request, res: Response) => {
   const { tenantId, studentId, amount, status, description } = req.body;
-  const recordedBy = req.headers["x-user-id"] as string;
+  const recordedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !studentId || amount === undefined || !status) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -227,3 +225,5 @@ export const createExpense = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create expense" });
   }
 };
+
+

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient, TenantRole } from "@prisma/client";
+import { db as prisma } from "../db";
+import { TenantRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { createUserSchema } from "../schemas/user";
 import { z } from "zod";
@@ -7,7 +8,6 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
-const prisma = new PrismaClient();
 
 export const createUser = async (req: Request, res: Response) => {
   const { email, firstName, lastName, phone, roleId, tenantId, assignedBy } = req.body;
@@ -359,3 +359,4 @@ export const getUsersByRole = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch users by role" });
   }
 };
+

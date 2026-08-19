@@ -147,3 +147,4 @@ export async function getFinancialSummary(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to fetch financial summary" });
   }
 }
+

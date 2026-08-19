@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getParents = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
@@ -114,7 +112,7 @@ export const createParent = async (req: Request, res: Response) => {
 
 export const getMyChildren = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
-  const userId = req.headers["x-user-id"] as string;
+  const userId = ((req as any).user?.id || "");
 
   if (!tenantId || typeof tenantId !== 'string') {
     return res.status(400).json({ error: "Tenant ID is required" });
@@ -148,3 +146,5 @@ export const getMyChildren = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch children" });
   }
 };
+
+

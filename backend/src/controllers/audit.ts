@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { db as prisma } from "../db";
 
-const prisma = new PrismaClient();
 
 export const getTenantAuditLogs = async (req: Request, res: Response) => {
   const { tenantId, action, resourceType, startDate, endDate } = req.query;
@@ -84,3 +83,4 @@ export const getSaaSAuditLogs = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch SaaS audit logs" });
   }
 };
+

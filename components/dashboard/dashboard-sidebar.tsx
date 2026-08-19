@@ -99,7 +99,7 @@ export function DashboardSidebar({
           <SidebarGroup>
             <SidebarGroupLabel>Platform Navigation</SidebarGroupLabel>
             <SidebarMenu>
-              {navMain.map((item) => (
+              {navMain.map((item: any) => (
                 <Collapsible
                   key={item.title}
                   render={<SidebarMenuItem />}
@@ -113,7 +113,7 @@ export function DashboardSidebar({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
+                        {item.items?.map((subItem: any) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton render={<a href={subItem.url} />}>
                               <span>{subItem.title}</span>

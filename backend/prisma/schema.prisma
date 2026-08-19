@@ -60,6 +60,21 @@ model Tenant {
   Hostel                 Hostel[]
   HostelAllocation       HostelAllocation[]
   VisitorPass            VisitorPass[]
+
+  // Expanded v2.0 Models
+  admissionInquiries     AdmissionInquiry[]
+  admissionApplications  AdmissionApplication[]
+  healthRecords          HealthRecord[]
+  clinicVisits           ClinicVisit[]
+  counselingNotes        CounselingNote[]
+  lessonPlans            LessonPlan[]
+  learningResources      LearningResource[]
+  feeStructures          FeeStructure[]
+  purchaseOrders         PurchaseOrder[]
+  inventoryItems         InventoryItem[]
+  alumniProfiles         AlumniProfile[]
+  delegatedAccesses      DelegatedAccess[]
+  featureFlags           FeatureFlag[]
 }
 
 // ---------------------------------------------------------
@@ -1057,3 +1072,191 @@ model VisitorPass {
   issuedBy  String   @db.ObjectId
   createdAt DateTime @default(now())
 }
+
+// ---------------------------------------------------------
+// EXPANDED V2.0 MODULES
+// ---------------------------------------------------------
+
+model AdmissionInquiry {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentName String
+  parentName  String
+  email       String
+  phone       String
+  targetGrade String
+  status      String   @default("NEW") // NEW, CONTACTED, APPLIED, REJECTED
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdmissionApplication {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentName String
+  parentEmail String
+  phone       String
+  targetGrade String
+  stage       String   @default("APPLICATION") // APPLICATION, ENTRANCE_EXAM, INTERVIEW, OFFER_EXTENDED, ENROLLED
+  documents   String[]
+  score       Float?
+  decision    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HealthRecord {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String    @db.ObjectId
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId      String    @db.ObjectId
+  bloodGroup     String?
+  allergies      String[]
+  medications    String[]
+  emergencyPhone String
+  immunizations  Json?     // Map of vaccine names to dates
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model ClinicVisit {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId   String   @db.ObjectId
+  studentName String
+  symptoms    String
+  treatment   String
+  nurseNotes  String?
+  admittedAt  DateTime @default(now())
+  dischargedAt DateTime?
+}
+
+model CounselingNote {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String   @db.ObjectId
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId      String   @db.ObjectId
+  counselorId    String   @db.ObjectId
+  confidentialTag String   @default("HIGH") // NORMAL, CONFIDENTIAL, STRICT
+  sessionDate    DateTime @default(now())
+  topic          String
+  observations   String
+  actionPlan     String?
+  createdAt      DateTime @default(now())
+}
+
+model LessonPlan {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teacherId    String   @db.ObjectId
+  subjectName  String
+  className    String
+  weekNumber   Int
+  topic        String
+  objectives   String[]
+  status       String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REVISE
+  reviewNotes  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model LearningResource {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  subjectName String
+  className   String
+  fileUrl     String
+  fileType    String   // PDF, VIDEO, DOC, LINK
+  uploadedBy  String   @db.ObjectId
+  createdAt   DateTime @default(now())
+}
+
+model FeeStructure {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String   // e.g. "Grade 10 Standard Annual"
+  className   String
+  tuitionFee  Float
+  examFee     Float    @default(0)
+  labFee      Float    @default(0)
+  transportFee Float   @default(0)
+  siblingDiscountPct Float @default(0)
+  scholarshipRules Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  poNumber    String   @unique
+  vendorName  String
+  totalAmount Float
+  status      String   @default("DRAFT") // DRAFT, ISSUED, PARTIALLY_DELIVERED, FULFILLED, CANCELLED
+  items       Json
+  issuedAt    DateTime @default(now())
+  deliveryDate DateTime?
+}
+
+model InventoryItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assetCode   String   @unique
+  name        String
+  category    String   // LAB_EQUIPMENT, IT_HARDWARE, FURNITURE, SPORTS
+  quantity    Int
+  unitPrice   Float
+  depreciationRate Float @default(0.1)
+  location    String
+  createdAt   DateTime @default(now())
+}
+
+model AlumniProfile {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fullName     String
+  email        String
+  graduationYear Int
+  currentCompany String?
+  currentRole  String?
+  linkedin     String?
+  donations    Json?
+  createdAt    DateTime @default(now())
+}
+
+model DelegatedAccess {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  granteeId   String   @db.ObjectId
+  granterId   String   @db.ObjectId
+  roleName    String
+  reason      String
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model FeatureFlag {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  featureKey  String   // HOSTEL_MODULE, TRANSPORT_MODULE, LMS_PORTAL, ALUMNI_PORTAL
+  isEnabled   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, featureKey])
+}
+

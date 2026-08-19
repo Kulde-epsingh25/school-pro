@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";
 
 export const getRoutes = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
@@ -110,7 +108,7 @@ export const createVehicle = async (req: Request, res: Response) => {
 export const allocateStudent = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
   const { studentId, routeId, stopId } = req.body;
-  const assignedBy = req.headers["x-user-id"] as string;
+  const assignedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !studentId || !routeId || !stopId) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -174,3 +172,5 @@ export const getMyRoute = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch route" });
   }
 };
+
+

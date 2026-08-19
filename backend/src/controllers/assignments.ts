@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, SubmissionStatus } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "../db";`nimport { SubmissionStatus } from "@prisma/client";
 
 export const getAssignments = async (req: Request, res: Response) => {
   const { tenantId, classId } = req.query;
@@ -33,7 +31,7 @@ export const getAssignments = async (req: Request, res: Response) => {
 
 export const createAssignment = async (req: Request, res: Response) => {
   const { tenantId, title, description, dueDate, classId, subject, maxScore } = req.body;
-  const createdBy = req.headers["x-user-id"] as string;
+  const createdBy = ((req as any).user?.id || "");
 
   if (!tenantId || !title || !dueDate || !classId || !subject || maxScore === undefined) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -109,7 +107,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
 
 export const gradeSubmissions = async (req: Request, res: Response) => {
   const { tenantId, assignmentId, records } = req.body;
-  const gradedBy = req.headers["x-user-id"] as string;
+  const gradedBy = ((req as any).user?.id || "");
 
   if (!tenantId || !assignmentId || !records || !Array.isArray(records)) {
     return res.status(400).json({ error: "Tenant ID, Assignment ID, and Records array are required" });
@@ -188,7 +186,7 @@ export const gradeSubmissions = async (req: Request, res: Response) => {
 
 export const getStudentAssignments = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
-  const userId = req.headers["x-user-id"] as string;
+  const userId = ((req as any).user?.id || "");
 
   if (!tenantId || typeof tenantId !== 'string') {
     return res.status(400).json({ error: "Tenant ID is required" });
@@ -234,7 +232,7 @@ export const submitAssignment = async (req: Request, res: Response) => {
   const { tenantId } = req.query;
   const { assignmentId } = req.params;
   const { content } = req.body;
-  const userId = req.headers["x-user-id"] as string;
+  const userId = ((req as any).user?.id || "");
 
   if (!tenantId || typeof tenantId !== 'string' || !assignmentId) {
     return res.status(400).json({ error: "Tenant ID and Assignment ID are required" });
@@ -283,4 +281,6 @@ export const submitAssignment = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to submit assignment" });
   }
 };
+
+
 

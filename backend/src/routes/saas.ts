@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPlatformStats, getTenants, getTenantDetails, toggleTenantSuspension, getAuditLogs, getAccountDetails, updatePassword, shareAccount, revokeShare } from "../controllers/saas";
+import { getPlatformStats, getTenants, getTenantDetails, toggleTenantSuspension, getAuditLogs, getAccountDetails, updatePassword, shareAccount, revokeShare, impersonateUser } from "../controllers/saas";
 import { tenantIsolation } from "../middleware/tenantIsolation";
 
 const saasRouter = Router();
@@ -29,5 +29,8 @@ saasRouter.get("/account", getAccountDetails);
 saasRouter.put("/account/password", updatePassword);
 saasRouter.post("/account/share", shareAccount);
 saasRouter.delete("/account/share/:email", revokeShare);
+
+// User Impersonation - heavily audited
+saasRouter.post("/impersonate/:userId", impersonateUser);
 
 export default saasRouter;
