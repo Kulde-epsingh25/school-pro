@@ -55,16 +55,21 @@ export default function LoginV2() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: values.email, password: values.password })
+        body: JSON.stringify({ email: values.email.trim(), password: values.password })
       });
 
+      const responseBody = await res.json().catch(() => null);
+
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error || "Invalid credentials");
+        // Display exact backend error like "Incorrect password", "User does not exist", or "Invalid credentials"
+        const errorMessage = responseBody?.error || responseBody?.message || "Incorrect email or password. Please check your credentials.";
+        toast.error("Authentication Failed", {
+          description: errorMessage,
+        });
+        return;
       }
 
-      const data = await res.json();
-      
+      const data = responseBody;
       const roles: string[] = data.user.roles || [];
       let redirectUrl = "/dashboard/teacher";
 
@@ -78,9 +83,9 @@ export default function LoginV2() {
       } else if (roles.includes("teacher")) {
         redirectUrl = "/dashboard/teacher";
       } else if (roles.includes("parent")) {
-        redirectUrl = "/portal/parent"; // Assuming portal for parents
+        redirectUrl = "/portal/parent";
       } else if (roles.includes("student")) {
-        redirectUrl = "/portal/student"; // Assuming portal for students
+        redirectUrl = "/portal/student";
       }
 
       const user = data.user;
@@ -93,33 +98,40 @@ export default function LoginV2() {
       // Set client Zustand state
       useAuthStore.getState().setAuth(user, accessToken);
       
-      // Populate school context whenever the backend provides a tenant school ID.
-      // Tenant super admins still need this for tenant-scoped pages like roles and classes.
       if (user.schoolId) {
         useSchoolStore.getState().setSchool({
           id: user.schoolId,
           name: user.schoolName || "School Pro Academy",
-          logo: "https://utfs.io/f/5a88ce2b-65bc-4f7f-bdc7-27b5e406f85d-8vj8v7.png" // placeholder logo
+          logo: "https://utfs.io/f/5a88ce2b-65bc-4f7f-bdc7-27b5e406f85d-8vj8v7.png"
         });
       } else {
         useSchoolStore.getState().clearSchool();
       }
 
       toast.success("Login Successful!", {
-        description: `Welcome back, ${user.name}!`
+        description: `Welcome back, ${user.name || user.firstName || "User"}!`
       });
 
       // Redirect based on role
       router.push(redirectUrl);
-    } catch (error) {
-      toast.error("Error", {
-        description: "Something went wrong. Please try again.",
+    } catch (error: any) {
+      toast.error("Login Error", {
+        description: error?.message || "Incorrect email or password. Please check your credentials.",
       });
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   }
+
+  // Handle OAuth provider login
+  const handleOAuthLogin = (provider: "google" | "github") => {
+    toast.info(`Connecting to ${provider === "google" ? "Google" : "GitHub"}...`, {
+      description: "Redirecting to single sign-on authentication portal."
+    });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com";
+    window.location.href = `${apiUrl}/auth/${provider}?returnUrl=${encodeURIComponent(window.location.origin + "/dashboard")}`;
+  };
 
   return (
     <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
@@ -134,11 +146,11 @@ export default function LoginV2() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => handleOAuthLogin("google")}>
               <Icons.google />
               <span>Google</span>
             </Button>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => handleOAuthLogin("github")}>
               <Icons.gitHub />
               <span>Github</span>
             </Button>
