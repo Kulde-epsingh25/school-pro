@@ -10,15 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createStudent = exports.getStudents = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const db_1 = require("../db");
 const getStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { tenantId } = req.query;
     if (!tenantId || typeof tenantId !== 'string') {
         return res.status(400).json({ error: "Tenant ID is required" });
     }
     try {
-        const students = yield prisma.studentProfile.findMany({
+        const students = yield db_1.db.studentProfile.findMany({
             where: {
                 user: {
                     tenantRoles: {
@@ -53,7 +52,7 @@ const createStudent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return res.status(400).json({ error: "Missing required fields" });
     }
     try {
-        const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const result = yield db_1.db.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             // Create Base User
             const user = yield tx.user.create({
                 data: {

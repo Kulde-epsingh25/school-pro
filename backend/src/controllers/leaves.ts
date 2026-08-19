@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { db as prisma } from "../db";`nimport { LeaveStatus } from "@prisma/client";
+import { db as prisma } from "../db";
+import { LeaveStatus } from "@prisma/client";
 
 export const getLeaveBalance = async (req: Request, res: Response) => {
   const { tenantId, userId } = req.query;

@@ -410,8 +410,8 @@ model Subscription {
 
 model TenantAuditLog {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId     String  @db.ObjectId
-  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String? @db.ObjectId
+  tenant       Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   action       String // CREATE, UPDATE, DELETE, LOGIN
   resourceType String // USER, ROLE, DEPARTMENT
   resourceId   String?

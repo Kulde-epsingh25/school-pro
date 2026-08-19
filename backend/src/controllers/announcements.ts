@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { db as prisma } from "../db";`nimport { AnnouncementRole } from "@prisma/client";
+import { db as prisma } from "../db";
+import { AnnouncementRole } from "@prisma/client";
 
 export const getAnnouncements = async (req: Request, res: Response) => {
   const { tenantId, role } = req.query;

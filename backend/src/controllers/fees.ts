@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { db as prisma } from "../db";`nimport { PaymentMethod } from "@prisma/client";
+import { db as prisma } from "../db";
+import { PaymentMethod } from "@prisma/client";
 
 export const getMyFees = async (req: Request, res: Response) => {
   const { tenantId, studentId } = req.query;

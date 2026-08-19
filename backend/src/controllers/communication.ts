@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { db as prisma } from "../db";`nimport { NotificationType } from "@prisma/client";
+import { db as prisma } from "../db";
+import { NotificationType } from "@prisma/client";
 
 // -----------------------------------------
 // MESSAGING & CONVERSATIONS

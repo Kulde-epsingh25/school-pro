@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { db as prisma } from "../db";`nimport { SubmissionStatus } from "@prisma/client";
+import { db as prisma } from "../db";
+import { SubmissionStatus } from "@prisma/client";
 
 export const getAssignments = async (req: Request, res: Response) => {
   const { tenantId, classId } = req.query;
