@@ -1,9 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Users, Eye, X } from "lucide-react";
+import { Plus, Users, Eye, X, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { apiClient } from "@/lib/api-client";
+import { useAuthStore } from "@/store/authStore";
+
+interface StudentChild {
+  id: string;
+  firstName: string;
+  lastName: string;
+  imageUrl?: string;
+  classId?: string;
+}
+
+interface PaymentRecord {
+  id: string;
+  prn: string;
+  amount: number;
+  status: string;
+  description?: string;
+  createdAt?: string;
+}
 
 export default function PaymentsPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
@@ -11,25 +30,49 @@ export default function PaymentsPage() {
   const [isPrnModalOpen, setIsPrnModalOpen] = useState(false);
   const [currentPrn, setCurrentPrn] = useState("");
 
-  const [children, setChildren] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [children, setChildren] = useState<StudentChild[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const user = useAuthStore(state => state.user);
 
   useEffect(() => {
-    // For demonstration, we'd normally fetch the logged-in parent's students
-    // fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents/me/students`).then(...)
-    // Since we cleared the DB, let's just show empty states gracefully until data is added
-    setChildren([]);
-    setLoading(false);
-  }, []);
+    fetchMyChildren();
+  }, [user?.id]);
+
+  const fetchMyChildren = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiClient.get<StudentChild[]>(`/parents/me/students`);
+      if (res.ok && res.data && Array.isArray(res.data)) {
+        setChildren(res.data);
+        if (res.data.length > 0 && !selectedChildId) {
+          setSelectedChildId(res.data[0].id);
+        }
+      } else {
+        setChildren([]);
+      }
+    } catch (err: any) {
+      console.error("Failed to load children", err);
+      setError(err?.message || "Failed to load linked student profiles.");
+      setChildren([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchPayments = async (studentId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || (process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com")}/finance/payments/student/${studentId}`);
-      const data = await res.json();
-      setPayments(data);
+      const res = await apiClient.get<PaymentRecord[]>(`/finance/payments/student/${studentId}`);
+      if (res.ok && res.data) {
+        setPayments(Array.isArray(res.data) ? res.data : []);
+      } else {
+        setPayments([]);
+      }
     } catch (error) {
       console.error("Failed to fetch payments", error);
+      setPayments([]);
     }
   };
 
@@ -43,63 +86,62 @@ export default function PaymentsPage() {
     if (!selectedChildId) return;
 
     try {
-      // Create a pending payment
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/finance/payments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: selectedChildId,
-          amount: 3000, // mock amount for now
-          status: "PENDING",
-          description: "Term 1 Fees"
-        })
+      const res = await apiClient.post<{ prn: string }>(`/finance/payments`, {
+        studentId: selectedChildId,
+        amount: 3000,
+        status: "PENDING",
+        description: "Term 1 Fees"
       });
-      const data = await res.json();
-      setCurrentPrn(data.prn);
-      setIsPrnModalOpen(true);
-      fetchPayments(selectedChildId);
+      if (res.ok && res.data) {
+        setCurrentPrn(res.data.prn);
+        setIsPrnModalOpen(true);
+        fetchPayments(selectedChildId);
+      }
     } catch (error) {
       console.error("Failed to generate payment", error);
     }
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] flex bg-white relative">
+    <div className="h-[calc(100vh-64px)] flex bg-card relative">
       
       {/* Left Pane - My Children */}
-      <div className="w-[300px] border-r border-gray-100 flex flex-col bg-gray-50/30">
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center gap-2 font-bold text-lg text-gray-900">
-            <Users className="w-5 h-5 text-gray-600" />
+      <div className="w-[300px] border-r flex flex-col bg-muted/20">
+        <div className="p-6 border-b">
+          <div className="flex items-center gap-2 font-bold text-lg text-foreground">
+            <Users className="w-5 h-5 text-primary" />
             My Children
           </div>
         </div>
         
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 flex-1 overflow-y-auto">
           {loading ? (
-            <p className="text-gray-500 text-sm">Loading children...</p>
+            <p className="text-muted-foreground text-sm">Loading children...</p>
           ) : children.length === 0 ? (
-            <p className="text-gray-400 text-sm italic p-2">No children found in database.</p>
+            <div className="p-4 text-center rounded-xl bg-card border text-muted-foreground text-xs space-y-2">
+              <p className="font-semibold text-foreground">No students linked</p>
+              <p>Contact school administration to link student registration numbers to your guardian account.</p>
+            </div>
           ) : (
-            children.map((child: any) => (
+            children.map((child: StudentChild) => (
               <div 
                 key={child.id}
                 onClick={() => setSelectedChildId(child.id)}
                 className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                   selectedChildId === child.id 
-                    ? 'bg-blue-50/50 border border-blue-100' 
-                    : 'hover:bg-gray-100/50 border border-transparent'
+                    ? 'bg-primary/10 border border-primary/20' 
+                    : 'hover:bg-muted/50 border border-transparent'
                 }`}
               >
-                <Avatar className="h-10 w-10 border border-gray-100 bg-white">
+                <Avatar className="h-10 w-10 border bg-card">
                   <AvatarImage src={child.imageUrl} alt={child.firstName} />
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xs">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
                     {child.firstName?.[0]}{child.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
-                  <span className="font-bold text-sm text-gray-900">{child.firstName} {child.lastName}</span>
-                  <span className="text-xs font-semibold text-gray-400">{child.classId}</span>
+                  <span className="font-bold text-sm text-foreground">{child.firstName} {child.lastName}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">{child.classId || "Grade"}</span>
                 </div>
               </div>
             ))
@@ -108,127 +150,126 @@ export default function PaymentsPage() {
       </div>
 
       {/* Right Pane - Dynamic Content */}
-      <div className="flex-1 flex flex-col overflow-y-auto bg-white p-10 relative">
+      <div className="flex-1 flex flex-col overflow-y-auto bg-card p-8 sm:p-10 relative">
         {!selectedChildId ? (
-          <div className="h-full flex flex-col items-center justify-center">
-            <p className="text-lg font-medium text-gray-500 mb-2">Select a Student to see Payments</p>
-            <p className="text-sm text-gray-400">If the list is empty, you need to create Students in the Admin panel first!</p>
+          <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto">
+            <p className="text-lg font-bold text-foreground mb-1">Select a Student</p>
+            <p className="text-sm text-muted-foreground">Select one of your registered children from the left panel to inspect tuition statements, download receipts, and process online fees.</p>
           </div>
         ) : (
-          <div className="max-w-4xl animate-in fade-in duration-300">
+          <div className="max-w-4xl animate-in fade-in duration-300 space-y-8">
             {/* Header */}
-            <div className="mb-8">
-              <h2 className="text-gray-500 font-semibold mb-6">Student ID: {selectedChildId}</h2>
-              <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Payments 2025</h1>
+            <div>
+              <div className="flex justify-between items-center flex-wrap gap-4">
+                <div>
+                  <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Academic Tuition & Fees</h1>
+                  <p className="text-xs text-muted-foreground mt-1">Student Record: {selectedChildId}</p>
+                </div>
                 
                 {activeTab === "pending" ? (
-                  <Button 
-                    className="bg-[#2563EB] hover:bg-blue-700 text-white font-medium shadow-sm"
-                    onClick={handlePayFees}
-                  >
+                  <Button onClick={handlePayFees}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Pay Fees
+                    Pay Term Fees
                   </Button>
                 ) : (
-                  <Button className="bg-[#2563EB] hover:bg-blue-700 text-white font-medium shadow-sm">
+                  <Button variant="outline">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add New Payment
+                    Bank Deposit
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-100 mb-8">
+            <div className="flex border-b">
               <button 
                 onClick={() => setActiveTab("pending")}
                 className={`flex-1 pb-4 text-sm font-bold transition-colors ${
                   activeTab === "pending" 
-                    ? "text-gray-900 border-b-2 border-gray-900" 
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "text-primary border-b-2 border-primary" 
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Pending Payments
+                Pending Invoices
               </button>
               <button 
                 onClick={() => setActiveTab("payments")}
                 className={`flex-1 pb-4 text-sm font-bold transition-colors ${
                   activeTab === "payments" 
-                    ? "text-gray-900 border-b-2 border-gray-900" 
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "text-primary border-b-2 border-primary" 
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Payments History
+                Payment Ledger & History
               </button>
             </div>
 
             {/* Tab Content */}
             {activeTab === "pending" ? (
-              /* Pending Fees Card - Normally fetched from Fees API */
-              <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm animate-in fade-in zoom-in-95 duration-200">
-                <div className="p-6 bg-white border-b border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-800">Pending Fees for Term 1-2025</h3>
+              <div className="border rounded-2xl overflow-hidden shadow-xs bg-card">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-bold text-foreground">Current Outstanding Tuition (Term 1 - 2025/26)</h3>
                 </div>
                 
-                <div className="bg-gray-50/50">
-                  <div className="grid grid-cols-2 p-4 px-6 text-sm font-bold text-gray-500 border-b border-gray-100">
-                    <div>Fee Title</div>
-                    <div className="text-right">Amount</div>
+                <div>
+                  <div className="grid grid-cols-2 p-4 px-6 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b bg-muted/20">
+                    <div>Fee Structure</div>
+                    <div className="text-right">Billed Amount</div>
                   </div>
                   
-                  <div className="divide-y divide-gray-100">
-                    <div className="grid grid-cols-2 p-5 px-6 items-center bg-white hover:bg-gray-50/50 transition-colors">
-                      <div className="font-semibold text-gray-700">Functional Fees</div>
-                      <div className="text-right font-bold text-gray-900">$1000.00</div>
+                  <div className="divide-y">
+                    <div className="grid grid-cols-2 p-5 px-6 items-center hover:bg-muted/20 transition-colors">
+                      <div className="font-semibold text-foreground">Institutional & Lab Utilities</div>
+                      <div className="text-right font-bold text-foreground">$1,000.00</div>
                     </div>
-                    <div className="grid grid-cols-2 p-5 px-6 items-center bg-white hover:bg-gray-50/50 transition-colors">
-                      <div className="font-semibold text-gray-700">Tuition</div>
-                      <div className="text-right font-bold text-gray-900">$2000.00</div>
+                    <div className="grid grid-cols-2 p-5 px-6 items-center hover:bg-muted/20 transition-colors">
+                      <div className="font-semibold text-foreground">Academic Tuition</div>
+                      <div className="text-right font-bold text-foreground">$2,000.00</div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-6 bg-white flex justify-end">
+                <div className="p-6 flex justify-end bg-muted/10 border-t">
                   <div className="text-right">
-                    <div className="text-sm font-bold text-gray-500 mb-1">Total Amount</div>
-                    <div className="text-3xl font-bold text-gray-900 tracking-tight">$3000.00</div>
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">Total Balance Due</div>
+                    <div className="text-3xl font-extrabold text-foreground tracking-tight">$3,000.00</div>
                   </div>
                 </div>
               </div>
             ) : (
-              /* Payments Progress Cards - Fetched from API */
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {payments.length === 0 ? (
-                  <p className="text-gray-500 italic">No payments recorded for this student.</p>
+                  <div className="p-8 text-center bg-muted/20 rounded-2xl border text-muted-foreground text-sm">
+                    No payment transactions recorded for this student.
+                  </div>
                 ) : (
                   payments.map(payment => (
-                    <div key={payment.id} className="border border-gray-100 rounded-xl p-6 shadow-sm bg-white animate-in fade-in zoom-in-95 duration-200">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div key={payment.id} className="border rounded-2xl p-6 shadow-xs bg-card">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">{payment.prn}</h3>
-                          <p className="text-sm text-gray-400 font-semibold mt-1">Status: {payment.status}</p>
+                          <h3 className="text-base font-bold text-foreground">PRN: {payment.prn}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">Status: {payment.status}</p>
                         </div>
-                        <div className="text-lg font-semibold text-gray-700">
-                          {payment.description || "General Fee"}
+                        <div className="text-sm font-semibold text-muted-foreground">
+                          {payment.description || "Tuition Installment"}
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-bold text-gray-900">UGX {payment.amount}</span>
-                          <Button variant="outline" size="sm" className="border-gray-200 text-gray-600 font-bold hover:bg-gray-50">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View
+                          <span className="font-bold text-foreground text-base">USD ${payment.amount}</span>
+                          <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
+                            <Eye className="w-3.5 h-3.5 mr-1.5" />
+                            Receipt
                           </Button>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm font-bold">
-                          <span className="text-gray-600">Payment Progress({payment.status === "PENDING" ? "0" : "100"}%)</span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">Settlement Status</span>
+                          <span className="text-primary font-bold">{payment.status === "PENDING" ? "Pending Bank Clearance" : "Settled (100%)"}</span>
                         </div>
                         
-                        {/* Progress Bar */}
-                        <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#2563EB] rounded-full" style={{ width: payment.status === "PENDING" ? '0%' : '100%' }}></div>
+                        <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: payment.status === "PENDING" ? '30%' : '100%' }}></div>
                         </div>
                       </div>
                     </div>
@@ -243,27 +284,27 @@ export default function PaymentsPage() {
 
       {/* PRN MODAL OVERLAY */}
       {isPrnModalOpen && (
-        <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+        <div className="absolute inset-0 bg-background/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
             <div className="p-6 pb-2 flex justify-between items-start">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 tracking-tight">Payment Successful</h3>
-                <p className="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block mt-2">
-                  Take the PRN to your bank to complete the payment
+                <h3 className="text-xl font-bold text-foreground">Payment Reference Generated</h3>
+                <p className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full inline-block mt-2 font-semibold">
+                  Provide this PRN at your banking branch or mobile money agent
                 </p>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 rounded-full hover:bg-gray-100" onClick={() => setIsPrnModalOpen(false)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsPrnModalOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
             
-            <div className="p-6 pt-4">
-              <div className="border border-gray-200 rounded-lg p-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
-                <span className="font-bold text-gray-800 text-lg tracking-wider break-all">
-                  PRN : {currentPrn}
+            <div className="p-6 pt-4 space-y-4">
+              <div className="border rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4 bg-muted/20">
+                <span className="font-mono font-bold text-foreground text-lg tracking-wider break-all">
+                  {currentPrn}
                 </span>
-                <Button className="bg-[#2563EB] hover:bg-blue-700 text-white font-bold px-8 shadow-sm">
-                  Print
+                <Button onClick={() => window.print()} className="w-full sm:w-auto">
+                  Print Slip
                 </Button>
               </div>
             </div>

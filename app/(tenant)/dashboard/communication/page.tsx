@@ -9,10 +9,28 @@ import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+interface ChatMessage {
+  id: string;
+  content: string;
+  senderId: string;
+  createdAt?: string;
+  sender?: {
+    firstName?: string;
+    lastName?: string;
+  };
+}
+
+interface ChatConversation {
+  id: string;
+  title?: string;
+  updatedAt?: string;
+  messages?: ChatMessage[];
+}
+
 export default function CommunicationPage() {
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   
   const { school } = useSchoolStore();
@@ -35,8 +53,8 @@ export default function CommunicationPage() {
   const fetchConversations = async () => {
     if (!school?.id || !user?.id) return;
     try {
-      const res = await apiClient.get<any[]>(`/communication/conversations?tenantId=${school.id}&userId=${user.id}`);
-      if (res.ok && res.data) setConversations(res.data);
+      const res = await apiClient.get<ChatConversation[]>(`/communication/conversations?tenantId=${school.id}&userId=${user.id}`);
+      if (res.ok && res.data) setConversations(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     }
@@ -45,8 +63,8 @@ export default function CommunicationPage() {
   const fetchMessages = async (convId: string) => {
     if (!school?.id) return;
     try {
-      const res = await apiClient.get<any[]>(`/communication/conversations/${convId}/messages?tenantId=${school.id}`);
-      if (res.ok && res.data) setMessages(res.data);
+      const res = await apiClient.get<ChatMessage[]>(`/communication/conversations/${convId}/messages?tenantId=${school.id}`);
+      if (res.ok && res.data) setMessages(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     }
@@ -73,25 +91,25 @@ export default function CommunicationPage() {
   const activeConv = conversations.find(c => c.id === activeConvId);
 
   return (
-    <div className="flex h-[calc(100vh-100px)] bg-white rounded-xl shadow-sm border overflow-hidden">
+    <div className="flex h-[calc(100vh-100px)] bg-card rounded-xl shadow-sm border overflow-hidden">
       {/* Sidebar List */}
-      <div className="w-1/3 border-r flex flex-col bg-gray-50/50">
-        <div className="p-4 border-b bg-white flex items-center gap-2 font-semibold">
-          <MessageSquare className="w-5 h-5 text-gray-500" />
+      <div className="w-1/3 border-r flex flex-col bg-muted/20">
+        <div className="p-4 border-b bg-card flex items-center gap-2 font-semibold text-foreground">
+          <MessageSquare className="w-5 h-5 text-primary" />
           Messages
         </div>
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 text-sm">No conversations found.</div>
+            <div className="p-8 text-center text-muted-foreground text-sm">No conversations found.</div>
           ) : (
             conversations.map(conv => (
               <div 
                 key={conv.id}
                 onClick={() => setActiveConvId(conv.id)}
-                className={`p-4 border-b cursor-pointer transition-colors ${activeConvId === conv.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-100'}`}
+                className={`p-4 border-b cursor-pointer transition-colors ${activeConvId === conv.id ? 'bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-muted/50'}`}
               >
-                <div className="font-semibold text-sm truncate">{conv.title || "Group Chat"}</div>
-                <div className="text-xs text-gray-500 truncate mt-1">
+                <div className="font-semibold text-sm truncate text-foreground">{conv.title || "Faculty & Parent Room"}</div>
+                <div className="text-xs text-muted-foreground truncate mt-1">
                   {conv.messages?.[0]?.content || "No messages yet"}
                 </div>
               </div>
@@ -101,29 +119,29 @@ export default function CommunicationPage() {
       </div>
 
       {/* Message Window */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-card">
         {activeConvId ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b bg-white flex items-center gap-3">
+            <div className="p-4 border-b bg-card flex items-center gap-3">
               <Avatar>
                 <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                <AvatarFallback><User className="w-4 h-4 text-primary" /></AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-semibold">{activeConv?.title || "Conversation"}</div>
-                <div className="text-xs text-green-600">Active now</div>
+                <div className="font-semibold text-foreground">{activeConv?.title || "Conversation"}</div>
+                <div className="text-xs text-emerald-600 font-medium">Channel active</div>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/30">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/10">
               {messages.map((msg, i) => {
                 const isMe = msg.senderId === user?.id;
                 return (
                   <div key={msg.id || i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border shadow-sm text-gray-800 rounded-bl-none'}`}>
-                      {!isMe && <div className="text-[10px] font-semibold mb-1 text-gray-500">{msg.sender?.firstName}</div>}
+                    <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${isMe ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-card border shadow-xs text-foreground rounded-bl-none'}`}>
+                      {!isMe && <div className="text-[10px] font-semibold mb-1 text-muted-foreground">{msg.sender?.firstName || "Member"}</div>}
                       <div className="text-sm">{msg.content}</div>
                     </div>
                   </div>
@@ -132,24 +150,25 @@ export default function CommunicationPage() {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white border-t">
+            <div className="p-4 bg-card border-t">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <Input 
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 focus-visible:ring-blue-600"
+                  className="flex-1"
                 />
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                <Button type="submit">
                   <Send className="w-4 h-4" />
                 </Button>
               </form>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <MessageSquare className="w-16 h-16 mb-4 text-gray-200" />
-            <p>Select a conversation to start messaging</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+            <MessageSquare className="w-16 h-16 mb-4 text-muted-foreground/30" />
+            <p className="font-medium text-foreground">Select a conversation</p>
+            <p className="text-xs mt-1">Chat securely with teachers, parents, and administrative staff.</p>
           </div>
         )}
       </div>
