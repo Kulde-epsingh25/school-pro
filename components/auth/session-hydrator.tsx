@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useSchoolStore } from "@/store/schoolStore";
 
@@ -28,11 +28,15 @@ export function SessionHydrator({
   school: SessionSchool;
   token?: string | null;
 }) {
+  const initialized = useRef(false);
+
   useEffect(() => {
+    // Prevent repetitive re-render cycles if user identity has already been hydrated
+    if (initialized.current) return;
+    initialized.current = true;
+
     if (user) {
       useAuthStore.getState().setAuth(user, token || "");
-    } else {
-      useAuthStore.getState().clearAuth();
     }
 
     if (school) {
@@ -41,10 +45,8 @@ export function SessionHydrator({
         name: school.name || "School Pro Academy",
         logo: "https://utfs.io/f/5a88ce2b-65bc-4f7f-bdc7-27b5e406f85d-8vj8v7.png",
       });
-    } else {
-      useSchoolStore.getState().clearSchool();
     }
   }, [user, school, token]);
 
   return null;
-}
+}
