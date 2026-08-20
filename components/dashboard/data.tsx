@@ -93,9 +93,9 @@ export const getNavData = (contextOrRoles: string[] | DynamicNavContext = []) =>
     const navMain: NavMainSection[] = [];
 
     // -------------------------------------------------------------
-    // 1. SaaS Platform Global Admin
+    // 1. SaaS Platform Global Admin (STRICTLY SAAS_SUPER_ADMIN ONLY)
     // -------------------------------------------------------------
-    if (isSaaSSuperAdmin || hasPermission("SAAS:READ_DASHBOARD")) {
+    if (isSaaSSuperAdmin) {
         const saasItems: NavSubItem[] = [
             { title: "Overview", url: "/saas-admin" },
             { title: "Tenants Directory", url: "/saas-admin/tenants" },
@@ -118,7 +118,7 @@ export const getNavData = (contextOrRoles: string[] | DynamicNavContext = []) =>
     }
 
     // -------------------------------------------------------------
-    // 2. Tenant Organization Super Admin
+    // 2. Tenant Organization Super Admin (FOR TENANT PRINCIPAL & ADMINS)
     // -------------------------------------------------------------
     if (isTenantSuperAdmin || hasPermission("TENANT_RBAC:MANAGE")) {
         const orgItems: NavSubItem[] = [
