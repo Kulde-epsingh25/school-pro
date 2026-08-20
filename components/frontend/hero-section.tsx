@@ -1,5 +1,6 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import SmallTitle from "./small-title";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -7,15 +8,16 @@ export function HeroSection() {
       {/* Background silk texture */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
         style={{ backgroundImage: "url('/silk-texture.png')" }}
       />
       {/* Soft wash to keep text legible */}
-      <div aria-hidden="true" className="absolute inset-0 bg-background/30" />
+      <div aria-hidden="true" className="absolute inset-0 bg-background/40 backdrop-blur-[1px]" />
 
       <div className="container mx-auto max-w-6xl relative z-10 flex flex-col items-center px-6 py-24 text-center">
         {/* Badge */}
         <SmallTitle title="Welcome to School Pro" />
+
         {/* Heading */}
         <h1 className="mt-8 text-balance text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
           Your Ultimate School Management Solution
@@ -28,26 +30,26 @@ export function HeroSection() {
 
         {/* Buttons */}
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-          <a
+          <Link
             href="/onboarding"
-            className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-md ring-2 ring-background/60 transition-colors hover:bg-primary/90"
+            className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-md ring-2 ring-background/60 transition-all hover:bg-primary/90 hover:shadow-lg"
           >
             Get Started
             <ArrowRight
-              className="size-4 text-destructive transition-transform group-hover:translate-x-0.5"
+              className="size-4 text-primary-foreground transition-transform group-hover:translate-x-1"
               aria-hidden="true"
             />
-          </a>
-          <a
+          </Link>
+          <Link
             href="/portal"
-            className="group inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-7 py-3.5 text-base font-semibold text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background"
+            className="group inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-7 py-3.5 text-base font-semibold text-foreground shadow-sm backdrop-blur transition-all hover:bg-background hover:shadow"
           >
             Explore Portals
             <ArrowRight
-              className="size-4 text-destructive transition-transform group-hover:translate-x-0.5"
+              className="size-4 text-foreground transition-transform group-hover:translate-x-1"
               aria-hidden="true"
             />
-          </a>
+          </Link>
         </div>
       </div>
     </section>
