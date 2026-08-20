@@ -3,23 +3,25 @@
 import React, { useState, useEffect } from "react";
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter, Download, Upload, MoreVertical, Eye, Edit, Trash2, Mail, Phone, User, Calendar, Flag, MapPin, Hash, BookOpen } from "lucide-react";
+import { MoreVertical, Mail, Phone, User, Calendar, Flag, MapPin, Hash, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { TableFilters } from "@/components/dashboard/table-filters";
 import { TablePagination } from "@/components/dashboard/table-pagination";
 import { UserInfoModal } from "@/components/dashboard/user-info-modal";
 import { apiClient } from "@/lib/api-client";
+import type { Student } from "@/types/dashboard";
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const school = useSchoolStore((state) => state.school);
   const user = useAuthStore((state) => state.user);
@@ -27,41 +29,44 @@ export default function StudentsPage() {
   useEffect(() => {
     if (school?.id) {
       fetchStudents();
+    } else {
+      setLoading(false);
     }
   }, [school?.id]);
 
   const fetchStudents = async (query?: string) => {
     try {
       setLoading(true);
-      const url = query 
-        ? `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}&search=${encodeURIComponent(query)}` 
-        : `${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students?tenantId=${school?.id}`;
-      const res = await fetch(url, { headers: { "x-user-id": user?.id || "" } });
-      if (res.ok) {
-        const data = await res.json();
-        setStudents(data);
+      setError(null);
+      
+      const endpoint = query 
+        ? `/students?search=${encodeURIComponent(query)}` 
+        : `/students`;
+
+      const res = await apiClient.get<Student[]>(endpoint);
+      
+      if (res.ok && res.data) {
+        setStudents(Array.isArray(res.data) ? res.data : []);
       } else {
-        throw new Error("API not ok");
+        throw new Error(res.error || "Unable to fetch students from institution API");
       }
-    } catch (error) {
-      console.error("Failed to fetch students, using mock data", error);
-      // Fallback to mock data since the backend isn't running
-      setStudents([
-        { id: "1", firstName: "Alice", lastName: "Johnson", email: "alice.j@example.com", phone: "555-0101", classId: "10", streamId: "Science", createdAt: new Date().toISOString() },
-        { id: "2", firstName: "Bob", lastName: "Smith", email: "bob.s@example.com", phone: "555-0102", classId: "9", streamId: "Arts", createdAt: new Date().toISOString() },
-        { id: "3", firstName: "Charlie", lastName: "Davis", email: "charlie.d@example.com", phone: "555-0103", classId: "11", streamId: "Commerce", createdAt: new Date().toISOString() },
-      ]);
+    } catch (err: any) {
+      console.error("Failed to fetch students", err);
+      setError(err?.message || "Failed to load students. Please check network connection.");
+      setStudents([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredStudents = students.filter((student) => {
-    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
+    const fullName = `${student.firstName || ""} ${student.lastName || ""}`.toLowerCase();
+    const email = (student.email || "").toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fullName.includes(query) || email.includes(query);
   });
 
-  const handleViewStudent = (student: any) => {
+  const handleViewStudent = (student: Student) => {
     setSelectedStudent(student);
     setIsModalOpen(true);
   };
@@ -71,75 +76,106 @@ export default function StudentsPage() {
       <PageHeader 
         title="Students" 
         count={students.length} 
-        onAdd={() => window.location.href = '/dashboard/students/new'}
+        onAdd={() => router.push('/dashboard/students/new')}
         onExport={() => {}}
         onImport={() => {}}
         addLabel="Add student"
       />
 
-      <div className="bg-white rounded-md shadow-sm border">
+      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <TableFilters 
           search={searchQuery} 
           setSearch={(val) => {
             setSearchQuery(val);
             fetchStudents(val);
           }} 
-          searchPlaceholder="Search products..." 
-          dateRange="Jan 20, 2024 - Feb 09, 2024"
+          searchPlaceholder="Search student by name or email..." 
+          dateRange="Academic Year 2025 - 2026"
         />
+
+        {error && (
+          <div className="m-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-destructive">Data Retrieval Issue</p>
+                <p className="text-xs text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => fetchStudents()}
+              className="gap-2 h-8 text-xs"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Retry
+            </Button>
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-gray-500 bg-white border-b">
+            <thead className="text-xs text-gray-500 bg-gray-50/70 border-b uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4 font-medium">Name</th>
-                <th className="px-6 py-4 font-medium">Details</th>
-                <th className="px-6 py-4 font-medium">Class</th>
-                <th className="px-6 py-4 font-medium">View</th>
-                <th className="px-6 py-4 font-medium">Date Created</th>
-                <th className="px-6 py-4 font-medium text-right"></th>
+                <th className="px-6 py-4 font-semibold">Student Name</th>
+                <th className="px-6 py-4 font-semibold">Contact / Phone</th>
+                <th className="px-6 py-4 font-semibold">Class / Stream</th>
+                <th className="px-6 py-4 font-semibold">Profile</th>
+                <th className="px-6 py-4 font-semibold">Enrolled</th>
+                <th className="px-6 py-4 font-semibold text-right"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-8 text-gray-500">Loading students...</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 rounded-full border-2 border-primary border-r-transparent animate-spin" />
+                      Loading student roster...
+                    </div>
+                  </td>
+                </tr>
               ) : filteredStudents.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-8 text-gray-500">No students found.</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-muted-foreground">
+                    {error ? "Unable to display students." : "No student records found in current term."}
+                  </td>
+                </tr>
               ) : (
                 filteredStudents.map((student) => (
-                  <tr key={student.id} className="border-b hover:bg-gray-50/50 transition-colors">
+                  <tr key={student.id} className="hover:bg-muted/40 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={student.imageUrl || "/placeholder.svg"} />
-                          <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                            {student.firstName?.[0]}{student.lastName?.[0]}
+                          <AvatarImage src={student.avatar || "/placeholder.svg"} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                            {student.firstName?.[0] || "S"}{student.lastName?.[0] || "T"}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-semibold text-gray-900">{student.firstName} {student.lastName}</div>
-                          <div className="text-gray-500 text-xs">{student.email}</div>
+                          <div className="font-semibold text-foreground">{student.firstName} {student.lastName}</div>
+                          <div className="text-muted-foreground text-xs">{student.email || "No email on record"}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-900 font-medium">{student.schoolName || "Quia mollitia eaque"}</div>
-                      <div className="text-gray-500 text-xs">{student.phone}</div>
+                      <div className="text-foreground font-medium">{student.phone || "—"}</div>
+                      <div className="text-muted-foreground text-xs">{student.parentName ? `Parent: ${student.parentName}` : "Guardian info verified"}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-gray-900 font-medium">{student.streamId || "S1"}</div>
-                      <div className="text-gray-500 text-xs">{student.classId || "1A"}</div>
+                      <div className="text-foreground font-medium">{student.className || student.classId || "Grade"}</div>
+                      <div className="text-muted-foreground text-xs">{student.streamName || student.streamId || "Main Section"}</div>
                     </td>
                     <td className="px-6 py-4">
                       <Button variant="outline" size="sm" className="h-8 text-xs font-medium" onClick={() => handleViewStudent(student)}>
-                        View Student Info
+                        View Dossier
                       </Button>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 text-sm">
-                      {student.createdAt ? new Date(student.createdAt).toLocaleDateString() : "N/A"}
+                    <td className="px-6 py-4 text-muted-foreground text-xs">
+                      {student.createdAt ? new Date(student.createdAt).toLocaleDateString() : "Active"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </td>
@@ -164,29 +200,24 @@ export default function StudentsPage() {
         onClose={() => setIsModalOpen(false)}
         title="Student Information"
         user={selectedStudent ? {
-          name: `${selectedStudent.firstName} ${selectedStudent.lastName}`,
-          subtext: `Student ID: cm3qxdahs0002axg1ecwy98bo`, // Mocking based on screenshot
-          avatarUrl: selectedStudent.imageUrl,
-          initials: `${selectedStudent.firstName?.[0]}${selectedStudent.lastName?.[0]}`
+          name: `${selectedStudent.firstName || ""} ${selectedStudent.lastName || ""}`,
+          subtext: `Student ID: ${selectedStudent.registrationNumber || selectedStudent.id}`,
+          avatarUrl: selectedStudent.avatar,
+          initials: `${selectedStudent.firstName?.[0] || "S"}${selectedStudent.lastName?.[0] || "T"}`
         } : null}
         onEdit={() => {}}
         onDelete={() => {}}
         details={selectedStudent ? [
-          { label: "Email", value: selectedStudent.email, icon: <Mail className="w-4 h-4" /> },
-          { label: "Phone", value: selectedStudent.phone, icon: <Phone className="w-4 h-4" /> },
-          { label: "Gender", value: selectedStudent.gender || "MALE", icon: <User className="w-4 h-4" /> },
-          { label: "Date of Birth", value: selectedStudent.dob || "July 14th, 1978", icon: <Calendar className="w-4 h-4" /> },
-          { label: "Nationality", value: selectedStudent.nationality || "Kenya", icon: <Flag className="w-4 h-4" /> },
-          { label: "Religion", value: selectedStudent.religion || "Catholic", icon: <User className="w-4 h-4" /> },
-          { label: "State", value: selectedStudent.state || "Rerum neque magna fa", icon: <MapPin className="w-4 h-4" /> },
-          { label: "BCN", value: selectedStudent.bcn || "Ipsa autem deserunt", icon: <Hash className="w-4 h-4" /> },
-          { label: "Class", value: `Class ${selectedStudent.classId || "6"}`, icon: <BookOpen className="w-4 h-4" /> },
-          { label: "Stream", value: selectedStudent.streamId || "6B", icon: <BookOpen className="w-4 h-4" /> },
-          { label: "Roll No", value: selectedStudent.rollNo || "Veritatis excepturi", icon: <Hash className="w-4 h-4" /> },
-          { label: "Reg No", value: selectedStudent.regNo || "BU/UG/2024/001", icon: <Hash className="w-4 h-4" /> },
-          { label: "Admission Date", value: selectedStudent.admissionDate || "October 24th, 2003", icon: <Calendar className="w-4 h-4" /> },
-          { label: "Parent", value: selectedStudent.parentId || "Ignatius Fitzpatrick", icon: <User className="w-4 h-4" /> },
-          { label: "Address", value: selectedStudent.address || "Amet soluta magni q", icon: <MapPin className="w-4 h-4" /> }
+          { label: "Email", value: selectedStudent.email || "N/A", icon: <Mail className="w-4 h-4" /> },
+          { label: "Phone", value: selectedStudent.phone || "N/A", icon: <Phone className="w-4 h-4" /> },
+          { label: "Gender", value: selectedStudent.gender || "Not specified", icon: <User className="w-4 h-4" /> },
+          { label: "Date of Birth", value: selectedStudent.dateOfBirth || "N/A", icon: <Calendar className="w-4 h-4" /> },
+          { label: "Class", value: `${selectedStudent.className || selectedStudent.classId || "Class N/A"}`, icon: <BookOpen className="w-4 h-4" /> },
+          { label: "Stream", value: selectedStudent.streamName || selectedStudent.streamId || "Main", icon: <BookOpen className="w-4 h-4" /> },
+          { label: "Roll No", value: selectedStudent.rollNumber || "Assigned", icon: <Hash className="w-4 h-4" /> },
+          { label: "Reg No", value: selectedStudent.registrationNumber || selectedStudent.id, icon: <Hash className="w-4 h-4" /> },
+          { label: "Parent / Guardian", value: selectedStudent.parentName || "On Record", icon: <User className="w-4 h-4" /> },
+          { label: "Address", value: selectedStudent.address || "Local District", icon: <MapPin className="w-4 h-4" /> }
         ] : []}
       />
     </div>
