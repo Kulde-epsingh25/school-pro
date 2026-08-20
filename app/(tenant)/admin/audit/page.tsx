@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, History, Filter, Download } from "lucide-react";
+import { Search, History, Filter, Download, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -17,10 +16,25 @@ import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { apiClient } from "@/lib/api-client";
+import type { AuditLog } from "@/types/dashboard";
+
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  resourceType: string;
+  changes?: string;
+  actor?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+  createdAt: string;
+}
 
 export default function TenantAuditPage() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     action: "ALL",
     resourceType: "ALL"
@@ -32,31 +46,36 @@ export default function TenantAuditPage() {
   useEffect(() => {
     if (school?.id) {
       fetchLogs();
+    } else {
+      setLoading(false);
     }
   }, [school?.id, filters]);
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
+      setError(null);
       const queryParams = new URLSearchParams({ tenantId: school?.id || '' });
       if (filters.action !== "ALL") queryParams.append("action", filters.action);
       if (filters.resourceType !== "ALL") queryParams.append("resourceType", filters.resourceType);
 
-      const res = await apiClient.get<any[]>(`/audit?${queryParams.toString()}`);
+      const res = await apiClient.get<AuditLogEntry[]>(`/audit?${queryParams.toString()}`);
       if (res.ok && res.data) {
-        setLogs(res.data);
+        setLogs(Array.isArray(res.data) ? res.data : []);
       } else {
-        console.error("Failed to fetch audit logs:", res.error);
+        throw new Error(res.error || "Failed to retrieve security audit trail");
       }
-    } catch (error) {
-      console.error("Failed to fetch audit logs:", error);
+    } catch (err: any) {
+      console.error("Failed to fetch audit logs:", err);
+      setError(err?.message || "Unable to query audit logs.");
+      setLogs([]);
     } finally {
       setLoading(false);
     }
   };
 
   const getActionBadge = (action: string) => {
-    switch (action) {
+    switch (action.toUpperCase()) {
       case 'CREATE': return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Create</Badge>;
       case 'UPDATE': return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Update</Badge>;
       case 'DELETE': return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Delete</Badge>;
@@ -138,6 +157,21 @@ export default function TenantAuditPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="mb-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-destructive">Audit Service Connection Failed</p>
+                  <p className="text-xs text-muted-foreground">{error}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={fetchLogs} className="gap-2 h-8 text-xs">
+                <RefreshCw className="h-3.5 w-3.5" /> Retry
+              </Button>
+            </div>
+          )}
+
           {loading ? (
             <div className="py-8 text-center text-muted-foreground">Loading audit logs...</div>
           ) : logs.length === 0 ? (

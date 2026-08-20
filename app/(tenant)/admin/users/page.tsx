@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Search, Users, MoreHorizontal, Mail, ShieldAlert, Download, Trash2, ShieldOff } from "lucide-react";
+import { Plus, Search, Users, MoreHorizontal, Mail, ShieldAlert, Download, Trash2, ShieldOff, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,18 +31,38 @@ import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { apiClient } from "@/lib/api-client";
+import type { User } from "@/types/dashboard";
+
+interface OrgRole {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+}
+
+interface OrgUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  roles: OrgRole[];
+  isActive?: boolean;
+  createdAt?: string;
+}
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [roles, setRoles] = useState<any[]>([]);
+  const [users, setUsers] = useState<OrgUser[]>([]);
+  const [roles, setRoles] = useState<OrgRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isManageRolesModalOpen, setIsManageRolesModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<OrgUser | null>(null);
   
-  // New features state
+  // Search & batch operations
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -63,19 +83,26 @@ export default function UsersPage() {
     if (school?.id) {
       fetchUsers();
       fetchRoles();
+    } else {
+      setLoading(false);
     }
   }, [school?.id]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get<any[]>(`/users`);
+      setError(null);
+      const res = await apiClient.get<OrgUser[]>(`/users`);
       if (res.ok && res.data) {
-        setUsers(res.data);
+        setUsers(Array.isArray(res.data) ? res.data : []);
         setSelectedUsers([]);
+      } else {
+        throw new Error(res.error || "Failed to load user accounts from API");
       }
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
+    } catch (err: any) {
+      console.error("Failed to fetch users:", err);
+      setError(err?.message || "Failed to fetch users from server.");
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -83,12 +110,12 @@ export default function UsersPage() {
 
   const fetchRoles = async () => {
     try {
-      const res = await apiClient.get<any[]>(`/roles`);
+      const res = await apiClient.get<OrgRole[]>(`/roles`);
       if (res.ok && res.data) {
-        setRoles(res.data);
+        setRoles(Array.isArray(res.data) ? res.data : []);
       }
-    } catch (error) {
-      console.error("Failed to fetch roles:", error);
+    } catch (err) {
+      console.error("Failed to fetch roles:", err);
     }
   };
 
@@ -101,7 +128,7 @@ export default function UsersPage() {
       if (res.ok) {
         setIsCreateModalOpen(false);
         setFormData({ firstName: "", lastName: "", email: "", phone: "", roleId: "" });
-        fetchUsers(); // Refresh the list
+        fetchUsers();
       } else {
         alert(res.error || "Failed to create user");
       }
@@ -115,6 +142,7 @@ export default function UsersPage() {
 
   const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedUser) return;
     setIsSubmitting(true);
     try {
       const res = await apiClient.put(`/users/${selectedUser.id}`, {
@@ -139,6 +167,7 @@ export default function UsersPage() {
 
   const handleUpdateRoles = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedUser) return;
     setIsSubmitting(true);
     try {
       const res = await apiClient.put(`/users/${selectedUser.id}/roles`, {
@@ -198,7 +227,7 @@ export default function UsersPage() {
         `"${u.lastName}"`,
         `"${u.email}"`,
         `"${u.phone || ''}"`,
-        `"${u.roles.map((r:any) => r.name).join(", ")}"`,
+        `"${u.roles.map((r: OrgRole) => r.name).join(", ")}"`,
         u.isActive ? "Active" : "Pending"
       ].join(","))
     ].join("\n");
@@ -213,7 +242,7 @@ export default function UsersPage() {
     document.body.removeChild(link);
   };
 
-  const openEditModal = (user: any) => {
+  const openEditModal = (user: OrgUser) => {
     setSelectedUser(user);
     setFormData({
       firstName: user.firstName,
@@ -225,11 +254,11 @@ export default function UsersPage() {
     setIsEditModalOpen(true);
   };
 
-  const openManageRolesModal = (user: any) => {
+  const openManageRolesModal = (user: OrgUser) => {
     setSelectedUser(user);
     setFormData({
       ...formData,
-      roleId: user.roles.map((r: any) => r.id).join(',')
+      roleId: (user.roles || []).map((r: OrgRole) => r.id).join(',')
     });
     setIsManageRolesModalOpen(true);
   };
@@ -260,9 +289,9 @@ export default function UsersPage() {
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
       const q = searchQuery.toLowerCase();
-      return u.firstName.toLowerCase().includes(q) || 
-             u.lastName.toLowerCase().includes(q) || 
-             u.email.toLowerCase().includes(q);
+      return (u.firstName || "").toLowerCase().includes(q) || 
+             (u.lastName || "").toLowerCase().includes(q) || 
+             (u.email || "").toLowerCase().includes(q);
     });
   }, [users, searchQuery]);
 
@@ -316,6 +345,21 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="mb-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-destructive">User Directory Issue</p>
+                  <p className="text-xs text-muted-foreground">{error}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-2 h-8 text-xs">
+                <RefreshCw className="h-3.5 w-3.5" /> Retry
+              </Button>
+            </div>
+          )}
+
           {loading ? (
             <div className="py-8 text-center text-muted-foreground">Loading users...</div>
           ) : users.length === 0 ? (
@@ -352,7 +396,7 @@ export default function UsersPage() {
                     />
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                        {user.firstName[0]}{user.lastName[0]}
+                        {(user.firstName?.[0] || "U")}{(user.lastName?.[0] || "")}
                       </div>
                       <div>
                         <div className="font-medium text-slate-900">{user.firstName} {user.lastName}</div>
@@ -367,12 +411,12 @@ export default function UsersPage() {
                     </div>
                     <div>
                       <div className="flex flex-wrap gap-1">
-                        {user.roles.map((role: any) => (
+                        {(user.roles || []).map((role: OrgRole) => (
                           <Badge key={role.id} variant="outline" className="bg-primary/5 text-xs font-normal">
-                            {role.name.replace('_', ' ')}
+                            {role.name ? role.name.replace('_', ' ') : role.displayName}
                           </Badge>
                         ))}
-                        {user.roles.length === 0 && <span className="text-muted-foreground text-xs italic">No roles</span>}
+                        {(!user.roles || user.roles.length === 0) && <span className="text-muted-foreground text-xs italic">No roles</span>}
                       </div>
                     </div>
                     <div className="text-center">
@@ -459,7 +503,7 @@ export default function UsersPage() {
                 <SelectContent>
                   {roles.map(role => (
                     <SelectItem key={role.id} value={role.id}>
-                      {role.displayName}
+                      {role.displayName || role.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -528,7 +572,7 @@ export default function UsersPage() {
                   <label key={role.id} className="flex items-start gap-3 p-3 rounded border hover:bg-slate-50 cursor-pointer">
                     <input type="checkbox" className="mt-1 w-4 h-4 text-primary" checked={isSelected} onChange={() => toggleRole(role.id)} />
                     <div>
-                      <div className="font-medium text-sm">{role.displayName}</div>
+                      <div className="font-medium text-sm">{role.displayName || role.name}</div>
                       <div className="text-xs text-muted-foreground">{role.description || "No description"}</div>
                     </div>
                   </label>
