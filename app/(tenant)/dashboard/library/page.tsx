@@ -1,20 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Book as BookIcon, Search, Plus, BookOpen, Clock, Check } from "lucide-react";
+import { Book as BookIcon, Search, Plus, BookOpen, Clock, Check, AlertCircle, RefreshCw } from "lucide-react";
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+interface LibraryBook {
+  id: string;
+  title: string;
+  author: string;
+  isbn?: string;
+  category?: string;
+  totalCopies: number;
+  availableCopies: number;
+}
+
+interface IssuedBook {
+  id: string;
+  book?: {
+    title: string;
+  };
+  issueDate: string;
+  dueDate: string;
+  isReturned: boolean;
+  fineAmount: number;
+}
+
 export default function LibraryPage() {
   const { school } = useSchoolStore();
   const user = useAuthStore(state => state.user);
   
   const [activeTab, setActiveTab] = useState<"CATALOG" | "MY_BOOKS" | "ADMIN">("CATALOG");
-  const [books, setBooks] = useState<any[]>([]);
-  const [myBooks, setMyBooks] = useState<any[]>([]);
+  const [books, setBooks] = useState<LibraryBook[]>([]);
+  const [myBooks, setMyBooks] = useState<IssuedBook[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   
   // Admin form states
@@ -31,18 +54,28 @@ export default function LibraryPage() {
 
   const fetchBooks = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const q = search ? `&search=${encodeURIComponent(search)}` : "";
-      const res = await apiClient.get<any[]>(`/library/books?tenantId=${school?.id}${q}`);
-      if (res.ok && res.data) setBooks(res.data);
-    } catch (err) {
+      const res = await apiClient.get<LibraryBook[]>(`/library/books?tenantId=${school?.id}${q}`);
+      if (res.ok && res.data) {
+        setBooks(Array.isArray(res.data) ? res.data : []);
+      } else {
+        throw new Error(res.error || "Unable to query library catalog");
+      }
+    } catch (err: any) {
       console.error(err);
+      setError(err?.message || "Failed to load library catalog.");
+      setBooks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchMyBooks = async () => {
     try {
-      const res = await apiClient.get<any[]>(`/library/my-books?tenantId=${school?.id}&userId=${user?.id}`);
-      if (res.ok && res.data) setMyBooks(res.data);
+      const res = await apiClient.get<IssuedBook[]>(`/library/my-books?tenantId=${school?.id}&userId=${user?.id}`);
+      if (res.ok && res.data) setMyBooks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     }
@@ -103,25 +136,39 @@ export default function LibraryPage() {
 
       <div className="flex border-b">
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'CATALOG' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'CATALOG' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
           onClick={() => setActiveTab('CATALOG')}
         >
           Catalog
         </button>
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'MY_BOOKS' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'MY_BOOKS' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
           onClick={() => setActiveTab('MY_BOOKS')}
         >
           My Books
         </button>
-        {/* Only show Admin tab if user is an admin or staff. For MVP, we'll just show it always. */}
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'ADMIN' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'ADMIN' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
           onClick={() => setActiveTab('ADMIN')}
         >
           Admin Portal
         </button>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-destructive">Library Connection Notice</p>
+              <p className="text-xs text-muted-foreground">{error}</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchBooks} className="gap-2 h-8 text-xs">
+            <RefreshCw className="h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
+      )}
 
       {activeTab === 'CATALOG' && (
         <div className="space-y-6">
@@ -131,7 +178,7 @@ export default function LibraryPage() {
               placeholder="Search by title, author, or ISBN..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-12 text-lg"
+              className="pl-10 h-12 text-base"
             />
           </div>
 
@@ -140,10 +187,10 @@ export default function LibraryPage() {
               <div key={book.id} className="bg-white p-6 rounded-xl border shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <div className="p-3 bg-primary/10 text-primary rounded-lg">
                       <BookIcon className="w-6 h-6" />
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${book.availableCopies > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${book.availableCopies > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                       {book.availableCopies > 0 ? `${book.availableCopies} Available` : 'Out of Stock'}
                     </span>
                   </div>
@@ -158,10 +205,10 @@ export default function LibraryPage() {
                 </div>
               </div>
             ))}
-            {books.length === 0 && (
+            {books.length === 0 && !loading && (
               <div className="col-span-full text-center py-12 text-gray-500">
                 <BookIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                <p>No books found.</p>
+                <p>No books currently available in catalog.</p>
               </div>
             )}
           </div>
@@ -187,7 +234,7 @@ export default function LibraryPage() {
                   <td className="px-6 py-4 font-medium">
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-gray-400" />
-                      {issue.book?.title}
+                      {issue.book?.title || "Book Title"}
                     </div>
                   </td>
                   <td className="px-6 py-4">{new Date(issue.issueDate).toLocaleDateString()}</td>
@@ -201,15 +248,15 @@ export default function LibraryPage() {
                   </td>
                   <td className="px-6 py-4">
                     {issue.isReturned ? (
-                      <span className="text-green-600 font-semibold flex items-center gap-1">
+                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
                         <Check className="w-4 h-4" /> Returned
                       </span>
                     ) : (
-                      <span className="text-blue-600 font-semibold">Active</span>
+                      <span className="text-primary font-semibold">Active</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    ${issue.fineAmount.toFixed(2)}
+                    ${(issue.fineAmount || 0).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -225,10 +272,9 @@ export default function LibraryPage() {
 
       {activeTab === 'ADMIN' && (
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Add Book */}
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-blue-600" /> Add New Book
+              <Plus className="w-5 h-5 text-primary" /> Add New Book
             </h2>
             <form onSubmit={handleAddBook} className="space-y-4">
               <Input placeholder="Title" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} required />
@@ -237,32 +283,30 @@ export default function LibraryPage() {
                 <Input placeholder="ISBN" value={newBook.isbn} onChange={e => setNewBook({...newBook, isbn: e.target.value})} />
                 <Input placeholder="Category" value={newBook.category} onChange={e => setNewBook({...newBook, category: e.target.value})} />
               </div>
-              <Input type="number" min="1" placeholder="Total Copies" value={newBook.totalCopies} onChange={e => setNewBook({...newBook, totalCopies: parseInt(e.target.value)})} required />
-              <Button type="submit" className="w-full bg-blue-600">Save Book</Button>
+              <Input type="number" min="1" placeholder="Total Copies" value={newBook.totalCopies} onChange={e => setNewBook({...newBook, totalCopies: parseInt(e.target.value) || 1})} required />
+              <Button type="submit" className="w-full">Save Book</Button>
             </form>
           </div>
 
           <div className="space-y-6">
-            {/* Issue Book */}
             <div className="bg-white p-6 rounded-xl border shadow-sm">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-green-600" /> Issue Book
+                <BookOpen className="w-5 h-5 text-emerald-600" /> Issue Book
               </h2>
               <form onSubmit={handleIssueBook} className="space-y-4">
                 <Input placeholder="Book ID" value={issueData.bookId} onChange={e => setIssueData({...issueData, bookId: e.target.value})} required />
                 <Input placeholder="User/Student ID" value={issueData.userId} onChange={e => setIssueData({...issueData, userId: e.target.value})} required />
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">Issue Book</Button>
+                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">Issue Book</Button>
               </form>
             </div>
 
-            {/* Return Book */}
             <div className="bg-white p-6 rounded-xl border shadow-sm">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Check className="w-5 h-5 text-orange-600" /> Return Book
+                <Check className="w-5 h-5 text-amber-600" /> Return Book
               </h2>
               <form onSubmit={handleReturnBook} className="space-y-4">
                 <Input placeholder="Issue Record ID" value={returnId} onChange={e => setReturnId(e.target.value)} required />
-                <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">Process Return</Button>
+                <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700">Process Return</Button>
               </form>
             </div>
           </div>

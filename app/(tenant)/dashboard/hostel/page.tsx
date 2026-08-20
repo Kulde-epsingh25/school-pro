@@ -1,21 +1,56 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Building, Bed, Users, UserCheck, Plus, Check } from "lucide-react";
+import { Building, Bed, Users, UserCheck, Plus, Check, AlertCircle, RefreshCw } from "lucide-react";
 import { useSchoolStore } from "@/store/schoolStore";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+interface HostelRoom {
+  id: string;
+  roomNo: string;
+  capacity: number;
+  currentOccupancy: number;
+  feePerMonth: number;
+}
+
+interface Hostel {
+  id: string;
+  name: string;
+  type: string;
+  wardenName: string;
+  wardenPhone?: string;
+  rooms?: HostelRoom[];
+}
+
+interface HostelVisitor {
+  id: string;
+  visitorName: string;
+  relation: string;
+  reason?: string;
+  status: "ACTIVE" | "COMPLETED";
+  checkInTime: string;
+  checkOutTime?: string;
+  student?: {
+    user?: {
+      firstName?: string;
+      lastName?: string;
+    };
+  };
+}
+
 export default function HostelPage() {
   const { school } = useSchoolStore();
   const user = useAuthStore(state => state.user);
   
   const [activeTab, setActiveTab] = useState<"HOSTELS" | "VISITORS" | "MY_ROOM">("HOSTELS");
-  const [hostels, setHostels] = useState<any[]>([]);
-  const [visitors, setVisitors] = useState<any[]>([]);
+  const [hostels, setHostels] = useState<Hostel[]>([]);
+  const [visitors, setVisitors] = useState<HostelVisitor[]>([]);
   const [myRoom, setMyRoom] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Forms
   const [newHostel, setNewHostel] = useState({ name: "", type: "Co-ed", wardenName: "", wardenPhone: "" });
@@ -33,17 +68,27 @@ export default function HostelPage() {
 
   const fetchHostels = async () => {
     try {
-      const res = await apiClient.get<any[]>(`/hostel/all?tenantId=${school?.id}`);
-      if (res.ok && res.data) setHostels(res.data);
-    } catch (err) {
+      setLoading(true);
+      setError(null);
+      const res = await apiClient.get<Hostel[]>(`/hostel/all?tenantId=${school?.id}`);
+      if (res.ok && res.data) {
+        setHostels(Array.isArray(res.data) ? res.data : []);
+      } else {
+        throw new Error(res.error || "Failed to load hostel blocks");
+      }
+    } catch (err: any) {
       console.error(err);
+      setError(err?.message || "Failed to load hostel facilities.");
+      setHostels([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchVisitors = async () => {
     try {
-      const res = await apiClient.get<any[]>(`/hostel/visitors?tenantId=${school?.id}`);
-      if (res.ok && res.data) setVisitors(res.data);
+      const res = await apiClient.get<HostelVisitor[]>(`/hostel/visitors?tenantId=${school?.id}`);
+      if (res.ok && res.data) setVisitors(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     }
@@ -120,39 +165,53 @@ export default function HostelPage() {
     <div className="flex-1 space-y-6 p-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Hostel Management</h1>
-          <p className="text-gray-500 mt-2">Manage properties, allocate rooms, and track visitors.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Hostel Management</h1>
+          <p className="text-muted-foreground mt-2">Manage properties, allocate rooms, and track visitors.</p>
         </div>
       </div>
 
       <div className="flex border-b">
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'HOSTELS' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'HOSTELS' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}
           onClick={() => setActiveTab('HOSTELS')}
         >
           Hostels & Rooms
         </button>
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'VISITORS' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'VISITORS' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}
           onClick={() => setActiveTab('VISITORS')}
         >
           Visitor Logs (Gate Pass)
         </button>
         <button 
-          className={`px-6 py-3 font-semibold ${activeTab === 'MY_ROOM' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-6 py-3 font-semibold ${activeTab === 'MY_ROOM' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}
           onClick={() => setActiveTab('MY_ROOM')}
         >
           My Room
         </button>
       </div>
 
+      {error && (
+        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-destructive">Hostel System Connection Notice</p>
+              <p className="text-xs text-muted-foreground">{error}</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchHostels} className="gap-2 h-8 text-xs">
+            <RefreshCw className="h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
+      )}
+
       {activeTab === 'HOSTELS' && (
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-1 space-y-6">
-            {/* Create Hostel */}
             <div className="bg-white p-6 rounded-xl border shadow-sm">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Building className="w-5 h-5 text-blue-600" /> New Hostel
+                <Building className="w-5 h-5 text-primary" /> New Hostel
               </h2>
               <form onSubmit={handleCreateHostel} className="space-y-4">
                 <Input placeholder="Hostel Name" value={newHostel.name} onChange={e => setNewHostel({...newHostel, name: e.target.value})} required />
@@ -163,19 +222,18 @@ export default function HostelPage() {
                 </select>
                 <Input placeholder="Warden Name" value={newHostel.wardenName} onChange={e => setNewHostel({...newHostel, wardenName: e.target.value})} required />
                 <Input placeholder="Warden Phone" value={newHostel.wardenPhone} onChange={e => setNewHostel({...newHostel, wardenPhone: e.target.value})} />
-                <Button type="submit" className="w-full bg-blue-600">Create</Button>
+                <Button type="submit" className="w-full">Create</Button>
               </form>
             </div>
 
-            {/* Allocate Student */}
             <div className="bg-white p-6 rounded-xl border shadow-sm">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-green-600" /> Allocate Room
+                <UserCheck className="w-5 h-5 text-emerald-600" /> Allocate Room
               </h2>
               <form onSubmit={handleAllocate} className="space-y-4">
                 <Input placeholder="Student ID" value={allocationData.studentId} onChange={e => setAllocationData({...allocationData, studentId: e.target.value})} required />
                 <Input placeholder="Room ID" value={allocationData.roomId} onChange={e => setAllocationData({...allocationData, roomId: e.target.value})} required />
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">Assign Room</Button>
+                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">Assign Room</Button>
               </form>
             </div>
           </div>
@@ -186,36 +244,35 @@ export default function HostelPage() {
                 <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
                   <div>
                     <h3 className="font-bold text-lg">{h.name} ({h.type})</h3>
-                    <p className="text-xs text-gray-500">Warden: {h.wardenName} | {h.wardenPhone}</p>
+                    <p className="text-xs text-muted-foreground">Warden: {h.wardenName} {h.wardenPhone ? `| ${h.wardenPhone}` : ""}</p>
                   </div>
-                  <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                    {h.rooms?.length} Rooms
+                  <span className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                    {h.rooms?.length || 0} Rooms
                   </span>
                 </div>
                 
                 <div className="p-4">
-                  {/* Quick Add Room Form inline */}
-                  <form onSubmit={handleAddRoom} className="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
+                  <form onSubmit={handleAddRoom} className="flex gap-2 mb-4 bg-muted/40 p-2 rounded border">
                     <Input placeholder="Room No" value={newRoom.roomNo} onChange={e => setNewRoom({...newRoom, hostelId: h.id, roomNo: e.target.value})} required className="w-24" />
-                    <Input type="number" placeholder="Cap" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, hostelId: h.id, capacity: parseInt(e.target.value)})} required className="w-20" />
-                    <Input type="number" placeholder="Fee/mo ($)" value={newRoom.feePerMonth} onChange={e => setNewRoom({...newRoom, hostelId: h.id, feePerMonth: parseFloat(e.target.value)})} className="w-28" />
-                    <Button type="submit" size="sm" className="bg-blue-600"><Plus className="w-4 h-4" /></Button>
+                    <Input type="number" placeholder="Cap" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, hostelId: h.id, capacity: parseInt(e.target.value) || 2})} required className="w-20" />
+                    <Input type="number" placeholder="Fee/mo ($)" value={newRoom.feePerMonth} onChange={e => setNewRoom({...newRoom, hostelId: h.id, feePerMonth: parseFloat(e.target.value) || 0})} className="w-28" />
+                    <Button type="submit" size="sm"><Plus className="w-4 h-4" /></Button>
                   </form>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {h.rooms?.map((r: any) => (
-                      <div key={r.id} className={`p-3 rounded border ${r.currentOccupancy >= r.capacity ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
+                    {(h.rooms || []).map((r: HostelRoom) => (
+                      <div key={r.id} className={`p-3 rounded border ${r.currentOccupancy >= r.capacity ? 'bg-destructive/5 border-destructive/30' : 'bg-card'}`}>
                         <div className="flex justify-between items-start mb-2">
-                          <span className="font-bold">{r.roomNo}</span>
-                          <span className="text-[10px] text-gray-400">ID: {r.id.slice(-4)}</span>
+                          <span className="font-bold text-sm">{r.roomNo}</span>
+                          <span className="text-[10px] text-muted-foreground">ID: {r.id.slice(-4)}</span>
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Users className="w-3 h-3" />
-                          <span className={r.currentOccupancy >= r.capacity ? 'text-red-600 font-bold' : 'text-gray-600'}>
-                            {r.currentOccupancy} / {r.capacity}
+                          <span className={r.currentOccupancy >= r.capacity ? 'text-destructive font-bold' : 'text-muted-foreground'}>
+                            {r.currentOccupancy || 0} / {r.capacity}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">${r.feePerMonth}/mo</div>
+                        <div className="text-xs text-muted-foreground mt-1">${r.feePerMonth}/mo</div>
                       </div>
                     ))}
                   </div>
@@ -233,9 +290,9 @@ export default function HostelPage() {
             <form onSubmit={handleIssuePass} className="space-y-4">
               <Input placeholder="Student ID" value={newVisitor.studentId} onChange={e => setNewVisitor({...newVisitor, studentId: e.target.value})} required />
               <Input placeholder="Visitor Name" value={newVisitor.visitorName} onChange={e => setNewVisitor({...newVisitor, visitorName: e.target.value})} required />
-              <Input placeholder="Relation (e.g. Father)" value={newVisitor.relation} onChange={e => setNewVisitor({...newVisitor, relation: e.target.value})} required />
+              <Input placeholder="Relation (e.g. Guardian)" value={newVisitor.relation} onChange={e => setNewVisitor({...newVisitor, relation: e.target.value})} required />
               <Input placeholder="Reason" value={newVisitor.reason} onChange={e => setNewVisitor({...newVisitor, reason: e.target.value})} />
-              <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">Issue Pass</Button>
+              <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700">Issue Pass</Button>
             </form>
           </div>
 
@@ -256,7 +313,7 @@ export default function HostelPage() {
                   <tr key={v.id} className="border-t">
                     <td className="px-4 py-3">
                       <div className="font-semibold">{v.visitorName}</div>
-                      <div className="text-xs text-gray-500">{v.relation}</div>
+                      <div className="text-xs text-muted-foreground">{v.relation}</div>
                     </td>
                     <td className="px-4 py-3">
                       {v.student?.user?.firstName} {v.student?.user?.lastName}
@@ -267,11 +324,11 @@ export default function HostelPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {v.status === 'ACTIVE' ? (
-                        <Button size="sm" onClick={() => handleCheckoutVisitor(v.id)} className="bg-slate-800">
+                        <Button size="sm" onClick={() => handleCheckoutVisitor(v.id)} variant="outline">
                           Checkout
                         </Button>
                       ) : (
-                        <span className="text-green-600 font-bold flex justify-end items-center gap-1">
+                        <span className="text-emerald-600 font-bold flex justify-end items-center gap-1">
                           <Check className="w-4 h-4" /> Done
                         </span>
                       )}
@@ -288,29 +345,29 @@ export default function HostelPage() {
         <div className="max-w-3xl mx-auto space-y-6">
           {myRoom ? (
             <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bed className="w-8 h-8" />
               </div>
               <h2 className="text-3xl font-bold mb-2">Room {myRoom.room?.roomNo}</h2>
-              <p className="text-xl text-gray-600">{myRoom.room?.hostel?.name}</p>
+              <p className="text-xl text-muted-foreground">{myRoom.room?.hostel?.name}</p>
               
               <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t max-w-md mx-auto">
                 <div>
-                  <p className="text-sm text-gray-500">Hostel Type</p>
+                  <p className="text-sm text-muted-foreground">Hostel Type</p>
                   <p className="font-semibold">{myRoom.room?.hostel?.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Warden</p>
+                  <p className="text-sm text-muted-foreground">Warden</p>
                   <p className="font-semibold">{myRoom.room?.hostel?.wardenName}</p>
-                  <p className="text-xs text-gray-400">{myRoom.room?.hostel?.wardenPhone}</p>
+                  <p className="text-xs text-muted-foreground">{myRoom.room?.hostel?.wardenPhone}</p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="bg-white p-12 rounded-xl border shadow-sm text-center">
-              <Building className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-              <h2 className="text-xl font-bold text-gray-700">No Room Allocated</h2>
-              <p className="text-gray-500 mt-2">You have not been assigned to a hostel room. Please contact administration.</p>
+              <Building className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h2 className="text-xl font-bold text-foreground">No Room Allocated</h2>
+              <p className="text-muted-foreground mt-2">You have not been assigned to a hostel room. Please contact administration.</p>
             </div>
           )}
         </div>
