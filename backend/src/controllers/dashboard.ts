@@ -62,15 +62,35 @@ export const getTenantDashboardMetrics = async (req: Request, res: Response) => 
       amount: "₹0" // Assuming 0 for now
     }));
 
-    // 4. Mock Fee Collection Data (Since we don't have historical months easily queryable without raw SQL)
-    const feeCollectionData = [
-      { name: "Jan", value: totalRevenue > 0 ? totalRevenue * 0.1 : 320000 },
-      { name: "Feb", value: totalRevenue > 0 ? totalRevenue * 0.15 : 280000 },
-      { name: "Mar", value: totalRevenue > 0 ? totalRevenue * 0.2 : 410000 },
-      { name: "Apr", value: totalRevenue > 0 ? totalRevenue * 0.25 : 390000 },
-      { name: "May", value: totalRevenue > 0 ? totalRevenue * 0.3 : 450000 },
-      { name: "Jun", value: totalRevenue > 0 ? totalRevenue : 370000 },
-    ];
+    // 4. Monthly Fee Collection Data from Real Payments
+    const allPaidPayments = await prisma.payment.findMany({
+      where: { tenantId, status: "PAID" },
+      select: { amount: true, createdAt: true }
+    });
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonthIdx = new Date().getMonth();
+    const last6Months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(currentMonthIdx - i);
+      last6Months.push({
+        name: monthNames[d.getMonth()],
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        value: 0
+      });
+    }
+
+    allPaidPayments.forEach(p => {
+      const pDate = new Date(p.createdAt);
+      const match = last6Months.find(m => m.month === pDate.getMonth() && m.year === pDate.getFullYear());
+      if (match) {
+        match.value += p.amount;
+      }
+    });
+
+    const feeCollectionData = last6Months.map(({ name, value }) => ({ name, value }));
 
     res.json({
       stats: {

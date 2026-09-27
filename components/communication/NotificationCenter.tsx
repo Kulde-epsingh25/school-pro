@@ -71,7 +71,7 @@ export function NotificationCenter() {
           <div className="p-4 text-center text-sm text-gray-500">No notifications</div>
         ) : (
           notifications.map((n) => (
-            <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-1 p-3 cursor-pointer" onClick={(e) => { e.preventDefault(); markAsRead(n.id); }}>
+            <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-1 p-3 cursor-pointer" onClick={() => markAsRead(n.id)}>
               <div className="flex w-full justify-between items-start">
                 <span className={`text-sm font-semibold ${n.isRead ? 'text-gray-600' : 'text-gray-900'}`}>{n.title}</span>
                 {!n.isRead && <div className="h-2 w-2 bg-blue-500 rounded-full mt-1"></div>}

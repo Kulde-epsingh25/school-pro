@@ -1,10 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { mergeProps } from "@base-ui/react/merge-props"
-import { useRender } from "@base-ui/react/use-render"
-import { cva, type VariantProps } from "class-variance-authority"
-
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,6 +20,49 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { PanelLeftIcon } from "lucide-react"
+
+function mergeProps<T>(defaultProps: any, overrideProps: any): any {
+  return {
+    ...defaultProps,
+    ...overrideProps,
+    className: cn(defaultProps?.className, overrideProps?.className),
+  };
+}
+
+function useRender({ defaultTagName = "div", props, render }: any) {
+  const Component = defaultTagName as any;
+  if (React.isValidElement(render)) {
+    return React.cloneElement(render, {
+      ...props,
+      className: cn((render.props as any)?.className, props?.className),
+    });
+  }
+  if (typeof render === "function") {
+    return render(props);
+  }
+  return <Component {...props} />;
+}
+
+namespace useRender {
+  export type ComponentProps<T extends React.ElementType> = {
+    render?: React.ReactElement | ((props: any) => React.ReactElement);
+  };
+}
+
+function cva(base: string, config?: any) {
+  return (options?: any) => {
+    let classes = base;
+    if (config?.variants && options) {
+      for (const [key, val] of Object.entries(options)) {
+        if (config.variants[key]?.[val as string]) {
+          classes = cn(classes, config.variants[key][val as string]);
+        }
+      }
+    }
+    return cn(classes, options?.className);
+  };
+}
+type VariantProps<T> = any;
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -265,7 +304,7 @@ function SidebarTrigger({
       variant="ghost"
       size="icon-sm"
       className={cn(className)}
-      onClick={(event) => {
+      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
         onClick?.(event)
         toggleSidebar()
       }}

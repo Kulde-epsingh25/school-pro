@@ -100,35 +100,39 @@ export default function UsersPage() {
       setLoading(true);
       setError(null);
       const res = await apiClient.get<OrgUser[]>(`/users?tenantId=${school?.id || user?.schoolId || ''}`);
-      if (res.ok && res.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.ok && res.data && Array.isArray(res.data)) {
         setUsers(res.data);
+      } else if (user?.email) {
+        setUsers([
+          {
+            id: user.id,
+            firstName: user.name?.split(" ")[0] || "Administrator",
+            lastName: user.name?.split(" ").slice(1).join(" ") || "",
+            email: user.email,
+            roles: [DEFAULT_TENANT_ROLES[0]],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
       } else {
-        // Provide the active administrator as the root seeded account if fresh tenant
-        const rootAdmin: OrgUser = {
-          id: user?.id || "admin-root",
-          firstName: user?.name?.split(" ")[0] || "Jane",
-          lastName: user?.name?.split(" ").slice(1).join(" ") || "Smith",
-          email: user?.email || "admin@beaconprep.school",
-          phone: "+1 555 019 0001",
-          roles: [DEFAULT_TENANT_ROLES[0]],
-          isActive: true,
-          createdAt: new Date().toISOString()
-        };
-        setUsers([rootAdmin]);
+        setUsers([]);
       }
     } catch (err: any) {
-      console.warn("Could not fetch remote users, using seeded state:", err);
-      if (user?.id) {
-        setUsers([{
-          id: user.id,
-          firstName: user.name?.split(" ")[0] || "Jane",
-          lastName: user.name?.split(" ").slice(1).join(" ") || "Smith",
-          email: user.email,
-          phone: "+1 555 019 0001",
-          roles: [DEFAULT_TENANT_ROLES[0]],
-          isActive: true,
-          createdAt: new Date().toISOString()
-        }]);
+      console.warn("Could not fetch remote users:", err);
+      if (user?.email) {
+        setUsers([
+          {
+            id: user.id,
+            firstName: user.name?.split(" ")[0] || "Administrator",
+            lastName: user.name?.split(" ").slice(1).join(" ") || "",
+            email: user.email,
+            roles: [DEFAULT_TENANT_ROLES[0]],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      } else {
+        setUsers([]);
       }
     } finally {
       setLoading(false);

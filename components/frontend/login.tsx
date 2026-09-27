@@ -14,7 +14,6 @@ import Link from "next/link";
 import { SVGAttributes, useState } from "react";
 
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { toast } from "sonner";
@@ -39,7 +38,6 @@ export default function LoginV2() {
   const router = useRouter();
   // Initialize react-hook-form with zod validation
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -48,6 +46,14 @@ export default function LoginV2() {
 
   // Form submission handler
   async function onSubmit(values: LoginFormValues) {
+    const parsed = loginSchema.safeParse(values);
+    if (!parsed.success) {
+      toast.error("Validation Error", {
+        description: parsed.error.issues[0]?.message || "Invalid input",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {

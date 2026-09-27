@@ -29,18 +29,31 @@ export default function NewSchoolFeePage() {
   const [selectedTermId, setSelectedTermId] = useState("");
 
   useEffect(() => {
-    // Fetch terms
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/terms`, { headers: { "x-user-id": user?.id || "" } })
+    const tenantId = user?.schoolId || "";
+    // Fetch terms and classes
+    const headers = { "x-user-id": user?.id || "" };
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com";
+
+    fetch(`${apiBase}/academics/terms?tenantId=${tenantId}`, { headers })
       .then(res => res.json())
       .then(data => {
-        setTerms(data);
-        if (data.length > 0) setSelectedTermId(data[0].id);
+        if (Array.isArray(data)) {
+          setTerms(data);
+          if (data.length > 0) setSelectedTermId(data[0].id);
+        }
       })
       .catch(console.error);
-    
-    // TODO: We need a getClasses endpoint, but for now we'll hardcode or let it fail gracefully
-    // fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/academics/classes`, { headers: { "x-user-id": user?.id || "" } })
-  }, []);
+
+    fetch(`${apiBase}/classes?tenantId=${tenantId}`, { headers })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setClasses(data);
+          if (data.length > 0) setSelectedClassId(data[0].id);
+        }
+      })
+      .catch(console.error);
+  }, [user?.schoolId, user?.id]);
 
   useEffect(() => {
     const sum = feeItems.reduce((acc, item) => acc + (parseFloat(item.amount) || 0), 0);
@@ -92,14 +105,26 @@ export default function NewSchoolFeePage() {
       {/* Top Selectors */}
       <div className="flex flex-col sm:flex-row gap-8 mb-8">
         <div className="flex-1 max-w-[400px]">
-          <label className="block text-sm font-bold text-gray-800 mb-2">Select Class (Mock ID for now)</label>
+          <label className="block text-sm font-bold text-gray-800 mb-2">Select Class</label>
           <div className="flex items-center gap-2">
-            <Input 
-              placeholder="Paste a Class UUID here" 
-              value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              className="flex-1 h-12 border-gray-200"
-            />
+            {classes.length > 0 ? (
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="flex-1 h-12 border border-gray-200 rounded-md px-4 font-medium text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.title || c.name || `Class ${c.id}`}</option>
+                ))}
+              </select>
+            ) : (
+              <Input 
+                placeholder="Enter Class ID or title" 
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="flex-1 h-12 border-gray-200"
+              />
+            )}
           </div>
         </div>
 
@@ -111,9 +136,13 @@ export default function NewSchoolFeePage() {
               onChange={(e) => setSelectedTermId(e.target.value)}
               className="flex-1 h-12 border border-gray-200 rounded-md px-4 font-medium text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
-              {terms.map(t => (
-                <option key={t.id} value={t.id}>{t.name} ({t.year})</option>
-              ))}
+              {terms.length === 0 ? (
+                <option value="">No terms configured</option>
+              ) : (
+                terms.map(t => (
+                  <option key={t.id} value={t.id}>{t.name} ({t.year})</option>
+                ))
+              )}
             </select>
           </div>
         </div>

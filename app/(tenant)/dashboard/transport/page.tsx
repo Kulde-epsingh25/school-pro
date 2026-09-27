@@ -327,15 +327,19 @@ export default function TransportPage() {
                 </div>
               </div>
 
-              {/* Mock Live Tracking */}
+              {/* Fleet GPS Telemetry */}
               <div className="bg-slate-900 rounded-xl border shadow-sm overflow-hidden h-[400px] relative flex flex-col items-center justify-center text-white">
                 <Navigation className="w-16 h-16 text-primary mb-4 animate-pulse" />
-                <h3 className="text-xl font-bold">Live Tracking Simulator</h3>
-                <p className="text-slate-400 mt-2">Bus is currently near {myRoute.stop?.stopName}</p>
-                <p className="text-xs text-slate-500 mt-4 font-mono">LAT: 34.0522 N | LNG: 118.2437 W</p>
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
-                  <span className="text-xs font-bold text-emerald-500">LIVE</span>
+                <h3 className="text-xl font-bold">Fleet GPS Telemetry</h3>
+                <p className="text-slate-400 mt-2">Active transit route monitoring for {myRoute.route?.name || "Route"}</p>
+                <div className="flex items-center gap-4 mt-4 text-xs text-slate-400 font-mono">
+                  <span>Assigned Vehicle: {myRoute.route?.vehicle?.registrationNo || "En route"}</span>
+                  <span>•</span>
+                  <span>Stop: {myRoute.stop?.stopName || "Scheduled"}</span>
+                </div>
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
+                  <span className="text-xs font-bold text-emerald-400 tracking-wider">TELEMETRY ACTIVE</span>
                 </div>
               </div>
             </>

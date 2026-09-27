@@ -17,15 +17,27 @@ export async function getDashboardMetrics(req: Request, res: Response) {
       orderBy: { createdAt: "desc" }
     });
 
-    // Mock chart data for platform growth
-    const growthData = [
-      { name: "Jan", tenants: Math.max(1, totalTenants - 5), users: Math.max(100, totalUsers - 500) },
-      { name: "Feb", tenants: Math.max(2, totalTenants - 4), users: Math.max(200, totalUsers - 400) },
-      { name: "Mar", tenants: Math.max(3, totalTenants - 3), users: Math.max(300, totalUsers - 300) },
-      { name: "Apr", tenants: Math.max(4, totalTenants - 2), users: Math.max(400, totalUsers - 200) },
-      { name: "May", tenants: Math.max(5, totalTenants - 1), users: Math.max(500, totalUsers - 100) },
-      { name: "Jun", tenants: totalTenants, users: totalUsers },
-    ];
+    // Real cumulative platform growth by month
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const growthData = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+
+      const tenantsCount = await db.tenant.count({
+        where: { createdAt: { lte: endOfMonth } }
+      });
+      const usersCount = await db.user.count({
+        where: { isActive: true, createdAt: { lte: endOfMonth } }
+      });
+
+      growthData.push({
+        name: monthNames[d.getMonth()],
+        tenants: tenantsCount,
+        users: usersCount
+      });
+    }
 
     res.json({
       metrics: {
@@ -117,12 +129,17 @@ export async function getFinancialSummary(req: Request, res: Response) {
   if (!tenantId || typeof tenantId !== 'string') return res.status(400).json({ error: "Tenant ID required" });
 
   try {
+    const feePayments = await db.payment.findMany({ where: { tenantId, status: "PAID" } });
     const payments = await db.salaryPayment.findMany({ where: { tenantId, status: "PAID" } });
     const expenses = await db.expense.findMany({ where: { tenantId } });
 
-    // Mock revenue from somewhere, maybe subscriptions or student fees if implemented
-    const revenueByMonth: Record<string, number> = { "Jan": 5000, "Feb": 5500, "Mar": 4800, "Apr": 6000 };
+    const revenueByMonth: Record<string, number> = {};
     const expensesByMonth: Record<string, number> = {};
+
+    feePayments.forEach(p => {
+      const month = p.createdAt.toLocaleString('default', { month: 'short' });
+      revenueByMonth[month] = (revenueByMonth[month] || 0) + p.amount;
+    });
 
     expenses.forEach(e => {
       const month = e.date.toLocaleString('default', { month: 'short' });
@@ -137,7 +154,7 @@ export async function getFinancialSummary(req: Request, res: Response) {
     const months = Array.from(new Set([...Object.keys(revenueByMonth), ...Object.keys(expensesByMonth)]));
     const data = months.map(m => ({
       name: m,
-      revenue: revenueByMonth[m] || Math.floor(Math.random() * 5000) + 3000,
+      revenue: revenueByMonth[m] || 0,
       expenses: expensesByMonth[m] || 0
     }));
 

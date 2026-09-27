@@ -64,17 +64,29 @@ export default function NewStudentPage() {
   const [selectedParentData, setSelectedParentData] = useState<any | null>(null);
 
   useEffect(() => {
-    if (school?.id) {
-      fetchData();
+    async function initSequence() {
+      let currentSeq = 1;
+      if (school?.id) {
+        fetchData();
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/students/count?tenantId=${school.id}`, {
+            headers: { "x-user-id": user?.id || "" }
+          }).then(r => r.json()).catch(() => null);
+          if (res && typeof res.count === "number") {
+            currentSeq = res.count + 1;
+          }
+        } catch (e) {
+          currentSeq = 1;
+        }
+      }
+      setSequenceNo(currentSeq);
+      setFormData(prev => ({
+        ...prev,
+        rollNo: generateRollNumber(),
+        regNo: generateRegistrationNumber("BU", prev.studentType as "PS" | "SS", new Date().getFullYear(), currentSeq)
+      }));
     }
-    // Simulate fetching the sequence from /students/sequence API
-    const mockSeq = 1;
-    setSequenceNo(mockSeq);
-    setFormData(prev => ({
-      ...prev,
-      rollNo: generateRollNumber(),
-      regNo: generateRegistrationNumber("BU", prev.studentType as "PS" | "SS", new Date().getFullYear(), mockSeq)
-    }));
+    initSequence();
   }, [school?.id, user?.id]);
 
   const fetchData = async () => {
@@ -87,25 +99,18 @@ export default function NewStudentPage() {
       if (parentsRes && parentsRes.ok) {
         setParents(await parentsRes.json());
       } else {
-        throw new Error("Parents API not ok");
+        setParents([]);
       }
       
       if (classesRes && classesRes.ok) {
         setClasses(await classesRes.json());
       } else {
-        throw new Error("Classes API not ok");
+        setClasses([]);
       }
     } catch (error) {
-      console.error("Failed to fetch data, using mock data:", error);
-      // Fallback to mock data
-      setParents([
-        { id: "1", firstName: "David", lastName: "Johnson" },
-        { id: "2", firstName: "Emma", lastName: "Smith" }
-      ]);
-      setClasses([
-        { id: "10", title: "Class 10", streams: [{ id: "Science", title: "Science" }, { id: "Arts", title: "Arts" }] },
-        { id: "11", title: "Class 11", streams: [{ id: "Commerce", title: "Commerce" }] }
-      ]);
+      console.error("Failed to fetch parents or classes:", error);
+      setParents([]);
+      setClasses([]);
     }
   };
 
@@ -138,7 +143,6 @@ export default function NewStudentPage() {
     e.preventDefault();
     try {
       setParentLoading(true);
-      // Simulate saving parent and getting full parent object back
       const payload = { ...parentForm, tenantId: school?.id };
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com"}/parents`, {
         method: "POST",
@@ -146,19 +150,16 @@ export default function NewStudentPage() {
         body: JSON.stringify(payload),
       }).catch(() => null);
 
-      let newParent;
       if (res && res.ok) {
-        newParent = await res.json();
+        const newParent = await res.json();
+        setParents([...parents, newParent]);
+        setFormData({ ...formData, parentId: newParent.id });
+        setSelectedParentData(newParent);
+        toast.success("Parent saved successfully!");
+        setIsParentModalOpen(false);
       } else {
-        // Fallback mock parent creation if API fails
-        newParent = { ...parentForm, id: `mock-${Date.now()}` };
+        toast.error("Failed to register parent in database. Please check inputs.");
       }
-      
-      setParents([...parents, newParent]);
-      setFormData({ ...formData, parentId: newParent.id });
-      setSelectedParentData(newParent);
-      toast.success("Parent saved successfully!");
-      setIsParentModalOpen(false);
     } catch (error) {
       toast.error("An error occurred saving the parent");
     } finally {

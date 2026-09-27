@@ -202,7 +202,7 @@ export const importBiometric = async (req: Request, res: Response) => {
         },
         create: {
           tenantId,
-          classId: record.classId, // Mock class ID for import
+          classId: record.classId,
           studentId: record.studentId,
           date: targetDate,
           status: record.status as AttendanceStatus,

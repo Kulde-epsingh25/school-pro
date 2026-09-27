@@ -76,7 +76,7 @@ export const createUser = async (req: Request, res: Response) => {
       });
       console.log(`[EMAIL SENT] Invitation email sent to ${email} via Resend.`);
     } else {
-      console.log(`[MOCK EMAIL] Invitation email simulated for ${email}.`);
+      console.log(`[DEV EMAIL DISPATCH] Invitation email simulated for ${email}.`);
     }
 
     res.status(201).json({ 

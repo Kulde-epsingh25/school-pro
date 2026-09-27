@@ -81,31 +81,34 @@ export default function BulkAttendancePage() {
     }
   };
 
-  const handleBiometricMock = async () => {
+  const handleSyncBiometric = async () => {
     if (!selectedClass || students.length === 0) {
-      alert("Select a class first to mock biometric import");
+      alert("Please select a class with enrolled students first");
       return;
     }
-    
-    // Mock import data for the selected class
-    const mockData = students.map(s => ({
-      studentId: s.id,
-      classId: selectedClass,
-      date,
-      status: Math.random() > 0.1 ? "PRESENT" : "ABSENT"
-    }));
 
     try {
-      await apiClient.post(`/attendance/import-biometric?tenantId=${school?.id}`, {
-        data: mockData
+      setSaving(true);
+      const res = await apiClient.post<any>(`/attendance/sync-biometric?tenantId=${school?.id}`, {
+        classId: selectedClass,
+        date
       });
-      alert(`Successfully imported ${mockData.length} biometric records!`);
-      // Update UI state to match the mock
-      const newState: Record<string, string> = {};
-      mockData.forEach(m => newState[m.studentId] = m.status);
-      setAttendanceState(newState);
+
+      if (res.ok && res.data?.records) {
+        const newState: Record<string, string> = { ...attendanceState };
+        res.data.records.forEach((m: any) => {
+          newState[m.studentId] = m.status;
+        });
+        setAttendanceState(newState);
+        alert(`Synchronized ${res.data.records.length} biometric device logs`);
+      } else {
+        alert("Biometric device queried. No new unsynced scans found for this date.");
+      }
     } catch (error) {
-      console.error("Biometric import failed", error);
+      console.error("Biometric sync failed", error);
+      alert("Biometric sync connection failed. Check device network gateway.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -117,8 +120,8 @@ export default function BulkAttendancePage() {
           <p className="text-gray-500 mt-2">Quickly mark attendance for an entire class.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBiometricMock} className="flex gap-2 items-center">
-            <Upload className="w-4 h-4" /> Import Biometric Data
+          <Button variant="outline" onClick={handleSyncBiometric} className="flex gap-2 items-center">
+            <Upload className="w-4 h-4" /> Sync Biometric Device
           </Button>
           <Button onClick={handleSave} disabled={saving || !selectedClass} className="bg-blue-600 hover:bg-blue-700">
             {saving ? "Saving..." : "Save Attendance"}

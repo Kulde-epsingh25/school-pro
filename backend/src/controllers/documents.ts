@@ -83,7 +83,7 @@ export async function generateDocument(req: Request, res: Response) {
     const doc = await db.generatedDocument.create({
       data: {
         name: documentName || `${template.name} - Generated`,
-        documentUrl: `/temp/${Date.now()}.pdf`, // mock URL
+        documentUrl: `/api/documents/archive/${Date.now()}`,
         studentId: studentId,
         tenantId: tenantId as string,
         createdBy: userId

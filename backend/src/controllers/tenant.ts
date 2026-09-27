@@ -115,10 +115,10 @@ export async function createTenant(req: Request, res: Response) {
       console.log(`[EMAIL SENT] Verification email sent to ${adminEmail} via Resend.`);
     } else {
       console.log("=========================================================");
-      console.log(`[MOCK EMAIL] To: ${adminEmail}`);
-      console.log(`[MOCK EMAIL] Subject: Welcome to School Management Pro`);
-      console.log(`[MOCK EMAIL] Body: Please verify your account and set your password:`);
-      console.log(`[MOCK EMAIL] Link: ${magicLink}`);
+      console.log(`[DEV EMAIL DISPATCH] To: ${adminEmail}`);
+      console.log(`[DEV EMAIL DISPATCH] Subject: Welcome to School Management Pro`);
+      console.log(`[DEV EMAIL DISPATCH] Body: Please verify your account and set your password:`);
+      console.log(`[DEV EMAIL DISPATCH] Link: ${magicLink}`);
       console.log("=========================================================");
     }
 

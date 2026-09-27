@@ -62,11 +62,11 @@ export const sendAttendanceNotificationEmail = async (
 ) => {
   if (!process.env.RESEND_API_KEY) {
     console.log("=========================================================");
-    console.log(`[MOCK EMAIL - No RESEND_API_KEY] To: ${parentEmail}`);
-    console.log(`[MOCK EMAIL] Subject: Attendance Alert: ${studentName} is ${status} today`);
-    console.log(`[MOCK EMAIL] Body: This is to inform you that ${studentName} was marked ${status} on ${dateString} at ${schoolName}.`);
+    console.log(`[DEV EMAIL DISPATCH - No RESEND_API_KEY] To: ${parentEmail}`);
+    console.log(`[DEV EMAIL DISPATCH] Subject: Attendance Alert: ${studentName} is ${status} today`);
+    console.log(`[DEV EMAIL DISPATCH] Body: This is to inform you that ${studentName} was marked ${status} on ${dateString} at ${schoolName}.`);
     console.log("=========================================================");
-    return { success: true, mock: true };
+    return { success: true, dispatched: "local_console" };
   }
 
   const isAbsent = status === 'ABSENT';

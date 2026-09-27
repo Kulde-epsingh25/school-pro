@@ -17,5 +17,10 @@
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "src/tests/**/*",
+    "src/scripts/**/*",
+    "src/seed_saas.ts"
   ]
 }

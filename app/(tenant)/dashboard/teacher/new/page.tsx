@@ -13,40 +13,57 @@ import { useAuthStore } from "@/store/authStore";
 
 type SelectOption = { value: string; label: string };
 
-const subjectOptions: SelectOption[] = [
-  { value: "algebra", label: "Algebra" },
-  { value: "geometry", label: "Geometry" },
-  { value: "physics", label: "Physics" },
-  { value: "chemistry", label: "Chemistry" },
-  { value: "english", label: "English" }
-];
-
-const classOptions: SelectOption[] = [
-  { value: "grade8", label: "Grade 8" },
-  { value: "grade9", label: "Grade 9" },
-  { value: "grade10", label: "Grade 10" },
-  { value: "grade11", label: "Grade 11" },
-  { value: "grade12", label: "Grade 12" }
-];
-
 export default function NewTeacherPage() {
   const router = useRouter();
   const school = useSchoolStore((state) => state.school);
   const user = useAuthStore((state) => state.user);
 
+  const [subjectOptions, setSubjectOptions] = useState<SelectOption[]>([]);
+  const [classOptions, setClassOptions] = useState<SelectOption[]>([]);
   const [employeeId, setEmployeeId] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState<SelectOption[]>([]);
   const [selectedClasses, setSelectedClasses] = useState<SelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Mock API fetch to get the sequence number
-    const fetchSequence = async () => {
-      const mockSeq = 15; // Example sequence
-      setEmployeeId(generateEmployeeId("SP", mockSeq));
-    };
-    fetchSequence();
-  }, []);
+    async function loadOptions() {
+      if (!school?.id) {
+        setEmployeeId(generateEmployeeId("SP", 1));
+        return;
+      }
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://school-pro-api-6mxq-5qzq.onrender.com";
+        const headers = { "x-user-id": user?.id || "" };
+
+        const [subRes, classRes, countRes] = await Promise.all([
+          fetch(`${apiBase}/academics/subjects?tenantId=${school.id}`, { headers })
+            .then(r => r.json()).catch(() => []),
+          fetch(`${apiBase}/classes?tenantId=${school.id}`, { headers })
+            .then(r => r.json()).catch(() => []),
+          fetch(`${apiBase}/teachers/count?tenantId=${school.id}`, { headers })
+            .then(r => r.json()).catch(() => ({ count: 1 }))
+        ]);
+
+        if (Array.isArray(subRes) && subRes.length > 0) {
+          setSubjectOptions(subRes.map((s: any) => ({ value: s.id, label: s.name })));
+        } else {
+          setSubjectOptions([]);
+        }
+
+        if (Array.isArray(classRes) && classRes.length > 0) {
+          setClassOptions(classRes.map((c: any) => ({ value: c.id, label: c.title || c.name || `Class ${c.id}` })));
+        } else {
+          setClassOptions([]);
+        }
+
+        const seq = (countRes?.count || 0) + 1;
+        setEmployeeId(generateEmployeeId("SP", seq));
+      } catch (err) {
+        setEmployeeId(generateEmployeeId("SP", 1));
+      }
+    }
+    loadOptions();
+  }, [school?.id, user?.id]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
